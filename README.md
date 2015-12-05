@@ -9,7 +9,6 @@ This repository is entirely written in C++, and is structured around the CMAKE c
 ## Status
 This library is currently in development, and right now it really doesn't do all that much. Don't worry! I'm working on it...
 
-
 ## Build Instructions
 We follow the standard CMAKE build scheme. Just download the repository and from the top directory type:
 
@@ -22,3 +21,6 @@ Optionally, to run tests:
 ```bash
 make check
 ```
+
+## Acknowledgements
+We have borrowed some of the code from the `berkeley_sfm` project, ongoing work by **Erik Nelson** and **David Fridovich-Keil**.
