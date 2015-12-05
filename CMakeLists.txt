@@ -30,9 +30,9 @@ add_subdirectory(external)
 # Add the source directories to the search path so cmake can find our headers.
 include_directories(${CMAKE_SOURCE_DIR}/src/cpp/)
 
-# Collect source files and build the berkeley_sfm object.
-file(GLOB_RECURSE bsfm_srcs ${CMAKE_SOURCE_DIR}/src/cpp/*.cpp)
-add_library(berkeley_sfm ${bsfm_srcs})
+# Collect source files and build the path_planning object.
+file(GLOB_RECURSE path_srcs ${CMAKE_SOURCE_DIR}/src/cpp/*.cpp)
+add_library(path_planning ${path_srcs})
 
 # Set up output directory for executables.
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/)
