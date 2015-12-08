@@ -36,53 +36,27 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines the base struct for all scene models. Derive from this
+// class to parameterize a particular scene (e.g. R^3, with known obstacles).
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
-
-#include <path/path.h>
+#ifdef PATH_PLANNING_SCENE_MODEL_H
+#define PATH_PLANNING_SCENE_MODEL_H
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  template <typename RobotModelType, typename SceneModelType, typename PointType>
-    class Planner {
-  public:
-    Planner() {}
-    virtual ~Planner() {}
+  // Derive from this struct when defining a specific scene model.
+  template<typename PointType> struct SceneModel {
+    SceneModel() {}
+    virtual ~SceneModel() {}
 
-    // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot) {}
-    virtual inline void SetSceneModel(SceneModelType& scene) {}
-
-    // Define these methods in a derived class.
-    virtual Path<PointType> PlanPath() const = 0;
-
-  private:
-    RobotModelType robot_;
-    SceneModelType scene_;
-  }
-
-// ---------------------------- Implementation ------------------------------ //
-
-  template<typename RobotModelType, typename SceneModelType, typename PointType>
-    void Planner<RobotModelType,
-                 SceneModelType,
-                 PointType>::SetRobotModel(RobotModelType& robot) {
-    robot_ = robot;
-  }
-
-  template<typename RobotModelType, typename SceneModelType, typename PointType>
-    void Planner<RobotModelType,
-                 SceneModelType,
-                 PointType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
+    // Define these methods in a derived struct.
+    virtual bool IsFeasible(PointType) const = true;
+    virtual double Cost(PointType) const = 0.0;
   }
 
 } // \namespace path
+
 
 #endif

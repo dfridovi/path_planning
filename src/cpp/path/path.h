@@ -36,53 +36,35 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines the Path datatype. It is templated on the type of
+// Point, i.e. a Path is an ordered list of Points, but these Points can be
+// in any arbitrary space.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
-
-#include <path/path.h>
+#ifdef PATH_PLANNING_PATH_H
+#define PATH_PLANNING_PATH_H
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  template <typename RobotModelType, typename SceneModelType, typename PointType>
-    class Planner {
+  // A Path is just an ordered list of Points. Keeps track of path cost.
+  template<typename PointType> class Path {
   public:
-    Planner() {}
-    virtual ~Planner() {}
+    Path() {}
+    ~Path() {}
 
-    // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot) {}
-    virtual inline void SetSceneModel(SceneModelType& scene) {}
+    // Initialize with a set of points.
+    Path(std::vector<PointType>& points) {}
 
-    // Define these methods in a derived class.
-    virtual Path<PointType> PlanPath() const = 0;
+    // Add a point to the path.
+    void AddPoint(PointType& point) {}
+
 
   private:
-    RobotModelType robot_;
-    SceneModelType scene_;
+    std::vector<PointType> points_;
+    double cost_;
   }
 
-// ---------------------------- Implementation ------------------------------ //
-
-  template<typename RobotModelType, typename SceneModelType, typename PointType>
-    void Planner<RobotModelType,
-                 SceneModelType,
-                 PointType>::SetRobotModel(RobotModelType& robot) {
-    robot_ = robot;
-  }
-
-  template<typename RobotModelType, typename SceneModelType, typename PointType>
-    void Planner<RobotModelType,
-                 SceneModelType,
-                 PointType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
-  }
-
-} // \namespace path
+} //\ namespace path
 
 #endif

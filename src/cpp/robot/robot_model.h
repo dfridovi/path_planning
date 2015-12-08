@@ -36,50 +36,41 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines the base class for all robot models. Derive from this
+// class to parameterize a particular robot (e.g. the DJI Matrice 100).
 //
+// The idea here is to provide a way to specify constraints on a robot's
+// configuration. For example, a RobotModel can test whether or not it is
+// occupying free space in a SceneModel.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
-
-#include <path/path.h>
+#ifdef PATH_PLANNING_ROBOT_MODEL_H
+#define PATH_PLANNING_ROBOT_MODEL_H
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  template <typename RobotModelType, typename SceneModelType, typename PointType>
-    class Planner {
+  // Derive from this class when defining a specific robot model.
+  template<typename SceneModelType> class RobotModel {
   public:
-    Planner() {}
-    virtual ~Planner() {}
+    RobotModel() {}
+    virtual ~RobotModel() {}
 
-    // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot) {}
+    // Set scene model.
     virtual inline void SetSceneModel(SceneModelType& scene) {}
 
     // Define these methods in a derived class.
-    virtual Path<PointType> PlanPath() const = 0;
+    virtual bool IsFeasible() const = 0;
+    virtual double Cost(IndexType) const = 0;
 
   private:
-    RobotModelType robot_;
     SceneModelType scene_;
   }
 
+
 // ---------------------------- Implementation ------------------------------ //
 
-  template<typename RobotModelType, typename SceneModelType, typename PointType>
-    void Planner<RobotModelType,
-                 SceneModelType,
-                 PointType>::SetRobotModel(RobotModelType& robot) {
-    robot_ = robot;
-  }
-
-  template<typename RobotModelType, typename SceneModelType, typename PointType>
-    void Planner<RobotModelType,
-                 SceneModelType,
-                 PointType>::SetSceneModel(SceneModelType& scene) {
+  template<typename SceneModelType>
+    void RobotModel<SceneModelType>::SetSceneModel(SceneModelType& scene) {
     scene_ = scene;
   }
 
