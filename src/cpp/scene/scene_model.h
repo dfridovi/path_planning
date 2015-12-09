@@ -44,16 +44,18 @@
 #ifdef PATH_PLANNING_SCENE_MODEL_H
 #define PATH_PLANNING_SCENE_MODEL_H
 
+#include <geometry/point.h>
+
 namespace path {
 
-  // Derive from this struct when defining a specific scene model.
-  template<typename PointType> struct SceneModel {
+  // Derive from this class when defining a specific scene model.
+  class SceneModel {
     SceneModel() {}
     virtual ~SceneModel() {}
 
-    // Define these methods in a derived struct.
-    virtual bool IsFeasible(PointType) const = true;
-    virtual double Cost(PointType) const = 0.0;
+    // Define these methods in a derived class.
+    virtual bool IsFeasible(Point point) const = 0;
+    virtual double Cost(Point point) const = 0;
   }
 
 } // \namespace path

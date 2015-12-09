@@ -36,52 +36,46 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines the Path datatype. It operates on generic Point objects,
+// i.e. a Path is an ordered list of Points, but these Points can be
+// in any arbitrary space.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
-
-#include <path/path.h>
-#include <geometry/point.h>
+#include "path.h"
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  template <typename RobotModelType, typename SceneModelType>
-    class Planner {
-  public:
-    Planner() {}
-    virtual ~Planner() {}
+  // A Path is just an ordered list of Points.
+  Path::Path() :
+    points_(std::vector<PointType>()), length_(0.0) {}
 
-    // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot) {}
-    virtual inline void SetSceneModel(SceneModelType& scene) {}
+  Path::~Path() {}
 
-    // Define these methods in a derived class.
-    virtual Path PlanPath() const = 0;
+  // Initialize with a set of points.
+  Path<typename PointType>::Path(std::vector<PointType>& points) {
+    points_ = std::vector<PointType>();
+    length_ = 0.0;
 
-  private:
-    RobotModelType robot_;
-    SceneModelType scene_;
+    // Iterate through points, compute distances, and add to path.
+    for (size_t ii = 0; ii < points.size(); ii++) {
+      PointType next_point = points[ii];
+      points_.push_back(next_point);
+      if (ii == 0) continue;
+
+      PointType last_point = points[ii - 1];
+      length_ += last_point.DistanceTo
+
+    }
+
   }
 
-// ---------------------------- Implementation ------------------------------ //
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetRobotModel(RobotModelType& robot) {
-    robot_ = robot;
+  // Add a point to the path.
+  void Path<typename PointType>::AddPoint(PointType& point) {
+    points_.push_back(point);
   }
 
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
-  }
+  // Get path length.
+  double GetLength() const {}
 
-} // \namespace path
-
-#endif
+}

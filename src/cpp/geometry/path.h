@@ -36,8 +36,8 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the Path datatype. It is templated on the type of
-// Point, i.e. a Path is an ordered list of Points, but these Points can be
+// This class defines the Path datatype. It operates on generic Point objects,
+// i.e. a Path is an ordered list of Points, but these Points can be
 // in any arbitrary space.
 //
 ///////////////////////////////////////////////////////////////////////////////
@@ -45,24 +45,28 @@
 #ifdef PATH_PLANNING_PATH_H
 #define PATH_PLANNING_PATH_H
 
+#include "point.h"
+
 namespace path {
 
-  // A Path is just an ordered list of Points. Keeps track of path cost.
-  template<typename PointType> class Path {
+  // A Path is just an ordered list of points.
+  class Path {
   public:
     Path() {}
     ~Path() {}
 
     // Initialize with a set of points.
-    Path(std::vector<PointType>& points) {}
+    Path(std::vector<Point>& points) {}
 
     // Add a point to the path.
-    void AddPoint(PointType& point) {}
+    void AddPoint(Point& point) {}
 
+    // Get path length.
+    double GetLength() const {}
 
   private:
-    std::vector<PointType> points_;
-    double cost_;
+    std::vector<Point> points_;
+    double length_;
   }
 
 } //\ namespace path

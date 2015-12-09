@@ -36,52 +36,26 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class is the basis for all Point objects. For example a Point3D class
+// could be derived from this class, where all Points live in R^3.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
-
-#include <path/path.h>
-#include <geometry/point.h>
+#ifndef PATH_PLANNING_POINT_H
+#define PATH_PLANNING_POINT_H
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  template <typename RobotModelType, typename SceneModelType>
-    class Planner {
+  // Derive from this class when defining a new Point type.
+  class Point {
   public:
-    Planner() {}
-    virtual ~Planner() {}
-
-    // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot) {}
-    virtual inline void SetSceneModel(SceneModelType& scene) {}
+    Point() {}
+    virtual ~Point() {}
 
     // Define these methods in a derived class.
-    virtual Path PlanPath() const = 0;
-
-  private:
-    RobotModelType robot_;
-    SceneModelType scene_;
+    virtual double DistanceTo(Point point) const = 0;
   }
 
-// ---------------------------- Implementation ------------------------------ //
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetRobotModel(RobotModelType& robot) {
-    robot_ = robot;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
-  }
-
-} // \namespace path
+} //\ namespace path
 
 #endif

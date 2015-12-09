@@ -36,52 +36,70 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines a 2D point, which is a child class of Point.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_POINT_2D_H
+#define PATH_PLANNING_POINT_2D_H
 
-#include <path/path.h>
-#include <geometry/point.h>
+#include "point.h"
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  template <typename RobotModelType, typename SceneModelType>
-    class Planner {
+  // Derive from this class when defining a new Point type.
+  class Point2D : public Point {
   public:
-    Planner() {}
-    virtual ~Planner() {}
+    Point2D() {}
+    virtual ~Point2D() {}
 
-    // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot) {}
-    virtual inline void SetSceneModel(SceneModelType& scene) {}
+    // Extra constructor. Use this one for convenience.
+    Point2D(double x, double y) {}
 
-    // Define these methods in a derived class.
-    virtual Path PlanPath() const = 0;
+    // Setters.
+    SetX(double x) {}
+    SetY(double y) {}
+
+    // Getters.
+    GetX() {}
+    GetY() {}
+
+    // Compute the distance to another 2D point.
+    virtual double DistanceTo(Point2D point) {}
 
   private:
-    RobotModelType robot_;
-    SceneModelType scene_;
+    double x_;
+    double y_;
+    DISALLOW_COPY_AND_ASSIGN(Point2D)
   }
 
 // ---------------------------- Implementation ------------------------------ //
 
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetRobotModel(RobotModelType& robot) {
-    robot_ = robot;
+  // Default constructor/destructor.
+  Point2D::Point2D()
+    : x_(0.0), y_(0.0) {}
+  Point2D::~Point2D() {}
+
+  // Extra constructor. Use this one for convenience.
+  Point2D::Point2D(double x, double y)
+    : x_(x), y_(y) {}
+
+  // Setters.
+  Point2D::SetX(double x) { x_ = x; }
+  Point2D::SetY(double y) { y_ = y; }
+
+  // Getters.
+  Point2D::GetX() { return x_; }
+  Point2D::GetY() { return y_; }
+
+  // Compute the distance to another 2D point.
+  double Point2d::DistanceTo(Point2D point) {
+    double dx = x_ - point.x_;
+    double dy = y_ - point.y_;
+
+    return std::sqrt(dx*dx + dy*dy);
   }
 
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
-  }
-
-} // \namespace path
+} //\ namespace path
 
 #endif
