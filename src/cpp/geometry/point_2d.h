@@ -93,7 +93,7 @@ namespace path {
   Point2D::GetY() { return y_; }
 
   // Compute the distance to another 2D point.
-  double Point2d::DistanceTo(Point2D point) {
+  double Point2D::DistanceTo(Point2D point) {
     double dx = x_ - point.x_;
     double dy = y_ - point.y_;
 

@@ -31,53 +31,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// This class defines the Path datatype. It operates on generic Point objects,
-// i.e. a Path is an ordered list of Points, but these Points can be
-// in any arbitrary space.
-//
-///////////////////////////////////////////////////////////////////////////////
-
-#include "path.h"
-#include "point.h"
+#include <geometry/point_2d.h>
+#include <math/random_generator.h>
 
 #include <vector>
+#include <gtest/gtest.h>
 
 namespace path {
 
-  // A Path is just an ordered list of Points.
-  Path::Path() :
-    points_(std::vector<Point>()), length_(0.0) {}
+  // Test that we can construct and destroy a bunch of 2D points.
+  TEST(Point2D, TestPoint2D) {
+    RandomGenerator rng(0);
 
-  Path::~Path() {}
+    std::vector<Point2D> points = std::vector<Point2D>();
+    std::vector<double> x_coords = std::vector<double>();
+    std::vector<double> y_coords = std::vector<double>();
+    for (size_t ii = 0; ii < 1000; ++ii) {
+      double x = rng.Double();
+      double y = rng.Double();
 
-  // Initialize with a set of points.
-  Path::Path(std::vector<Point>& points) {
-    points_ = std::vector<Point>();
-    length_ = 0.0;
+      Point2D point = Point2D(x, y);
+      points.push_back(point);
 
-    // Iterate through points, compute distances, and add to path.
-    for (size_t ii = 0; ii < points.size(); ii++) {
-      Point next_point = points[ii];
-      points_.push_back(next_point);
-      if (ii == 0) continue;
-
-      Point last_point = points[ii - 1];
-      length_ += last_point.DistanceTo(next_point);
+      x_coords.push_back(x);
+      y_coords.push_back(y);
     }
+
+
   }
 
-  // Add a point to the path.
-  void Path<typename Point>::AddPoint(Point& point) {
-    Point last_point = points_.back()
-    points_.push_back(point);
-    length_ += last_point.DistanceTo(point);
-  }
-
-  // Get path length.
-  double GetLength() const { return length_; }
-}
+} //\ namespace path

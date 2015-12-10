@@ -46,6 +46,7 @@
 #define PATH_PLANNING_PATH_H
 
 #include "point.h"
+#include <vector>
 
 namespace path {
 
