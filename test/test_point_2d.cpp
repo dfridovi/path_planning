@@ -39,6 +39,7 @@
 
 #include <vector>
 #include <gtest/gtest.h>
+#include <glog/logging.h>
 
 namespace path {
 
@@ -46,18 +47,18 @@ namespace path {
   TEST(Point2D, TestPoint2D) {
     RandomGenerator rng(0);
 
-    std::vector<Point2D> points = std::vector<Point2D>();
-    std::vector<double> x_coords = std::vector<double>();
-    std::vector<double> y_coords = std::vector<double>();
     for (size_t ii = 0; ii < 1000; ++ii) {
-      double x = rng.Double();
-      double y = rng.Double();
+      double x1 = rng.Double();
+      double y1 = rng.Double();
+      Point2D::Ptr point1 = Point2D::Create(x1, y1);
+      CHECK_NOTNULL(point1.get());
 
-      Point2D point = Point2D(x, y);
-      points.push_back(point);
+      double x2 = x1 + 0.1 * rng.DoubleUniform(-1.0, 1.0);
+      double y2 = y1 + 0.1 * rng.DoubleUniform(-1.0, 1.0);
+      Point2D::Ptr point2 = Point2D::Create(x2, y2);
+      CHECK_NOTNULL(point2.get());
 
-      x_coords.push_back(x);
-      y_coords.push_back(y);
+      EXPECT_NEAR(point1->DistanceTo(point2), 0.0, 0.1 * std::sqrt(2.0));
     }
 
 

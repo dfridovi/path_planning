@@ -36,48 +36,48 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the Path datatype. It operates on generic Point objects,
+// This class defines the Trajectory datatype. It operates on generic Point objects,
 // i.e. a Path is an ordered list of Points, but these Points can be
 // in any arbitrary space.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "path.h"
-#include "point.h"
-
-#include <vector>
+#include "trajectory.h"
+#include <glog/logging.h>
 
 namespace path {
 
-  // A Path is just an ordered list of Points.
-  Path::Path() :
-    points_(std::vector<Point>()), length_(0.0) {}
+  // A Trajectory is just an ordered list of Points.
+  Trajectory::Trajectory() {
+    points_ = std::vector<Point::Ptr>();
+    length_ = 0.0;
+  }
 
-  Path::~Path() {}
-
-  // Initialize with a set of points.
-  Path::Path(std::vector<Point>& points) {
-    points_ = std::vector<Point>();
+  // Factory method. Initialize with a set of points.
+  Trajectory::Trajectory(std::vector<Point::Ptr>& points) {
+    points_ = std::vector<Point::Ptr>();
     length_ = 0.0;
 
     // Iterate through points, compute distances, and add to path.
     for (size_t ii = 0; ii < points.size(); ii++) {
-      Point next_point = points[ii];
+      Point::Ptr next_point = points[ii];
+      CHECK_NOTNULL(next_point.get());
+
       points_.push_back(next_point);
       if (ii == 0) continue;
 
-      Point last_point = points[ii - 1];
-      length_ += last_point.DistanceTo(next_point);
+      Point::Ptr last_point = points[ii - 1];
+      length_ += last_point->DistanceTo(next_point);
     }
   }
 
   // Add a point to the path.
-  void Path<typename Point>::AddPoint(Point& point) {
-    Point last_point = points_.back()
+  void Trajectory::AddPoint(Point::Ptr point) {
+    Point::Ptr last_point = points_.back();
     points_.push_back(point);
-    length_ += last_point.DistanceTo(point);
+    length_ += last_point->DistanceTo(point);
   }
 
   // Get path length.
-  double GetLength() const { return length_; }
+  double Trajectory::GetLength() const { return length_; }
 }

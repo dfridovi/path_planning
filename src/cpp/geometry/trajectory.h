@@ -36,39 +36,41 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the Path datatype. It operates on generic Point objects,
+// This class defines the Trajectory datatype. It operates on generic Point objects,
 // i.e. a Path is an ordered list of Points, but these Points can be
 // in any arbitrary space.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef PATH_PLANNING_PATH_H
-#define PATH_PLANNING_PATH_H
+#ifndef PATH_PLANNING_TRAJECTORY_H
+#define PATH_PLANNING_TRAJECTORY_H
 
 #include "point.h"
 #include <vector>
 
 namespace path {
 
-  // A Path is just an ordered list of points.
-  class Path {
+  // A Trajectory is just an ordered list of points.
+  class Trajectory {
   public:
-    Path() {}
-    ~Path() {}
+    ~Trajectory() {}
 
-    // Initialize with a set of points.
-    Path(std::vector<Point>& points) {}
+    // Factory method. Initialize with a set of points.
+    Trajectory(std::vector<Point::Ptr>& points);
 
     // Add a point to the path.
-    void AddPoint(Point& point) {}
+    void AddPoint(Point::Ptr point);
 
     // Get path length.
-    double GetLength() const {}
+    double GetLength() const;
 
   private:
-    std::vector<Point> points_;
+    std::vector<Point::Ptr> points_;
     double length_;
-  }
+
+    // Private constructor. Use the factory method instead.
+    Trajectory();
+  };
 
 } //\ namespace path
 

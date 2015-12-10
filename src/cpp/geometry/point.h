@@ -44,17 +44,26 @@
 #ifndef PATH_PLANNING_POINT_H
 #define PATH_PLANNING_POINT_H
 
+#include <memory>
+
 namespace path {
 
   // Derive from this class when defining a new Point type.
   class Point {
   public:
-    Point() {}
+    typedef std::shared_ptr<Point> Ptr;
+    typedef std::shared_ptr<const Point> ConstPtr;
+
     virtual ~Point() {}
 
     // Define these methods in a derived class.
-    virtual double DistanceTo(Point point) const = 0;
-  }
+    virtual double DistanceTo(Ptr point) const = 0;
+
+  private:
+    // Use the factory constructor instead.
+    // Define and implement in the derived class.
+    Point() {}
+  };
 
 } //\ namespace path
 

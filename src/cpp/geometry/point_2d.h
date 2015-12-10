@@ -44,43 +44,46 @@
 #define PATH_PLANNING_POINT_2D_H
 
 #include "point.h"
+#include <util/disallow_copy_and_assign.h>
 
 namespace path {
 
   // Derive from this class when defining a new Point type.
   class Point2D : public Point {
   public:
-    Point2D() {}
-    virtual ~Point2D() {}
-
-    // Extra constructor. Use this one for convenience.
-    Point2D(double x, double y) {}
+    // Factory method. Use this one for convenience.
+    Point::Ptr Create(double x, double y);
 
     // Setters.
-    SetX(double x) {}
-    SetY(double y) {}
+    void SetX(double x);
+    void SetY(double y);
 
     // Getters.
-    GetX() {}
-    GetY() {}
+    double GetX() const;
+    double GetY() const;
 
     // Compute the distance to another 2D point.
-    virtual double DistanceTo(Point2D point) {}
+    virtual double DistanceTo(Point2D& point);
 
   private:
     double x_;
     double y_;
-    DISALLOW_COPY_AND_ASSIGN(Point2D)
-  }
+
+    // Default constructor is private.
+    Point2D(double x, double y);
+
+    DISALLOW_COPY_AND_ASSIGN(Point2D);
+  };
 
 // ---------------------------- Implementation ------------------------------ //
 
-  // Default constructor/destructor.
-  Point2D::Point2D()
-    : x_(0.0), y_(0.0) {}
-  Point2D::~Point2D() {}
+  // Factory method.
+  Point::Ptr Create(double x, double y) {
+    Point::Ptr point(new Point2D(x, y));
+    return point;
+  }
 
-  // Extra constructor. Use this one for convenience.
+  // Default constructor.
   Point2D::Point2D(double x, double y)
     : x_(x), y_(y) {}
 
@@ -93,7 +96,7 @@ namespace path {
   Point2D::GetY() { return y_; }
 
   // Compute the distance to another 2D point.
-  double Point2D::DistanceTo(Point2D point) {
+  virtual double Point2D::DistanceTo(Point2D::Ptr point) {
     double dx = x_ - point.x_;
     double dy = y_ - point.y_;
 
