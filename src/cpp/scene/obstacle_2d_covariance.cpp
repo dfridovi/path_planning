@@ -36,34 +36,46 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the base struct for all scene models. Derive from this
-// class to parameterize a particular scene (e.g. R^3, with known obstacles).
+// This class models 2D point obstacles with some ellipse of uncertainty.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_SCENE_MODEL_H
-#define PATH_PLANNING_SCENE_MODEL_H
-
-#include <geometry/point.h>
-#include <util/disallow_copy_and_assign.h>
+#include "obstacle_2d_covariance.h"
+#include <geometry/point_2d.h>
+#include <memory>
+#include <cmath>
 
 namespace path {
 
-  // Derive from this class when defining a specific scene model.
-  class SceneModel {
-  public:
-    SceneModel() {}
-    virtual ~SceneModel() {}
-
-    // Define these methods in a derived class.
-    virtual bool IsFeasible(Point::Ptr point) const = 0;
-    virtual double Cost(Point::Ptr point) const = 0;
-
-  private:
-    DISALLOW_COPY_AND_ASSIGN(SceneModel);
+  // Factory method.
+  static Obstacle::Ptr Obstacle2DCovariance::Create(double x, double y,
+                              double sigma_x, double sigma_y) {
+    Obstacle::Ptr obstacle(new Obstacle2DCovariance(x, y,
+                                                    sigma_x, sigma_y));
+    return obstacle;
   }
 
-} // \namespace path
+  // Is this point feasible?
+  bool Obstacle2DCovariance::IsFeasible(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
 
+    if (point->GetX() == x_ && point->GetY() == y_)
+      return false;
+    return true;
+  }
+
+  // What is the cost of occupying this point?
+  double Obstacle2DCovariance::Cost(Point::Ptr point) const {
+    
+  }
+
+  // Default constructor.
+  Obstacle2DCovariance::Obstacle2DCovariance(double x, double y,
+                                             double sigma_x, double sigma_y)
+    : x_(x), y_(y),
+      sigma_x_(sigma_x), sigma_y_(sigma_y) {}
+
+} //\ namespace path
 
 #endif

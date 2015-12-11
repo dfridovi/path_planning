@@ -36,34 +36,37 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the base struct for all scene models. Derive from this
-// class to parameterize a particular scene (e.g. R^3, with known obstacles).
+// This class is the basis for all Obstacle objects. For example, one type
+// of obstacle we care about is point obstacles with some covariance.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_SCENE_MODEL_H
-#define PATH_PLANNING_SCENE_MODEL_H
+#ifndef PATH_PLANNING_OBSTACLE_H
+#define PATH_PLANNING_OBSTACLE_H
 
-#include <geometry/point.h>
+#include "point.h"
 #include <util/disallow_copy_and_assign.h>
+#include <memory>
 
 namespace path {
 
-  // Derive from this class when defining a specific scene model.
-  class SceneModel {
+  // Derive from this class when defining a new Obstacle type.
+  class Obstacle {
   public:
-    SceneModel() {}
-    virtual ~SceneModel() {}
+    typedef std::shared_ptr<Point> Ptr;
+    typedef std::shared_ptr<const Point> ConstPtr;
+
+    Obstacle() {}
+    virtual ~Obstacle() {}
 
     // Define these methods in a derived class.
     virtual bool IsFeasible(Point::Ptr point) const = 0;
     virtual double Cost(Point::Ptr point) const = 0;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(SceneModel);
-  }
+    DISALLOW_COPY_AND_ASSIGN(Obstacle);
+  };
 
-} // \namespace path
-
+} //\ namespace path
 
 #endif

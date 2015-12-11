@@ -36,31 +36,39 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the base struct for all scene models. Derive from this
-// class to parameterize a particular scene (e.g. R^3, with known obstacles).
+// This class defines a 2D continuous scene, templated on the type of obstacle.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_SCENE_MODEL_H
-#define PATH_PLANNING_SCENE_MODEL_H
+#ifndef PATH_PLANNING_SCENE_2D_CONTINUOUS_H
+#define PATH_PLANNING_SCENE_2D_CONTINUOUS_H
 
+#include "scene_model.h"
 #include <geometry/point.h>
-#include <util/disallow_copy_and_assign.h>
+#include "obstacle.h"
+#include <vector>
 
 namespace path {
 
-  // Derive from this class when defining a specific scene model.
-  class SceneModel {
+  // Derived class to model 2D continuous scenes.
+  class Scene2DContinuous : public SceneModel {
   public:
-    SceneModel() {}
-    virtual ~SceneModel() {}
+    Scene2DContinuous(double xmin, double xmax,
+                      double ymin, double ymax,
+                      std::vector<Obstacle::Ptr>& obstacles);
 
-    // Define these methods in a derived class.
-    virtual bool IsFeasible(Point::Ptr point) const = 0;
-    virtual double Cost(Point::Ptr point) const = 0;
+    // Is this point feasible?
+    bool IsFeasible(Point::Ptr point) const;
+
+    // What is the cost of occupying this point?
+    double Cost(Point::Ptr point) const;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(SceneModel);
+    std::vector<Obstacle::Ptr> obstacles_;
+    double xmin_;
+    double xmax_;
+    double ymin_;
+    double ymax_;
   }
 
 } // \namespace path

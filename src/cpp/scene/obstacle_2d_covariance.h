@@ -36,34 +36,39 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the base struct for all scene models. Derive from this
-// class to parameterize a particular scene (e.g. R^3, with known obstacles).
+// This class models 2D point obstacles with some ellipse of uncertainty.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_SCENE_MODEL_H
-#define PATH_PLANNING_SCENE_MODEL_H
+#ifndef PATH_PLANNING_OBSTACLE_2D_COV_H
+#define PATH_PLANNING_OBSTACLE_2D_COV_H
 
-#include <geometry/point.h>
-#include <util/disallow_copy_and_assign.h>
+#include "obstacle.h"
 
 namespace path {
 
-  // Derive from this class when defining a specific scene model.
-  class SceneModel {
+  // Derive from this class when defining a new Obstacle type.
+  class Obstacle2DCovariance : public Obstacle {
   public:
-    SceneModel() {}
-    virtual ~SceneModel() {}
+    // Factory method.
+    static Obstacle::Ptr Create(double x, double y,
+                                double sigma_x, double sigma_y);
 
     // Define these methods in a derived class.
-    virtual bool IsFeasible(Point::Ptr point) const = 0;
-    virtual double Cost(Point::Ptr point) const = 0;
+    bool IsFeasible(Point::Ptr point) const;
+    double Cost(Point::Ptr point) const;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(SceneModel);
-  }
+    double x_;
+    double y_;
+    double sigma_x_;
+    double sigma_y_;
 
-} // \namespace path
+    // Default constructor.
+    Obstacle2DCovariance(double x, double y,
+                         double sigma_x, double sigma_y);
+  };
 
+} //\ namespace path
 
 #endif

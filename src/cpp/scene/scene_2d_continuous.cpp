@@ -36,34 +36,47 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the base struct for all scene models. Derive from this
-// class to parameterize a particular scene (e.g. R^3, with known obstacles).
+// This class defines a 2D continuous scene, templated on the type of obstacle.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_SCENE_MODEL_H
-#define PATH_PLANNING_SCENE_MODEL_H
-
+#include "scene_2d_continuous.h"
+#include "scene_model.h"
 #include <geometry/point.h>
-#include <util/disallow_copy_and_assign.h>
+#include <glog/logging.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific scene model.
-  class SceneModel {
-  public:
-    SceneModel() {}
-    virtual ~SceneModel() {}
+  Scene2DContinuous::Scene2DContinuous(double xmin, double xmax,
+                                       double ymin, double ymax,
+                                       std::vector<Obstacle::Ptr>& obstacles)
+    : xmin_(xmin), xmax_(xmax),
+      ymin_(ymin), ymax_(ymax),
+      obstacles_(obstacles) {}
 
-    // Define these methods in a derived class.
-    virtual bool IsFeasible(Point::Ptr point) const = 0;
-    virtual double Cost(Point::Ptr point) const = 0;
+  // Is this point feasible?
+  bool Scene2DContinuous::IsFeasible(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
 
-  private:
-    DISALLOW_COPY_AND_ASSIGN(SceneModel);
+    // Check each obstacle.
+    for (const auto& obstacle : obstacles_) {
+      if (!obstacle->IsFeasible(point))
+        return false;
+    }
+
+    return true;
+  }
+
+  // What is the cost of occupying this point?
+  double Scene2DContinuous::Cost(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+
+    // Iterate over all obstacles and add costs.
+    double total_cost = 0.0;
+    for (const auto& obstacle : obstacles_)
+      total_cost += obstacle->Cost(point);
+
+    return total_cost;
   }
 
 } // \namespace path
-
-
-#endif
