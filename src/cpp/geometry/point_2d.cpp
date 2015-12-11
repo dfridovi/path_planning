@@ -36,44 +36,41 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the base class for all robot models. Derive from this
-// class to parameterize a particular robot (e.g. the DJI Matrice 100).
+// This class defines a 2D point, which is a child class of Point.
 //
-// The idea here is to provide a way to specify constraints on a robot's
-// configuration. For example, a RobotModel can test whether or not it is
-// occupying free space in a SceneModel.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_ROBOT_MODEL_H
-#define PATH_PLANNING_ROBOT_MODEL_H
+#include "point_2d.h"
 
 namespace path {
 
-  // Derive from this class when defining a specific robot model.
-  template<typename SceneModelType> class RobotModel {
-  public:
-    RobotModel() {}
-    virtual ~RobotModel() {}
+  // Default constructor.
+  Point2D::Point2D(double x, double y)
+    : x_(x), y_(y) {}
 
-    // Set scene model.
-    virtual inline void SetSceneModel(SceneModelType& scene) {}
-
-    // Define these methods in a derived class.
-    virtual bool IsFeasible() const = 0;
-    virtual double Cost(IndexType) const = 0;
-
-  private:
-    SceneModelType scene_;
+  // Factory method.
+  Point::Ptr Point2D::Create(double x, double y) {
+    Point::Ptr point(new Point2D(x, y));
+    return point;
   }
 
+  // Setters.
+  void Point2D::SetX(double x) { x_ = x; }
+  void Point2D::SetY(double y) { y_ = y; }
 
-// ---------------------------- Implementation ------------------------------ //
+  // Getters.
+  double Point2D::GetX() const { return x_; }
+  double Point2D::GetY() const { return y_; }
 
-  template<typename SceneModelType>
-    void RobotModel<SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
+  // Compute the distance to another 2D point.
+  double Point2D::DistanceTo(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
+
+    double dx = x_ - point2d->x_;
+    double dy = y_ - point2d->y_;
+
+    return std::sqrt(dx*dx + dy*dy);
   }
 
-} // \namespace path
-
-#endif
+} //\ namespace path

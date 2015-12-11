@@ -44,7 +44,6 @@
 #define PATH_PLANNING_POINT_2D_H
 
 #include "point.h"
-#include <util/disallow_copy_and_assign.h>
 #include <glog/logging.h>
 #include <memory>
 #include <cmath>
@@ -75,37 +74,6 @@ namespace path {
     // Default constructor.
     Point2D(double x, double y);
   };
-
-// ---------------------------- Implementation ------------------------------ //
-
-  // Default constructor.
-  Point2D::Point2D(double x, double y)
-    : x_(x), y_(y) {}
-
-  // Factory method.
-  Point::Ptr Point2D::Create(double x, double y) {
-    Point::Ptr point(new Point2D(x, y));
-    return point;
-  }
-
-  // Setters.
-  void Point2D::SetX(double x) { x_ = x; }
-  void Point2D::SetY(double y) { y_ = y; }
-
-  // Getters.
-  double Point2D::GetX() const { return x_; }
-  double Point2D::GetY() const { return y_; }
-
-  // Compute the distance to another 2D point.
-  double Point2D::DistanceTo(Point::Ptr point) const {
-    CHECK_NOTNULL(point.get());
-    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
-
-    double dx = x_ - point2d->x_;
-    double dy = y_ - point2d->y_;
-
-    return std::sqrt(dx*dx + dy*dy);
-  }
 
 } //\ namespace path
 

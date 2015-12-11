@@ -41,7 +41,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_PLANNER_H
 #define PATH_PLANNING_PLANNER_H
 
 #include <path/path.h>

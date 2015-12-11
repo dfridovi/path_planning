@@ -44,6 +44,8 @@
 
 #include "trajectory.h"
 #include <glog/logging.h>
+#include <iostream>
+
 
 namespace path {
 
@@ -73,6 +75,11 @@ namespace path {
 
   // Add a point to the path.
   void Trajectory::AddPoint(Point::Ptr point) {
+    if (points_.size() == 0) {
+      points_.push_back(point);
+      return;
+    }
+
     Point::Ptr last_point = points_.back();
     CHECK_NOTNULL(last_point.get());
 

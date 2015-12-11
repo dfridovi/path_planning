@@ -58,7 +58,8 @@ namespace path {
 
     ~Trajectory() {}
 
-    // Factory method. Initialize with a set of points.
+    // Constructors.
+    Trajectory();
     Trajectory(std::vector<Ptr>& points);
 
     // Add a point to the path.
@@ -71,8 +72,6 @@ namespace path {
     std::vector<Ptr> points_;
     double length_;
 
-    // Private constructor. Use the factory method instead.
-    Trajectory();
   };
 
 } //\ namespace path

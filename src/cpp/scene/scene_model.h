@@ -41,7 +41,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef PATH_PLANNING_SCENE_MODEL_H
+#ifndef PATH_PLANNING_SCENE_MODEL_H
 #define PATH_PLANNING_SCENE_MODEL_H
 
 #include <geometry/point.h>

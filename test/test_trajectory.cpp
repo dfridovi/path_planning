@@ -31,49 +31,56 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// This class defines the base class for all robot models. Derive from this
-// class to parameterize a particular robot (e.g. the DJI Matrice 100).
-//
-// The idea here is to provide a way to specify constraints on a robot's
-// configuration. For example, a RobotModel can test whether or not it is
-// occupying free space in a SceneModel.
-///////////////////////////////////////////////////////////////////////////////
+#include <geometry/trajectory.h>
+#include <geometry/point_2d.h>
+#include <math/random_generator.h>
 
-#ifndef PATH_PLANNING_ROBOT_MODEL_H
-#define PATH_PLANNING_ROBOT_MODEL_H
+#include <vector>
+#include <cmath>
+#include <gtest/gtest.h>
+#include <glog/logging.h>
+#include <iostream>
 
 namespace path {
 
-  // Derive from this class when defining a specific robot model.
-  template<typename SceneModelType> class RobotModel {
-  public:
-    RobotModel() {}
-    virtual ~RobotModel() {}
+  // Test that we can construct and destroy a Trajectory.
+  TEST(Trajectory, TestTrajectory) {
+    math::RandomGenerator rng(0);
 
-    // Set scene model.
-    virtual inline void SetSceneModel(SceneModelType& scene) {}
+    // Empty Trajectory.
+    Trajectory path1;
 
-    // Define these methods in a derived class.
-    virtual bool IsFeasible() const = 0;
-    virtual double Cost(IndexType) const = 0;
+    // Vector of Points.
+    std::vector<Point::Ptr> points;
+    Point::Ptr last_point;
+    double length = 0.0;
 
-  private:
-    SceneModelType scene_;
+    // Make a bunch of points.
+    for (size_t ii = 0; ii < 1000; ++ii) {
+      double x = rng.Double();
+      double y = rng.Double();
+      Point::Ptr point = Point2D::Create(x, y);
+      CHECK_NOTNULL(point.get());
+
+      // Keep track of length for comparison.
+      if (ii != 0)
+        length += last_point->DistanceTo(point);
+
+      // Add to path and vector.
+      path1.AddPoint(point);
+      points.push_back(point);
+      last_point = point;
+    }
+
+    // Make second Trajectory from vector.
+    Trajectory path2(points);
+
+    // Checks lengths.
+    EXPECT_NEAR(path1.GetLength(), path2.GetLength(), 1e-16);
+    EXPECT_NEAR(path1.GetLength(), length, 1e-16);
   }
 
-
-// ---------------------------- Implementation ------------------------------ //
-
-  template<typename SceneModelType>
-    void RobotModel<SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
-  }
-
-} // \namespace path
-
-#endif
+} //\ namespace path
