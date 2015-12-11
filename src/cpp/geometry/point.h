@@ -45,6 +45,7 @@
 #define PATH_PLANNING_POINT_H
 
 #include <memory>
+#include <util/disallow_copy_and_assign.h>
 
 namespace path {
 
@@ -54,15 +55,14 @@ namespace path {
     typedef std::shared_ptr<Point> Ptr;
     typedef std::shared_ptr<const Point> ConstPtr;
 
+    Point() {}
     virtual ~Point() {}
 
     // Define these methods in a derived class.
-    virtual double DistanceTo(Ptr point) const = 0;
+    virtual double DistanceTo(Point::Ptr point) const = 0;
 
   private:
-    // Use the factory constructor instead.
-    // Define and implement in the derived class.
-    Point() {}
+    DISALLOW_COPY_AND_ASSIGN(Point);
   };
 
 } //\ namespace path

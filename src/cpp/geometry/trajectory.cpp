@@ -74,6 +74,8 @@ namespace path {
   // Add a point to the path.
   void Trajectory::AddPoint(Point::Ptr point) {
     Point::Ptr last_point = points_.back();
+    CHECK_NOTNULL(last_point.get());
+
     points_.push_back(point);
     length_ += last_point->DistanceTo(point);
   }

@@ -45,14 +45,17 @@
 
 #include "point.h"
 #include <util/disallow_copy_and_assign.h>
+#include <glog/logging.h>
+#include <memory>
+#include <cmath>
 
 namespace path {
 
   // Derive from this class when defining a new Point type.
   class Point2D : public Point {
   public:
-    // Factory method. Use this one for convenience.
-    Point::Ptr Create(double x, double y);
+    // Factory method.
+    static Point::Ptr Create(double x, double y);
 
     // Setters.
     void SetX(double x);
@@ -63,42 +66,43 @@ namespace path {
     double GetY() const;
 
     // Compute the distance to another 2D point.
-    virtual double DistanceTo(Point2D& point);
+    double DistanceTo(Point::Ptr point) const;
 
   private:
     double x_;
     double y_;
 
-    // Default constructor is private.
+    // Default constructor.
     Point2D(double x, double y);
-
-    DISALLOW_COPY_AND_ASSIGN(Point2D);
   };
 
 // ---------------------------- Implementation ------------------------------ //
-
-  // Factory method.
-  Point::Ptr Create(double x, double y) {
-    Point::Ptr point(new Point2D(x, y));
-    return point;
-  }
 
   // Default constructor.
   Point2D::Point2D(double x, double y)
     : x_(x), y_(y) {}
 
+  // Factory method.
+  Point::Ptr Point2D::Create(double x, double y) {
+    Point::Ptr point(new Point2D(x, y));
+    return point;
+  }
+
   // Setters.
-  Point2D::SetX(double x) { x_ = x; }
-  Point2D::SetY(double y) { y_ = y; }
+  void Point2D::SetX(double x) { x_ = x; }
+  void Point2D::SetY(double y) { y_ = y; }
 
   // Getters.
-  Point2D::GetX() { return x_; }
-  Point2D::GetY() { return y_; }
+  double Point2D::GetX() const { return x_; }
+  double Point2D::GetY() const { return y_; }
 
   // Compute the distance to another 2D point.
-  virtual double Point2D::DistanceTo(Point2D::Ptr point) {
-    double dx = x_ - point.x_;
-    double dy = y_ - point.y_;
+  double Point2D::DistanceTo(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
+
+    double dx = x_ - point2d->x_;
+    double dy = y_ - point2d->y_;
 
     return std::sqrt(dx*dx + dy*dy);
   }

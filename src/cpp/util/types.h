@@ -45,7 +45,6 @@
 #define PATH_UTIL_TYPES_H
 
 #include <Eigen/Core>
-#include <opencv2/features2d/features2d.hpp>
 #include <limits>
 #include <vector>
 
@@ -53,38 +52,9 @@ namespace path {
 
 // -------------------- Custom types -------------------- //
 
-// Each ViewIndex corresponds to a unique View that is constructed at runtime
-// and can be accessed with View::GetView(ViewIndex index).
-typedef unsigned int ViewIndex;
-
-// Each LandmarkIndex corresponds to a unique Landmark that is constructed at
-// runtime and can be accessed with Landmark::GetLandmark(LandmarkIndex index).
-typedef unsigned int LandmarkIndex;
-
-// Designate some invalid indices.
-static constexpr ViewIndex kInvalidView = std::numeric_limits<ViewIndex>::max();
-static constexpr LandmarkIndex kInvalidLandmark =
-    std::numeric_limits<LandmarkIndex>::max();
-
 
 // -------------------- Third-party typedefs -------------------- //
 
-// When extracting N-dimensional descriptors from a set of M keypoints, OpenCV
-// will store the desriptors in a (M-K)xN matrix, where K is the number of
-// keypoints that OpenCV failed to compute a descriptor for. In other words,
-// rows correspond to keypoints, and columns to indices of the descriptor.
-typedef ::cv::Mat DescriptorList;
-
-// Keypoints contain (u, v) image-space coordinates.
-typedef ::cv::KeyPoint Keypoint;
-typedef ::std::vector<Keypoint> KeypointList;
-
-// Descriptors are dynamically sized vectors of doubles.
-typedef ::Eigen::Matrix<double, Eigen::Dynamic, 1> Descriptor;
-
-// Used to represent [R | t] and P, the camera extrinsics and projection
-// matrices.
-typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
 
 }  //\namespace path
 

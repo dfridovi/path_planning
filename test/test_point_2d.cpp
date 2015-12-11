@@ -38,6 +38,7 @@
 #include <math/random_generator.h>
 
 #include <vector>
+#include <cmath>
 #include <gtest/gtest.h>
 #include <glog/logging.h>
 
@@ -45,23 +46,21 @@ namespace path {
 
   // Test that we can construct and destroy a bunch of 2D points.
   TEST(Point2D, TestPoint2D) {
-    RandomGenerator rng(0);
+    math::RandomGenerator rng(0);
 
     for (size_t ii = 0; ii < 1000; ++ii) {
       double x1 = rng.Double();
       double y1 = rng.Double();
-      Point2D::Ptr point1 = Point2D::Create(x1, y1);
+      Point::Ptr point1 = Point2D::Create(x1, y1);
       CHECK_NOTNULL(point1.get());
 
       double x2 = x1 + 0.1 * rng.DoubleUniform(-1.0, 1.0);
       double y2 = y1 + 0.1 * rng.DoubleUniform(-1.0, 1.0);
-      Point2D::Ptr point2 = Point2D::Create(x2, y2);
+      Point::Ptr point2 = Point2D::Create(x2, y2);
       CHECK_NOTNULL(point2.get());
 
       EXPECT_NEAR(point1->DistanceTo(point2), 0.0, 0.1 * std::sqrt(2.0));
     }
-
-
   }
 
 } //\ namespace path
