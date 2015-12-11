@@ -44,7 +44,7 @@
 #ifndef PATH_PLANNING_OBSTACLE_H
 #define PATH_PLANNING_OBSTACLE_H
 
-#include "point.h"
+#include <geometry/point.h>
 #include <util/disallow_copy_and_assign.h>
 #include <memory>
 
@@ -53,8 +53,8 @@ namespace path {
   // Derive from this class when defining a new Obstacle type.
   class Obstacle {
   public:
-    typedef std::shared_ptr<Point> Ptr;
-    typedef std::shared_ptr<const Point> ConstPtr;
+    typedef std::shared_ptr<Obstacle> Ptr;
+    typedef std::shared_ptr<const Obstacle> ConstPtr;
 
     Obstacle() {}
     virtual ~Obstacle() {}

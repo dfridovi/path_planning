@@ -40,7 +40,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "obstacle_2d_covariance.h"
+#include "obstacle_2d_gaussian.h"
+#include <geometry/point.h>
 #include <geometry/point_2d.h>
 #include <memory>
 #include <cmath>
@@ -48,34 +49,51 @@
 namespace path {
 
   // Factory method.
-  static Obstacle::Ptr Obstacle2DCovariance::Create(double x, double y,
-                              double sigma_x, double sigma_y) {
-    Obstacle::Ptr obstacle(new Obstacle2DCovariance(x, y,
-                                                    sigma_x, sigma_y));
+  Obstacle::Ptr Obstacle2DGaussian::Create(double x, double y,
+                                           double sigma_xx, double sigma_yy,
+                                           double sigma_xy) {
+    Obstacle::Ptr obstacle(new Obstacle2DGaussian(x, y,
+                                                  sigma_xx, sigma_yy,
+                                                  sigma_xy));
     return obstacle;
   }
 
   // Is this point feasible?
-  bool Obstacle2DCovariance::IsFeasible(Point::Ptr point) const {
+  bool Obstacle2DGaussian::IsFeasible(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
-    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
+    Point2D *ptr = std::static_pointer_cast<Point2D>(point).get();
 
-    if (point->GetX() == x_ && point->GetY() == y_)
+    if (ptr->GetVector().isApprox(mean_))
       return false;
     return true;
   }
 
   // What is the cost of occupying this point?
-  double Obstacle2DCovariance::Cost(Point::Ptr point) const {
-    
+  double Obstacle2DGaussian::Cost(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+    Point2D *ptr = std::static_pointer_cast<Point2D>(point).get();
+    Vector2d p = ptr->GetVector();
+
+    return std::exp(-0.5 * (p - mean_).transpose() * inv_ * (p - mean_)) /
+      std::sqrt(2.0 * M_PI * det_);
   }
 
   // Default constructor.
-  Obstacle2DCovariance::Obstacle2DCovariance(double x, double y,
-                                             double sigma_x, double sigma_y)
-    : x_(x), y_(y),
-      sigma_x_(sigma_x), sigma_y_(sigma_y) {}
+  Obstacle2DGaussian::Obstacle2DGaussian(double x, double y,
+                                         double sigma_xx,
+                                         double sigma_yy,
+                                         double sigma_xy) {
+    mean_(0) = x;
+    mean_(1) = y;
+
+    cov_(0, 0) = sigma_xx;
+    cov_(0, 1) = sigma_xy;
+    cov_(1, 0) = sigma_xy;
+    cov_(1, 1) = sigma_yy;
+
+    // Precalculate determinant and inverse.
+    det_ = cov_.determinant();
+    inv_ = cov_.inverse();
+  }
 
 } //\ namespace path
-
-#endif

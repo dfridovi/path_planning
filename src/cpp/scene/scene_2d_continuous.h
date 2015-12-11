@@ -69,7 +69,7 @@ namespace path {
     double xmax_;
     double ymin_;
     double ymax_;
-  }
+  };
 
 } // \namespace path
 

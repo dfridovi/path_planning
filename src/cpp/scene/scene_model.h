@@ -61,7 +61,7 @@ namespace path {
 
   private:
     DISALLOW_COPY_AND_ASSIGN(SceneModel);
-  }
+  };
 
 } // \namespace path
 

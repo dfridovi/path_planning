@@ -47,6 +47,9 @@
 #include <glog/logging.h>
 #include <memory>
 #include <cmath>
+#include <Eigen/Dense>
+
+using Eigen::Vector2d;
 
 namespace path {
 
@@ -63,13 +66,13 @@ namespace path {
     // Getters.
     double GetX() const;
     double GetY() const;
+    Vector2d& GetVector();
 
     // Compute the distance to another 2D point.
     double DistanceTo(Point::Ptr point) const;
 
   private:
-    double x_;
-    double y_;
+    Vector2d pt_;
 
     // Default constructor.
     Point2D(double x, double y);

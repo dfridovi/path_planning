@@ -40,33 +40,41 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_OBSTACLE_2D_COV_H
-#define PATH_PLANNING_OBSTACLE_2D_COV_H
+#ifndef PATH_PLANNING_OBSTACLE_2D_GAUSSIAN_H
+#define PATH_PLANNING_OBSTACLE_2D_GAUSSIAN_H
 
 #include "obstacle.h"
+#include <Eigen/Dense>
+
+using Eigen::Matrix2d;
+using Eigen::Vector2d;
 
 namespace path {
 
   // Derive from this class when defining a new Obstacle type.
-  class Obstacle2DCovariance : public Obstacle {
+  class Obstacle2DGaussian : public Obstacle {
   public:
     // Factory method.
     static Obstacle::Ptr Create(double x, double y,
-                                double sigma_x, double sigma_y);
+                                double sigma_xx, double sigma_yy,
+                                double sigma_xy);
 
     // Define these methods in a derived class.
     bool IsFeasible(Point::Ptr point) const;
     double Cost(Point::Ptr point) const;
 
   private:
-    double x_;
-    double y_;
-    double sigma_x_;
-    double sigma_y_;
+    Vector2d mean_;
+    Matrix2d cov_;
+
+    // For speed.
+    Matrix2d inv_;
+    double det_;
 
     // Default constructor.
-    Obstacle2DCovariance(double x, double y,
-                         double sigma_x, double sigma_y);
+    Obstacle2DGaussian(double x, double y,
+                       double sigma_xx, double sigma_yy,
+                       double sigma_xy);
   };
 
 } //\ namespace path

@@ -45,8 +45,10 @@
 namespace path {
 
   // Default constructor.
-  Point2D::Point2D(double x, double y)
-    : x_(x), y_(y) {}
+  Point2D::Point2D(double x, double y) {
+    pt_(0) = x;
+    pt_(1) = y;
+  }
 
   // Factory method.
   Point::Ptr Point2D::Create(double x, double y) {
@@ -55,20 +57,21 @@ namespace path {
   }
 
   // Setters.
-  void Point2D::SetX(double x) { x_ = x; }
-  void Point2D::SetY(double y) { y_ = y; }
+  void Point2D::SetX(double x) { pt_(0) = x; }
+  void Point2D::SetY(double y) { pt_(1) = y; }
 
   // Getters.
-  double Point2D::GetX() const { return x_; }
-  double Point2D::GetY() const { return y_; }
+  double Point2D::GetX() const { return pt_(0); }
+  double Point2D::GetY() const { return pt_(1); }
+  Vector2d& Point2D::GetVector() { return pt_; };
 
   // Compute the distance to another 2D point.
   double Point2D::DistanceTo(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
     Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
 
-    double dx = x_ - point2d->x_;
-    double dy = y_ - point2d->y_;
+    double dx = pt_(0) - point2d->pt_(0);
+    double dy = pt_(1) - point2d->pt_(1);
 
     return std::sqrt(dx*dx + dy*dy);
   }
