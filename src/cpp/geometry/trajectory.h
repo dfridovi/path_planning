@@ -53,8 +53,8 @@ namespace path {
   // A Trajectory is just an ordered list of points.
   class Trajectory {
   public:
-    typedef std::shared_ptr<Point> Ptr;
-    typedef std::shared_ptr<const Point> ConstPtr;
+    typedef std::shared_ptr<Trajectory> Ptr;
+    typedef std::shared_ptr<const Trajectory> ConstPtr;
 
     ~Trajectory() {}
 
