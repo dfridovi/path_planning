@@ -52,7 +52,12 @@ namespace path {
                                        std::vector<Obstacle::Ptr>& obstacles)
     : xmin_(xmin), xmax_(xmax),
       ymin_(ymin), ymax_(ymax),
-      obstacles_(obstacles) {}
+      obstacles_(obstacles) {
+
+    // Check that all obstacle pointers are not null.
+    for (const auto& obstacle : obstacles_)
+      CHECK_NOTNULL(obstacle.get());
+  }
 
   // Is this point feasible?
   bool Scene2DContinuous::IsFeasible(Point::Ptr point) const {

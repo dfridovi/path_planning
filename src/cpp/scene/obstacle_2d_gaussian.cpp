@@ -45,6 +45,7 @@
 #include <geometry/point_2d.h>
 #include <memory>
 #include <cmath>
+#include <iostream>
 
 namespace path {
 
@@ -74,8 +75,9 @@ namespace path {
     Point2D *ptr = std::static_pointer_cast<Point2D>(point).get();
     Vector2d p = ptr->GetVector();
 
-    return std::exp(-0.5 * (p - mean_).transpose() * inv_ * (p - mean_)) /
+    double cost = std::exp(-0.5 * (p - mean_).transpose() * inv_ * (p - mean_)) /
       std::sqrt(2.0 * M_PI * det_);
+    return cost;
   }
 
   // Default constructor.

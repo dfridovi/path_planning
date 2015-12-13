@@ -16,6 +16,11 @@ find_package( Flann REQUIRED )
 include_directories(SYSTEM ${FLANN_INCLUDE_DIRS})
 list(APPEND path_planning_LIBRARIES ${FLANN_LIBRARIES})
 
+# Find OpenCV.
+find_package( OpenCV REQUIRED )
+include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
+list(APPEND path_planning_LIBRARIES ${OpenCV_LIBS})
+
 # Find Google-gflags.
 include("cmake/External/gflags.cmake")
 include_directories(SYSTEM ${GFLAGS_INCLUDE_DIRS})

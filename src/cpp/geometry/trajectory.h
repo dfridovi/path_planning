@@ -53,23 +53,23 @@ namespace path {
   // A Trajectory is just an ordered list of points.
   class Trajectory {
   public:
-    typedef std::shared_ptr<Trajectory> Ptr;
-    typedef std::shared_ptr<const Trajectory> ConstPtr;
+    //    typedef std::shared_ptr<Trajectory> Ptr;
+    //    typedef std::shared_ptr<const Trajectory> ConstPtr;
 
     ~Trajectory() {}
 
     // Constructors.
     Trajectory();
-    Trajectory(std::vector<Ptr>& points);
+    Trajectory(std::vector<Point::Ptr>& points);
 
     // Add a point to the path.
-    void AddPoint(Ptr point);
+    void AddPoint(Point::Ptr point);
 
     // Get path length.
     double GetLength() const;
 
   private:
-    std::vector<Ptr> points_;
+    std::vector<Point::Ptr> points_;
     double length_;
 
   };

@@ -51,13 +51,11 @@ namespace path {
 
   // A Trajectory is just an ordered list of Points.
   Trajectory::Trajectory() {
-    points_ = std::vector<Point::Ptr>();
     length_ = 0.0;
   }
 
   // Factory method. Initialize with a set of points.
   Trajectory::Trajectory(std::vector<Point::Ptr>& points) {
-    points_ = std::vector<Point::Ptr>();
     length_ = 0.0;
 
     // Iterate through points, compute distances, and add to path.
