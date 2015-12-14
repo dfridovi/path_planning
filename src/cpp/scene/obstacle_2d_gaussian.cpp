@@ -52,19 +52,16 @@ namespace path {
   // Factory method.
   Obstacle::Ptr Obstacle2DGaussian::Create(double x, double y,
                                            double sigma_xx, double sigma_yy,
-                                           double sigma_xy) {
+                                           double sigma_xy, double threshold) {
     Obstacle::Ptr obstacle(new Obstacle2DGaussian(x, y,
                                                   sigma_xx, sigma_yy,
-                                                  sigma_xy));
+                                                  sigma_xy, threshold));
     return obstacle;
   }
 
   // Is this point feasible?
   bool Obstacle2DGaussian::IsFeasible(Point::Ptr point) const {
-    CHECK_NOTNULL(point.get());
-    Point2D *ptr = std::static_pointer_cast<Point2D>(point).get();
-
-    if (ptr->GetVector().isApprox(mean_))
+    if (this->Cost(point) > threshold_)
       return false;
     return true;
   }
@@ -82,9 +79,8 @@ namespace path {
 
   // Default constructor.
   Obstacle2DGaussian::Obstacle2DGaussian(double x, double y,
-                                         double sigma_xx,
-                                         double sigma_yy,
-                                         double sigma_xy) {
+                                         double sigma_xx, double sigma_yy,
+                                         double sigma_xy, double threshold) {
     mean_(0) = x;
     mean_(1) = y;
 
@@ -92,6 +88,8 @@ namespace path {
     cov_(0, 1) = sigma_xy;
     cov_(1, 0) = sigma_xy;
     cov_(1, 1) = sigma_yy;
+
+    threshold_ = threshold;
 
     // Precalculate determinant and inverse.
     det_ = cov_.determinant();

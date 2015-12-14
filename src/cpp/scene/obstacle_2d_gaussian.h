@@ -57,7 +57,7 @@ namespace path {
     // Factory method.
     static Obstacle::Ptr Create(double x, double y,
                                 double sigma_xx, double sigma_yy,
-                                double sigma_xy);
+                                double sigma_xy, double threshold = 0.1);
 
     // Define these methods in a derived class.
     bool IsFeasible(Point::Ptr point) const;
@@ -66,6 +66,7 @@ namespace path {
   private:
     Vector2d mean_;
     Matrix2d cov_;
+    double threshold_;
 
     // For speed.
     Matrix2d inv_;
@@ -74,7 +75,7 @@ namespace path {
     // Default constructor.
     Obstacle2DGaussian(double x, double y,
                        double sigma_xx, double sigma_yy,
-                       double sigma_xy);
+                       double sigma_xy, double threshold = 0.1);
   };
 
 } //\ namespace path

@@ -49,7 +49,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-DEFINE_bool(visualize, true, "Visualize scene?");
+DEFINE_bool(visualize, false, "Visualize scene?");
 
 using Eigen::MatrixXf;
 
