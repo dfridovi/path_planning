@@ -31,51 +31,49 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Authors:        David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ *                 Erik Nelson            ( eanelson@eecs.berkeley.edu )
  */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines an N-ary tree of Points.
+// Wrapper around the FLANN library for approximate nearest neighbor searches.
+// This is useful for finding the nearest Point in a collection -- e.g. for
+// insertion into a RRT.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_POINT_TREE_H
-#define PATH_PLANNING_POINT_TREE_H
+#ifndef PATH_PLANNING_FLANN_POINT_KDTREE_H
+#define PATH_PLANNING_FLANN_POINT_KDTREE_H
+
+#include <flann/flann.h>
 
 #include "point.h"
-#include "trajectory.h"
-#include <util/nary_node.h>
-#include <util/disallow_copy_and_assign.h>
-#include <memory>
-#include <vector>
-#include <unordered_map>
-#include <glog/logging.h>
+#include "../util/disallow_copy_and_assign.h"
 
-namespace path {
+namespace bsfm {
 
-  // N-ary tree of Points.
-  class PointTree {
-  public:
-    PointTree();
-    ~PointTree() {}
+class FlannPointKDTree {
+ public:
+  FlannPointKDTree();
+  ~FlannPointKDTree();
 
-    // Insert a point.
-    void Insert(Point::Ptr point);
+  // Add descriptors to the index.
+  void AddPoint(Point& descriptor);
+  void AddPoints(std::vector<Point>& descriptors);
 
-    // Does the tree contain this point?
-    bool Contains(Point::Ptr point);
+  // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
+  // not a nearest neighbor was found, and if it was found, the index and
+  // distance to the nearest neighbor. Index is based on the order in which
+  // descriptors were added with AddPoint() and AddPoints().
+  bool NearestNeighbor(Point& query, int& nn_index, double& nn_distance);
 
-    // Get the path from the head to a particular goal point.
-    Trajectory GetTrajectory(Point::Ptr goal);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FlannPointKDTree)
 
-  private:
-    Node<Point::Ptr>::Ptr head_;
-    std::unordered_map<Point::Ptr, Node::Ptr> registry_;
+  std::shared_ptr< flann::Index<flann::L2<double> > > index_;
 
-    DISALLOW_COPY_AND_ASSIGN(NTree);
-  };
-
-} //\ namespace path
+};  //\class FlannPointKDTree
+}  //\namespace bsfm
 
 #endif

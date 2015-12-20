@@ -36,45 +36,60 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines an N-ary tree of Points.
+// This class defines a Node in an N-ary tree of generic objects.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_POINT_TREE_H
-#define PATH_PLANNING_POINT_TREE_H
+#ifndef PATH_PLANNING_NARY_NODE_H
+#define PATH_PLANNING_NARY_NODE_H
 
-#include "point.h"
-#include "trajectory.h"
-#include <util/nary_node.h>
 #include <util/disallow_copy_and_assign.h>
 #include <memory>
 #include <vector>
-#include <unordered_map>
 #include <glog/logging.h>
 
 namespace path {
 
-  // N-ary tree of Points.
-  class PointTree {
+  // Helper class for use with a tree class.
+  template<typename DataType>
+  class Node {
   public:
-    PointTree();
-    ~PointTree() {}
+    typedef std::shared_ptr<Node> Ptr;
+    typedef std::shared_ptr<const Node> ConstPtr;
 
-    // Insert a point.
-    void Insert(Point::Ptr point);
+    ~Node() {}
 
-    // Does the tree contain this point?
-    bool Contains(Point::Ptr point);
+    // Factory method.
+    Create(Node::Ptr parent);
 
-    // Get the path from the head to a particular goal point.
-    Trajectory GetTrajectory(Point::Ptr goal);
+    // Add a child.
+    AddChild(Node::Ptr child);
 
   private:
-    Node<Point::Ptr>::Ptr head_;
-    std::unordered_map<Point::Ptr, Node::Ptr> registry_;
+    // Private constructor. Use the factory method instead.
+    Node(Node::Ptr parent) {}
 
-    DISALLOW_COPY_AND_ASSIGN(NTree);
+    Node::Ptr parent_;
+    std::vector<Node::Ptr> children_;
   };
+
+// ---------------------------- Implementation ------------------------------ //
+
+  template<typename DataType>
+  Node<DataType>::Create(Node<DataType>::Ptr parent) {
+    Node<DataType>::Ptr node(new Node<DataType>(parent));
+    return node;
+  }
+
+  template<typename DataType>
+  Node<DataType>::Node(Node<DataType>::Ptr parent)
+    : parent_(parent) {}
+
+  template<typename DataType>
+  Node<DataType>::AddChild(Node<DataType>::Ptr child) {
+    CHECK_NOTNULL(child.get());
+    children_.push_back(child);
+  }
 
 } //\ namespace path
 

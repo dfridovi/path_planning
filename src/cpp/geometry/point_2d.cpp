@@ -41,6 +41,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "point_2d.h"
+#include <glog/logging.h>
 
 namespace path {
 
@@ -48,6 +49,8 @@ namespace path {
   Point2D::Point2D(double x, double y) {
     pt_(0) = x;
     pt_(1) = y;
+
+    SetType(Point::PointType::POINT_2D);
   }
 
   // Factory method.
@@ -68,6 +71,13 @@ namespace path {
   // Compute the distance to another 2D point.
   double Point2D::DistanceTo(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
+
+    // Type check.
+    if (!point->IsType(Point::PointType::POINT_2D)) {
+      VLOG(1) << "Point types do not match. Returning a distance of -1.0.";
+      return -1.0;
+    }
+
     Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
 
     double dx = pt_(0) - point2d->pt_(0);

@@ -78,7 +78,7 @@ namespace path {
     DISALLOW_COPY_AND_ASSIGN(Planner);
   }
 
-// ---------------------------- Implementation ------------------------------ //
+  // ---------------------------- Implementation ------------------------------ //
 
   template<typename RobotModelType, typename SceneModelType>
     void Planner<RobotModelType,

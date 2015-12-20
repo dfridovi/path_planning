@@ -69,6 +69,13 @@ namespace path {
   // What is the cost of occupying this point?
   double Obstacle2DGaussian::Cost(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
+
+    // Check point type.
+    if (!point->IsType(Point::PointType::POINT_2D)) {
+      VLOG(1) << "Point types do not match. Returning a cost of infinity.";
+      return std::numeric_limits<double>::infinity();
+    }
+
     Point2D *ptr = std::static_pointer_cast<Point2D>(point).get();
     Vector2d p = ptr->GetVector();
 
