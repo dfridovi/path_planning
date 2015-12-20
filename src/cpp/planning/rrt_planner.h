@@ -44,65 +44,26 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_RRT_PLANNER_H
+#define PATH_PLANNING_RRT_PLANNER_H
 
 #include <path/trajectory.h>
 #include <geometry/point.h>
+#include <geometry/point_tree.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
+  // Derived from base class Planner.
   template <typename RobotModelType, typename SceneModelType>
-    class Planner {
+    class RRTPlanner : public Planner<RobotModelType, SceneModelType> {
   public:
-    Planner();
-    virtual ~Planner() {}
-
-    // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot);
-    virtual inline void SetSceneModel(SceneModelType& scene);
-
-    // Set origin and goal points.
-    virtual inline void SetOrigin(Point::Ptr origin);
-    virtual inline void SetGoal(Point::Ptr goal);
-
-    // Define these methods in a derived class.
-    virtual Trajectory PlanTrajectory() const = 0;
+    // The algorithm. See header for references.
+    Trajectory PlanTrajectory() const;
 
   private:
-    RobotModelType robot_;
-    SceneModelType scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    PointTree tree_;
   }
 
-// ---------------------------- Implementation ------------------------------ //
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetRobotModel(RobotModelType& robot) {
-    robot_ = robot;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetOrigin(Point::Ptr origin) {
-    origin_ = origin;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetGoal(Point::Ptr goal) {
-    goal_ = goal;
-  }
-
-} // \namespace path
+} //\ namespace path
 
 #endif

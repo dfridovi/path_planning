@@ -36,74 +36,78 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines a generic N-ary tree of Points.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_POINT_TREE_H
+#define PATH_PLANNING_POINT_TREE_H
 
-#include <path/trajectory.h>
-#include <geometry/point.h>
+#include "point.h"
 #include <util/disallow_copy_and_assign.h>
+#include <memory>
+#include <vector>
+#include <glog/logging.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  template <typename RobotModelType, typename SceneModelType>
-    class Planner {
+  // Tree of Points.
+  class PointTree {
   public:
-    Planner() {}
-    virtual ~Planner() {}
+    ~Trajectory() {}
 
-    // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot);
-    virtual inline void SetSceneModel(SceneModelType& scene);
+    // Constructors.
+    Trajectory();
+    Trajectory(std::vector<Point::Ptr>& points);
 
-    // Set origin and goal points.
-    virtual inline void SetOrigin(Point::Ptr origin);
-    virtual inline void SetGoal(Point::Ptr goal);
+    // Add a point to the path.
+    void AddPoint(Point::Ptr point);
 
-    // Define these methods in a derived class.
-    virtual Trajectory PlanTrajectory() const = 0;
-
-  protected:
-    RobotModelType robot_;
-    SceneModelType scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // Get path length.
+    double GetLength() const;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
-  }
+    Node::Ptr head_;
+    DISALLOW_COPY_AND_ASSIGN(PointTree);
+
+  };
+
+  class Node {
+  public:
+    typedef std::shared_ptr<Node> Ptr;
+    typedef std::shared_ptr<const Node> ConstPtr;
+
+    ~Node() {}
+
+    // Factory method.
+    Create(Node::Ptr parent);
+
+    // Add a child.
+    AddChild(Node::Ptr child);
+
+  private:
+    // Private constructor. Use the factory method instead.
+    Node(Node::Ptr parent) {}
+
+    Node::Ptr parent_;
+    std::vector<Node::Ptr> children_;
+  };
 
 // ---------------------------- Implementation ------------------------------ //
 
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetRobotModel(RobotModelType& robot) {
-    robot_ = robot;
+  Node::Create(Node::Ptr parent) {
+    Node::Ptr node(new Node(parent));
+    return node;
   }
 
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
+  Node::Node(Node::Ptr parent)
+    : parent_(parent) {}
+
+  Node::AddChild(Node::Ptr child) {
+    CHECK_NOTNULL(child.get());
+    children_.push_back(child);
   }
 
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetOrigin(Point::Ptr origin) {
-    origin_ = origin;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetGoal(Point::Ptr goal) {
-    goal_ = goal;
-  }
-
-} // \namespace path
+} //\ namespace path
 
 #endif

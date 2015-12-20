@@ -36,74 +36,29 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This file defines the RRT (rapidly-exploring random tree) class, which is
+// a derived class based on the Planner class. It is implemented according to
+// the following descriptions:
+// + https://www.cs.cmu.edu/~motionplanning/lecture/lec20.pdf
+// + http://msl.cs.uiuc.edu/rrt/about.html
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
-
-#include <path/trajectory.h>
-#include <geometry/point.h>
-#include <util/disallow_copy_and_assign.h>
+#include "rrt_planner.h"
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  template <typename RobotModelType, typename SceneModelType>
-    class Planner {
-  public:
-    Planner() {}
-    virtual ~Planner() {}
+  // The algorithm. See header for references.
+  template<typename RobotModelType, typename SceneModelType>
+  Trajectory RRTPlanner<RobotModelType, SceneModelType>::PlanTrajectory() const {
 
-    // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot);
-    virtual inline void SetSceneModel(SceneModelType& scene);
-
-    // Set origin and goal points.
-    virtual inline void SetOrigin(Point::Ptr origin);
-    virtual inline void SetGoal(Point::Ptr goal);
-
-    // Define these methods in a derived class.
-    virtual Trajectory PlanTrajectory() const = 0;
-
-  protected:
-    RobotModelType robot_;
-    SceneModelType scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // TODO: FILL THIS IN!!!
+  }
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    PointTree tree_;
   }
 
-// ---------------------------- Implementation ------------------------------ //
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetRobotModel(RobotModelType& robot) {
-    robot_ = robot;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetOrigin(Point::Ptr origin) {
-    origin_ = origin;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetGoal(Point::Ptr goal) {
-    goal_ = goal;
-  }
-
-} // \namespace path
+} //\ namespace path
 
 #endif
