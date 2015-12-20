@@ -44,7 +44,7 @@
 #ifndef PATH_PLANNING_PLANNER_H
 #define PATH_PLANNING_PLANNER_H
 
-#include <path/path.h>
+#include <path/trajectory.h>
 #include <geometry/point.h>
 
 namespace path {
@@ -53,19 +53,25 @@ namespace path {
   template <typename RobotModelType, typename SceneModelType>
     class Planner {
   public:
-    Planner() {}
+    Planner();
     virtual ~Planner() {}
 
     // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot) {}
-    virtual inline void SetSceneModel(SceneModelType& scene) {}
+    virtual inline void SetRobotModel(RobotModelType& robot);
+    virtual inline void SetSceneModel(SceneModelType& scene);
+
+    // Set origin and goal points.
+    virtual inline void SetOrigin(Point::Ptr origin);
+    virtual inline void SetGoal(Point::Ptr goal);
 
     // Define these methods in a derived class.
-    virtual Path PlanPath() const = 0;
+    virtual Trajectory PlanTrajectory() const = 0;
 
   private:
     RobotModelType robot_;
     SceneModelType scene_;
+    Point::Ptr origin_;
+    Point::Ptr goal_;
   }
 
 // ---------------------------- Implementation ------------------------------ //
@@ -80,6 +86,18 @@ namespace path {
     void Planner<RobotModelType,
                  SceneModelType>::SetSceneModel(SceneModelType& scene) {
     scene_ = scene;
+  }
+
+  template<typename RobotModelType, typename SceneModelType>
+    void Planner<RobotModelType,
+                 SceneModelType>::SetOrigin(Point::Ptr origin) {
+    origin_ = origin;
+  }
+
+  template<typename RobotModelType, typename SceneModelType>
+    void Planner<RobotModelType,
+                 SceneModelType>::SetGoal(Point::Ptr goal) {
+    goal_ = goal;
   }
 
 } // \namespace path

@@ -36,41 +36,73 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the Trajectory datatype. It operates on generic Point objects,
-// i.e. a Path is an ordered list of Points, but these Points can be
-// in any arbitrary space.
+// This file defines the RRT (rapidly-exploring random tree) class, which is
+// a derived class based on the Planner class. It is implemented according to
+// the following descriptions:
+// + https://www.cs.cmu.edu/~motionplanning/lecture/lec20.pdf
+// + http://msl.cs.uiuc.edu/rrt/about.html
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_TRAJECTORY_H
-#define PATH_PLANNING_TRAJECTORY_H
+#ifndef PATH_PLANNING_PLANNER_H
+#define PATH_PLANNING_PLANNER_H
 
-#include "point.h"
-#include <vector>
+#include <path/trajectory.h>
+#include <geometry/point.h>
 
 namespace path {
 
-  // A Trajectory is just an ordered list of points.
-  class Trajectory {
+  // Derive from this class when defining a specific path planner.
+  template <typename RobotModelType, typename SceneModelType>
+    class Planner {
   public:
-    ~Trajectory() {}
+    Planner();
+    virtual ~Planner() {}
 
-    // Constructors.
-    Trajectory();
-    Trajectory(std::vector<Point::Ptr>& points);
+    // Set robot and scene models.
+    virtual inline void SetRobotModel(RobotModelType& robot);
+    virtual inline void SetSceneModel(SceneModelType& scene);
 
-    // Add a point to the path.
-    void AddPoint(Point::Ptr point);
+    // Set origin and goal points.
+    virtual inline void SetOrigin(Point::Ptr origin);
+    virtual inline void SetGoal(Point::Ptr goal);
 
-    // Get path length.
-    double GetLength() const;
+    // Define these methods in a derived class.
+    virtual Trajectory PlanTrajectory() const = 0;
 
   private:
-    std::vector<Point::Ptr> points_;
-    double length_;
+    RobotModelType robot_;
+    SceneModelType scene_;
+    Point::Ptr origin_;
+    Point::Ptr goal_;
+  }
 
-  };
+// ---------------------------- Implementation ------------------------------ //
 
-} //\ namespace path
+  template<typename RobotModelType, typename SceneModelType>
+    void Planner<RobotModelType,
+                 SceneModelType>::SetRobotModel(RobotModelType& robot) {
+    robot_ = robot;
+  }
+
+  template<typename RobotModelType, typename SceneModelType>
+    void Planner<RobotModelType,
+                 SceneModelType>::SetSceneModel(SceneModelType& scene) {
+    scene_ = scene;
+  }
+
+  template<typename RobotModelType, typename SceneModelType>
+    void Planner<RobotModelType,
+                 SceneModelType>::SetOrigin(Point::Ptr origin) {
+    origin_ = origin;
+  }
+
+  template<typename RobotModelType, typename SceneModelType>
+    void Planner<RobotModelType,
+                 SceneModelType>::SetGoal(Point::Ptr goal) {
+    goal_ = goal;
+  }
+
+} // \namespace path
 
 #endif
