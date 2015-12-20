@@ -49,7 +49,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-DEFINE_bool(visualize, false, "Visualize scene?");
+DEFINE_bool(visualize, true, "Visualize scene?");
 
 using Eigen::MatrixXf;
 
@@ -61,7 +61,7 @@ namespace path {
 
     // Create a bunch of obstacles.
     std::vector<Obstacle::Ptr> obstacles;
-    for (size_t ii = 0; ii < 50; ii++) {
+    for (size_t ii = 0; ii < 10; ii++) {
       double x = rng.Double();
       double y = rng.Double();
       double sigma_xx = 0.005 * rng.Double();
@@ -69,7 +69,7 @@ namespace path {
       double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
 
       Obstacle::Ptr obstacle =
-        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy);
+        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.9);
       obstacles.push_back(obstacle);
     }
 
@@ -87,12 +87,24 @@ namespace path {
           double y = (500.0 - static_cast<double>(ii)) / 500.0;
           Point::Ptr point = Point2D::Create(x, y);
 
-          map_matrix(ii, jj) = static_cast<float>(scene.Cost(point));
+          map_matrix(ii, jj) = scene.Cost(point);
         }
       }
 
       // Normalize.
       map_matrix /= map_matrix.maxCoeff();
+
+      // Set infeasible points to 1.0.
+      for (size_t ii = 0; ii < 500; ii++) {
+        for (size_t jj = 0; jj < 500; jj++) {
+          double x = static_cast<double>(jj) / 500.0;
+          double y = (500.0 - static_cast<double>(ii)) / 500.0;
+          Point::Ptr point = Point2D::Create(x, y);
+
+          if (!scene.IsFeasible(point))
+            map_matrix(ii, jj) = 1.0;
+        }
+      }
 
       // Display.
       Image map_image(map_matrix);

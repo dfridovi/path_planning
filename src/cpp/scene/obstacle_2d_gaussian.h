@@ -57,7 +57,7 @@ namespace path {
     // Factory method.
     static Obstacle::Ptr Create(double x, double y,
                                 double sigma_xx, double sigma_yy,
-                                double sigma_xy, double threshold = 0.1);
+                                double sigma_xy, double threshold = 0.9);
 
     // Define these methods in a derived class.
     bool IsFeasible(Point::Ptr point) const;
@@ -72,10 +72,11 @@ namespace path {
     Matrix2d inv_;
     double det_;
 
-    // Default constructor.
+    // Default constructor. Threshold is fraction of max cost above which
+    // a point is considered infeasible.
     Obstacle2DGaussian(double x, double y,
                        double sigma_xx, double sigma_yy,
-                       double sigma_xy, double threshold = 0.1);
+                       double sigma_xy, double threshold = 0.9);
   };
 
 } //\ namespace path
