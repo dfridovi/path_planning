@@ -36,46 +36,56 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines an N-ary tree of Points.
+// This class defines an N-ary tree of Points for use in an RRT. Insertion
+// is based on finding the nearest neighbor.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_POINT_TREE_H
-#define PATH_PLANNING_POINT_TREE_H
-
-#include "point.h"
-#include "trajectory.h"
-#include <util/nary_node.h>
-#include <util/disallow_copy_and_assign.h>
-#include <memory>
-#include <vector>
-#include <unordered_map>
-#include <glog/logging.h>
+#include "point_tree.h"
 
 namespace path {
 
-  // N-ary tree of Points.
-  class PointTree {
-  public:
-    PointTree();
-    ~PointTree() {}
+  PointTree::PointTree();
 
-    // Insert a point.
-    void Insert(Point::Ptr point);
+  // Insert a point. Returns true if successful.
+  bool PointTree::Insert(Point::Ptr point) {
+    CHECK_NOTNULL(point.get());
 
-    // Does the tree contain this point?
-    bool Contains(Point::Ptr point);
+    // Base case -- empty tree.
+    if (registry_.size() == 0) {
+      head_ = Node<Point::Ptr>::Create(point);
+      registry_.emplace(point, head_);
+      kd_tree_.AddPoint(point);
+      return true;
+    }
 
-    // Get the path from the head to a particular goal point.
-    Trajectory GetTrajectory(Point::Ptr goal);
+    // Don't insert if the tree already contains this point.
+    if (Contains(point)) return false;
 
-  private:
-    Node<Point::Ptr>::Ptr head_;
-    std::unordered_map<Point::Ptr, Node::Ptr> registry_;
+    // Find nearest point.
+    Point::Ptr nearest;
+    double distance;
+    if (!kd_tree.NearestNeighbor(point, nearest, distance)) {
+      VLOG(1) << "Did not find a nearest neighbor. Could not insert.";
+      return;
+    }
 
-    DISALLOW_COPY_AND_ASSIGN(NTree);
-  };
+    // Make a new Node and insert.
+    Node<Point::Ptr>::Ptr node = Node<Point::Ptr>::Create(point);
+
+    const auto match = registry_.find(nearest);
+    CHECK_NOTNULL(match);
+    Node<Point::Ptr>::Ptr parent = match->second;
+    node->SetParent(parent);
+    parent->AddChild(node);
+  }
+
+  // Does the tree contain this point?
+  bool PointTree::Contains(Point::Ptr point) {
+    return registry_.count(point) > 0;
+  }
+
+  // Get the path from the head to a particular goal point.
+  Trajectory PointTree::GetTrajectory(Point::Ptr goal);
 
 } //\ namespace path
-
-#endif

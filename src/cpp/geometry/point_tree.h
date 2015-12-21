@@ -45,8 +45,10 @@
 
 #include "point.h"
 #include "trajectory.h"
+#include "flann_point_kdtree.h"
 #include <util/nary_node.h>
 #include <util/disallow_copy_and_assign.h>
+
 #include <memory>
 #include <vector>
 #include <unordered_map>
@@ -60,8 +62,8 @@ namespace path {
     PointTree();
     ~PointTree() {}
 
-    // Insert a point.
-    void Insert(Point::Ptr point);
+    // Insert a point. Returns true if successful.
+    bool Insert(Point::Ptr point);
 
     // Does the tree contain this point?
     bool Contains(Point::Ptr point);
@@ -71,9 +73,10 @@ namespace path {
 
   private:
     Node<Point::Ptr>::Ptr head_;
-    std::unordered_map<Point::Ptr, Node::Ptr> registry_;
+    std::unordered_map<Point::Ptr, Node<Point::Ptr>::Ptr> registry_;
+    FlannPointKDTree kd_tree_;
 
-    DISALLOW_COPY_AND_ASSIGN(NTree);
+    DISALLOW_COPY_AND_ASSIGN(PointTree);
   };
 
 } //\ namespace path

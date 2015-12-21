@@ -44,14 +44,19 @@
 #ifndef PATH_PLANNING_POINT_H
 #define PATH_PLANNING_POINT_H
 
+#include <Eigen/Dense>
 #include <memory>
 #include <util/disallow_copy_and_assign.h>
+
+using Eigen::VectorXd;
 
 namespace path {
 
   // Derive from this class when defining a new Point type.
   class Point {
   public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     typedef std::shared_ptr<Point> Ptr;
     typedef std::shared_ptr<const Point> ConstPtr;
 
@@ -67,8 +72,14 @@ namespace path {
     // Check point type.
     virtual inline bool IsType(PointType type);
 
+    // Get vector.
+    virtual inline VectorXd GetVector();
+
     // Define these methods in a derived class.
     virtual double DistanceTo(Point::Ptr point) const = 0;
+
+  protected:
+    VectorXd coordinates_;
 
   private:
     const PointType type_;
@@ -84,6 +95,10 @@ namespace path {
     if (type_ == type)
       return true;
     return false;
+  }
+
+  VectorXd& Point::GetVector() {
+    return coordinates_;
   }
 
 } //\ namespace path

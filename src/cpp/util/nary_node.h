@@ -60,15 +60,16 @@ namespace path {
     ~Node() {}
 
     // Factory method.
-    Create(Node::Ptr parent);
+    Create(const DataType data);
 
     // Add a child.
     AddChild(Node::Ptr child);
 
   private:
     // Private constructor. Use the factory method instead.
-    Node(Node::Ptr parent) {}
+    Node(const DataType data) {}
 
+    DataType data_;
     Node::Ptr parent_;
     std::vector<Node::Ptr> children_;
   };
@@ -76,18 +77,22 @@ namespace path {
 // ---------------------------- Implementation ------------------------------ //
 
   template<typename DataType>
-  Node<DataType>::Create(Node<DataType>::Ptr parent) {
-    Node<DataType>::Ptr node(new Node<DataType>(parent));
+  Node<DataType>::Create(DataType data) {
+    Node<DataType>::Ptr node(new Node<DataType>(data));
     return node;
   }
 
   template<typename DataType>
-  Node<DataType>::Node(Node<DataType>::Ptr parent)
-    : parent_(parent) {}
+  Node<DataType>::Node(DataType data)
+    : data_(data) {}
+
+  template<typename DataType>
+  Node<DataType>::SetParent(Node<DataType>::Ptr parent) {
+    parent_ = parent;
+  }
 
   template<typename DataType>
   Node<DataType>::AddChild(Node<DataType>::Ptr child) {
-    CHECK_NOTNULL(child.get());
     children_.push_back(child);
   }
 

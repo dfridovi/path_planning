@@ -31,8 +31,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Authors:        David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
- *                 Erik Nelson            ( eanelson@eecs.berkeley.edu )
+ * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ *          Erik Nelson            ( eanelson@eecs.berkeley.edu )
  */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -51,29 +51,33 @@
 #include "point.h"
 #include "../util/disallow_copy_and_assign.h"
 
-namespace bsfm {
+namespace path {
 
-class FlannPointKDTree {
- public:
-  FlannPointKDTree();
-  ~FlannPointKDTree();
+  class FlannPointKDTree {
+  public:
+    FlannPointKDTree(const Point::PointType point_type);
+    ~FlannPointKDTree();
 
-  // Add descriptors to the index.
-  void AddPoint(Point& descriptor);
-  void AddPoints(std::vector<Point>& descriptors);
+    // Add points to the index.
+    void AddPoint(Point::Ptr point);
+    void AddPoints(std::vector<Point::Ptr>& points);
 
-  // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
-  // not a nearest neighbor was found, and if it was found, the index and
-  // distance to the nearest neighbor. Index is based on the order in which
-  // descriptors were added with AddPoint() and AddPoints().
-  bool NearestNeighbor(Point& query, int& nn_index, double& nn_distance);
+    // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
+    // not a nearest neighbor was found, and if it was found, the nearest neighbor
+    // and distance to the nearest neighbor. Note that index is based on the 
+    // order in which points were added with AddPoint() and AddPoints().
+    bool NearestNeighbor(Point::Ptr query, Point::Ptr& nearest,
+                         double& nn_distance);
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(FlannPointKDTree)
+  private:
+    std::shared_ptr< flann::Index<flann::L2<double> > > index_;
+    std::vector<Point::Ptr> registry_; // to retrieve original points
+    const Point::PointType point_type_;
 
-  std::shared_ptr< flann::Index<flann::L2<double> > > index_;
+    DISALLOW_COPY_AND_ASSIGN(FlannPointKDTree);
 
-};  //\class FlannPointKDTree
+  };  //\class FlannPointKDTree
+
 }  //\namespace bsfm
 
 #endif

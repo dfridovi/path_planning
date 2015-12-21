@@ -31,89 +31,125 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Authors: Erik Nelson            ( eanelson@eecs.berkeley.edu )
- *          David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ *          Erik Nelson            ( eanelson@eecs.berkeley.edu )
  */
 
-#include "flann_descriptor_kdtree.h"
+///////////////////////////////////////////////////////////////////////////////
+//
+// Wrapper around the FLANN library for approximate nearest neighbor searches.
+// This is useful for finding the nearest Point in a collection -- e.g. for
+// insertion into a RRT.
+//
+///////////////////////////////////////////////////////////////////////////////
 
-namespace bsfm {
+#include "flann_point_kdtree.h"
+#include <glog/logging.h>
 
-FlannDescriptorKDTree::FlannDescriptorKDTree() {}
+using Eigen::VectorXd;
 
-FlannDescriptorKDTree::~FlannDescriptorKDTree() {
-  // Free memory from descriptors in the kd tree.
-  if (index_ != nullptr) {
-    for (size_t ii = 0; ii < index_->size(); ++ii) {
-      double* descriptor = index_->getPoint(ii);
-      delete[] descriptor;
+namespace path {
+
+  FlannPointKDTree::FlannPointKDTree(const Point::PointType point_type)
+    : point_type_(point_type) {}
+
+  FlannPointKDTree::~FlannPointKDTree() {
+    // Free memory from points in the kd tree.
+    if (index_ != nullptr) {
+      for (size_t ii = 0; ii < index_->size(); ++ii) {
+        double* point = index_->getPoint(ii);
+        delete[] point;
+      }
     }
   }
-}
 
-// Add descriptors to the index.
-void FlannDescriptorKDTree::AddDescriptor(Descriptor& descriptor) {
+  // Add points to the index.
+  void FlannPointKDTree::AddPoint(Point::Ptr point) {
+    CHECK_NOTNULL(point.get());
 
-  // Copy the input descriptor into FLANN's Matrix type.
-  const size_t cols = descriptor.size();
-  flann::Matrix<double> flann_descriptor(new double[cols], 1, cols);
-  for (size_t ii = 0; ii < cols; ++ii) {
-    flann_descriptor[0][ii] = descriptor(ii);
+    // Check point type.
+    if (!point->IsType(point_type_)) {
+      VLOG(1) << "Tried to insert point of the wrong type. Did not insert.";
+      return;
+    }
+
+    // Add point to registry.
+    registry_.push_back(point);
+
+    // Extract vector.
+    VectorXd& coordinates = point->GetVector();
+
+    // Copy the input point into FLANN's Matrix type.
+    const size_t cols = coordinates.size();
+    flann::Matrix<double> flann_point(new double[cols], 1, cols);
+    for (size_t ii = 0; ii < cols; ++ii) {
+      flann_point[0][ii] = coordinates(ii);
+    }
+
+    // If this is the first point in the index, create the index and exit.
+    if (index_ == nullptr) {
+      // Single kd-tree. No approximation.
+      const int kNumRandomizedKDTrees = 1;
+      index_.reset(new flann::Index< flann::L2<double> >(
+         flann_point, flann::KDTreeIndexParams(kNumRandomizedKDTrees)));
+      index_->buildIndex();
+      return;
+    }
+
+    // If the index is already created, add the data point to the index. Rebuild
+    // every time the index doubles in size to occasionally rebalance the kd tree.
+    const int kRebuildThreshold = 2;
+    index_->addPoints(flann_point, kRebuildThreshold);
   }
 
-  // If this is the first point in the index, create the index and exit.
-  if (index_ == nullptr) {
-    // Single kd-tree. No approximation.
-    const int kNumRandomizedKDTrees = 1;
-    index_.reset(new flann::Index<flann::L2<double> >(
-        flann_descriptor, flann::KDTreeIndexParams(kNumRandomizedKDTrees)));
-    index_->buildIndex();
-    return;
+  // Add points to the index.
+  void FlannPointKDTree::AddPoints(std::vector<Point::Ptr>& points) {
+    for (auto& point : points) {
+      AddPoint(point);
+    }
   }
 
-  // If the index is already created, add the data point to the index. Rebuild
-  // every time the index doubles in size to occasionally rebalance the kd tree.
-  const int kRebuildThreshold = 2;
-  index_->addPoints(flann_descriptor, kRebuildThreshold);
-}
+  // Queries the kd tree for the nearest neighbor of 'query'.
+  bool FlannPointKDTree::NearestNeighbor(Point::Ptr query, Point::Ptr& nearest,
+                                         double& nn_distance) {
+    if (index_ == nullptr) {
+      VLOG(1) << "Index has not been built. Points must be added before "
+        "querying the kd tree";
+      return false;
+    }
 
-// Add descriptors to the index.
-void FlannDescriptorKDTree::AddDescriptors(
-    std::vector<Descriptor>& descriptors) {
-  for (auto& descriptor : descriptors) {
-    AddDescriptor(descriptor);
-  }
-}
+    CHECK_NOTNULL(query.get());
 
-// Queries the kd tree for the nearest neighbor of 'query'.
-bool FlannDescriptorKDTree::NearestNeighbor(Descriptor& query, int& nn_index,
-                                            double& nn_distance) {
-  if (index_ == nullptr) {
-    VLOG(1) << "Index has not been built. Descriptors must be added before "
-               "querying the kd tree";
+    // Check point type.
+    if (!query->IsType(point_type_)) {
+      VLOG(1) << "Tried to query point of the wrong type. Did not insert.";
+      return false;
+    }
+
+    // Extract vector.
+    VectorXd& coordinates = query->GetVector();
+
+    // Convert the input point to the FLANN format. We can use Eigen's memory
+    // here, since we will have our answer before leaving function scope.
+    flann::Matrix<double> flann_query(coordinates.data(), 1, index_->veclen());
+
+    // Search the kd tree for the nearest neighbor to the query.
+    std::vector< std::vector<int> > query_match_indices;
+    std::vector< std::vector<double> > query_distances;
+
+    const int kOneNearestNeighbor = 1;
+    int num_neighbors_found = index_->knnSearch(
+       flann_query, query_match_indices, query_distances, kOneNearestNeighbor,
+       flann::SearchParams(flann::FLANN_CHECKS_UNLIMITED) /* no approx */);
+
+    // If we found a nearest neighbor, assign output.
+    if (num_neighbors_found > 0) {
+      nearest = registry_[ query_match_indices[0][0] ];
+      nn_distance = query_distances[0][0];
+      return true;
+    }
+
     return false;
   }
-
-  // Convert the input descriptor to the FLANN format. We can use Eigen's memory
-  // here, since we will have our answer before leaving function scope.
-  flann::Matrix<double> flann_query(query.data(), 1, index_->veclen());
-
-  // Search the kd tree for the nearest neighbor to the query.
-  std::vector< std::vector<int> > query_match_indices;
-  std::vector< std::vector<double> > query_distances;
-
-  const int kOneNearestNeighbor = 1;
-  int num_neighbors_found = index_->knnSearch(
-      flann_query, query_match_indices, query_distances, kOneNearestNeighbor,
-      flann::SearchParams(flann::FLANN_CHECKS_UNLIMITED) /* no approx */);
-
-  // If we found a nearest neighbor, assign output.
-  if (num_neighbors_found > 0) {
-    nn_index = query_match_indices[0][0];
-    nn_distance = query_distances[0][0];
-  }
-
-  return num_neighbors_found > 0;
-}
 
 }  //\namespace bsfm
