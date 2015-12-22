@@ -69,7 +69,7 @@ namespace path {
     bool Contains(Point::Ptr point);
 
     // Get the path from the head to a particular goal point.
-    Trajectory GetTrajectory(Point::Ptr goal);
+    Trajectory& GetTrajectory(Point::Ptr goal);
 
   private:
     Node<Point::Ptr>::Ptr head_;

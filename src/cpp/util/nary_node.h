@@ -60,10 +60,22 @@ namespace path {
     ~Node() {}
 
     // Factory method.
-    Create(const DataType data);
+    Node::Ptr Create(const DataType data);
 
     // Add a child.
-    AddChild(Node::Ptr child);
+    void AddChild(Node::Ptr child);
+
+    // Set parent.
+    void SetParent(Node::Ptr parent);
+
+    // Get children.
+    std::vector<Node::Ptr>& GetChildren();
+
+    // Get parent.
+    Node::Ptr GetParent();
+
+    // Get data.
+    DataType GetData();
 
   private:
     // Private constructor. Use the factory method instead.
@@ -77,23 +89,38 @@ namespace path {
 // ---------------------------- Implementation ------------------------------ //
 
   template<typename DataType>
-  Node<DataType>::Create(DataType data) {
+  Node<DataType>::Node(DataType data)
+    : data_(data) {}
+
+  template<typename DataType>
+  Node<DataType>::Ptr Node<DataType>::Create(DataType data) {
     Node<DataType>::Ptr node(new Node<DataType>(data));
     return node;
   }
 
   template<typename DataType>
-  Node<DataType>::Node(DataType data)
-    : data_(data) {}
-
-  template<typename DataType>
-  Node<DataType>::SetParent(Node<DataType>::Ptr parent) {
+  void Node<DataType>::SetParent(Node<DataType>::Ptr parent) {
     parent_ = parent;
   }
 
   template<typename DataType>
-  Node<DataType>::AddChild(Node<DataType>::Ptr child) {
+  void Node<DataType>::AddChild(Node<DataType>::Ptr child) {
     children_.push_back(child);
+  }
+
+  template<typename DataType>
+  Node<DataType>::Ptr Node<DataType>::GetParent() {
+    return parent_;
+  }
+
+  template<typename DataType>
+  std::vector< Node<DataType>::Ptr >& Node<DataType>::GetChildren() {
+    return children_;
+  }
+
+  template<typename DataType>
+  DataType Node<DataType>::GetData() {
+    return data_;
   }
 
 } //\ namespace path

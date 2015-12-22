@@ -42,6 +42,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "point_tree.h"
+#include <list>
 
 namespace path {
 
@@ -86,6 +87,27 @@ namespace path {
   }
 
   // Get the path from the head to a particular goal point.
-  Trajectory PointTree::GetTrajectory(Point::Ptr goal);
+  Trajectory& PointTree::GetTrajectory(Point::Ptr goal) {
+
+    // Return empty path if goal is not in the tree.
+    if (!Contains(goal)) {
+      VLOG(1) << "Tree does not contain the goal point. Returning "
+        "empty trajectory.";
+      Trajectory path;
+      return path;
+    }
+
+    // Trace the tree and populate the path.
+    std::list<Point::Ptr> trace;
+    const auto match = registry_.find(goal);
+    Node<Point::Ptr>::Ptr current_node = match->second;
+    while (current_node != nullptr) {
+      trace.push_front(current_node->GetData());
+      current_node = current_node->GetParent();
+    }
+
+    Trajectory path(trace);
+    return path;
+  }
 
 } //\ namespace path

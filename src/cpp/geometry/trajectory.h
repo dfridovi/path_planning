@@ -47,6 +47,7 @@
 
 #include "point.h"
 #include <vector>
+#include <list>
 
 namespace path {
 
@@ -58,6 +59,7 @@ namespace path {
     // Constructors.
     Trajectory();
     Trajectory(std::vector<Point::Ptr>& points);
+    Trajectory(std::list<Point::Ptr>& points);
 
     // Add a point to the path.
     void AddPoint(Point::Ptr point);

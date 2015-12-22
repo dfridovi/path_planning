@@ -50,11 +50,10 @@
 namespace path {
 
   // A Trajectory is just an ordered list of Points.
-  Trajectory::Trajectory() {
-    length_ = 0.0;
-  }
+  Trajectory::Trajectory()
+    : length_(0.0) {}
 
-  // Factory method. Initialize with a set of points.
+  // Initialize with a set of points.
   Trajectory::Trajectory(std::vector<Point::Ptr>& points) {
     length_ = 0.0;
 
@@ -68,6 +67,21 @@ namespace path {
 
       Point::Ptr last_point = points[ii - 1];
       length_ += last_point->DistanceTo(next_point);
+    }
+  }
+
+  // Initialize with a set of points.
+  Trajectory::Trajectory(std::list<Point::Ptr>& points) {
+    length_ = 0.0;
+
+    // Iterate through points, compute distances, and add to path.
+    Point::Ptr& last_point = points.front();
+    for (const auto& next_point : points) {
+      CHECK_NOTNULL(next_point.get());
+
+      points_.push_back(next_point);
+      length_ += last_point->DistanceTo(next_point);
+      last_point = next_point;
     }
   }
 
