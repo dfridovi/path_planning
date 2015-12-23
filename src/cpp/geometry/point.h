@@ -65,7 +65,7 @@ namespace path {
     enum PointType {POINT_2D, OTHER};
 
     // Derived classes must write their own constructors.
-    Point();
+    inline Point();
     virtual ~Point() {}
 
     // Set point type. This should be called in the derived class' constructor.
@@ -90,7 +90,7 @@ namespace path {
     DISALLOW_COPY_AND_ASSIGN(Point);
   };
 
-// ---------------------------- Implementation ------------------------------ //
+// -------------------------- IMPLEMENTATION ---------------------------- //
 
   // Don't use this!
   Point::Point()
@@ -116,6 +116,7 @@ namespace path {
   VectorXd& Point::GetVector() {
     return coordinates_;
   }
+
 
 } //\ namespace path
 
