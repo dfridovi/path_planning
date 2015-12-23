@@ -66,9 +66,6 @@ namespace path {
     bool Intersects(Obstacle::Ptr obstacle, unsigned int niter = 1000) const;
 
   private:
-    // Pick a random vector along the line segment.
-    VectorXd& GetRandomVector() const;
-
     Point::Ptr point1_;
     Point::Ptr point2_;
   };

@@ -50,8 +50,8 @@ using Eigen::VectorXd;
 
 namespace path {
 
-  FlannPointKDTree::FlannPointKDTree(const Point::PointType point_type)
-    : point_type_(point_type) {}
+  FlannPointKDTree::FlannPointKDTree()
+    : point_type_(Point::PointType::OTHER) {}
 
   FlannPointKDTree::~FlannPointKDTree() {
     // Free memory from points in the kd tree.
@@ -67,8 +67,12 @@ namespace path {
   void FlannPointKDTree::AddPoint(Point::Ptr point) {
     CHECK_NOTNULL(point.get());
 
+    // If empty tree, set point type.
+    if (registry_.size() == 0)
+      point_type_ = point->GetType();
+
     // Check point type.
-    if (!point->IsType(point_type_)) {
+    else if (!point->IsType(point_type_)) {
       VLOG(1) << "Tried to insert point of the wrong type. Did not insert.";
       return;
     }

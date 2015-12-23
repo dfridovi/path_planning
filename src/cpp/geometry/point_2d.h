@@ -55,7 +55,7 @@ namespace path {
   class Point2D : public Point {
   public:
     // Factory method.
-    Point::Ptr Create(double x, double y);
+    static Point::Ptr Create(double x, double y);
 
     // Setters.
     void SetX(double x);

@@ -62,20 +62,22 @@ namespace path {
     typedef std::shared_ptr<const Point> ConstPtr;
 
     // Each Point can only be of a single type.
-    enum PointType {POINT_2D}
+    enum PointType {POINT_2D, OTHER};
 
-    Point() {}
+    // Derived classes must write their own constructors.
+    Point();
     virtual ~Point() {}
 
     // Set point type. This should be called in the derived class' constructor.
     virtual inline void SetType(const PointType type);
 
     // Check point type.
+    virtual inline PointType GetType();
     virtual inline bool IsType(PointType type);
     virtual inline bool IsSameTypeAs(Point::Ptr point);
 
     // Get vector.
-    virtual inline VectorXd GetVector();
+    virtual inline VectorXd& GetVector();
 
     // Define these methods in a derived class.
     virtual double DistanceTo(Point::Ptr point) const = 0;
@@ -84,16 +86,20 @@ namespace path {
     VectorXd coordinates_;
 
   private:
-    const PointType type_;
+    PointType type_;
     DISALLOW_COPY_AND_ASSIGN(Point);
   };
 
-  // ---------------------------- Implementation ------------------------------ //
+// ---------------------------- Implementation ------------------------------ //
 
-  void Point::SetType(const PointType type)
-    : type_(type) {}
+  // Don't use this!
+  Point::Point()
+    : type_(Point::PointType::OTHER) {}
 
-  bool Point::IsType(PointType type) {
+  Point::PointType Point::GetType() { return type_; }
+  void Point::SetType(const Point::PointType type) { type_ = type; }
+
+  bool Point::IsType(Point::PointType type) {
     if (type_ == type)
       return true;
     return false;
@@ -114,3 +120,4 @@ namespace path {
 } //\ namespace path
 
 #endif
+

@@ -51,7 +51,7 @@ namespace path {
     math::RandomGenerator rng(0);
 
     // Empty Trajectory.
-    Trajectory path1;
+    Trajectory::Ptr path1 = Trajectory::Create();
 
     // Vector of Points.
     std::vector<Point::Ptr> points;
@@ -70,17 +70,17 @@ namespace path {
         length += last_point->DistanceTo(point);
 
       // Add to path and vector.
-      path1.AddPoint(point);
+      path1->AddPoint(point);
       points.push_back(point);
       last_point = point;
     }
 
     // Make second Trajectory from vector.
-    Trajectory path2(points);
+    Trajectory::Ptr path2 = Trajectory::Create(points);
 
     // Checks lengths.
-    EXPECT_NEAR(path1.GetLength(), path2.GetLength(), 1e-16);
-    EXPECT_NEAR(path1.GetLength(), length, 1e-16);
+    EXPECT_NEAR(path1->GetLength(), path2->GetLength(), 1e-16);
+    EXPECT_NEAR(path1->GetLength(), length, 1e-16);
   }
 
 } //\ namespace path

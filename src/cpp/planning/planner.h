@@ -44,8 +44,10 @@
 #ifndef PATH_PLANNING_PLANNER_H
 #define PATH_PLANNING_PLANNER_H
 
-#include <path/trajectory.h>
+#include <geometry/trajectory.h>
 #include <geometry/point.h>
+#include <robot/robot_model.h>
+#include <scene/scene_model.h>
 #include <util/disallow_copy_and_assign.h>
 
 namespace path {
@@ -53,8 +55,8 @@ namespace path {
   // Derive from this class when defining a specific path planner.
   class Planner {
   public:
-    inline virtual Planner(RobotModel& robot, SceneModel& scene,
-                           Point::Ptr origin, Point::Ptr goal);
+    Planner(RobotModel& robot, SceneModel& scene,
+            Point::Ptr origin, Point::Ptr goal);
     virtual ~Planner() {}
 
     // Define these methods in a derived class.

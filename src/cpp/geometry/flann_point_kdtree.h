@@ -55,7 +55,7 @@ namespace path {
 
   class FlannPointKDTree {
   public:
-    FlannPointKDTree(const Point::PointType point_type);
+    FlannPointKDTree();
     ~FlannPointKDTree();
 
     // Add points to the index.
@@ -72,7 +72,7 @@ namespace path {
   private:
     std::shared_ptr< flann::Index<flann::L2<double> > > index_;
     std::vector<Point::Ptr> registry_; // to retrieve original points
-    const Point::PointType point_type_;
+    Point::PointType point_type_;
 
     DISALLOW_COPY_AND_ASSIGN(FlannPointKDTree);
 

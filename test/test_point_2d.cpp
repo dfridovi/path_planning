@@ -34,6 +34,7 @@
  * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
+#include <geometry/point.h>
 #include <geometry/point_2d.h>
 #include <math/random_generator.h>
 

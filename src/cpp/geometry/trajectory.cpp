@@ -49,6 +49,22 @@
 
 namespace path {
 
+  // Factory methods.
+  Trajectory::Ptr Trajectory::Create() {
+    Trajectory::Ptr path(new Trajectory());
+    return path;
+  }
+
+  Trajectory::Ptr Trajectory::Create(std::vector<Point::Ptr>& points) {
+    Trajectory::Ptr path(new Trajectory(points));
+    return path;
+  }
+
+  Trajectory::Ptr Trajectory::Create(std::list<Point::Ptr>& points) {
+    Trajectory::Ptr path(new Trajectory(points));
+    return path;
+  }
+
   // A Trajectory is just an ordered list of Points.
   Trajectory::Trajectory()
     : length_(0.0) {}

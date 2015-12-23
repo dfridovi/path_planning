@@ -64,7 +64,6 @@ namespace path {
     virtual bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const = 0;
 
   private:
-    std::vector<Obstacle::Ptr> obstacles_;
     DISALLOW_COPY_AND_ASSIGN(SceneModel);
   };
 

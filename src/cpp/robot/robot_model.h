@@ -42,37 +42,35 @@
 // The idea here is to provide a way to specify constraints on a robot's
 // configuration. For example, a RobotModel can test whether or not it is
 // occupying free space in a SceneModel.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef PATH_PLANNING_ROBOT_MODEL_H
 #define PATH_PLANNING_ROBOT_MODEL_H
 
+#include <scene/scene_model.h>
+#include <geometry/point.h>
+
 namespace path {
 
   // Derive from this class when defining a specific robot model.
-  template<typename SceneModelType> class RobotModel {
+  class RobotModel {
   public:
-    RobotModel() {}
+    RobotModel(SceneModel& scene);
     virtual ~RobotModel() {}
 
-    // Set scene model.
-    virtual inline void SetSceneModel(SceneModelType& scene) {}
-
     // Define these methods in a derived class.
-    virtual bool IsFeasible() const = 0;
-    virtual double Cost(IndexType) const = 0;
+    virtual bool IsFeasible(Point::Ptr point) const = 0;
+    virtual double Cost(Point::Ptr point) const = 0;
 
   private:
-    SceneModelType scene_;
-  }
-
+    SceneModel& scene_;
+  };
 
 // ---------------------------- Implementation ------------------------------ //
 
-  template<typename SceneModelType>
-    void RobotModel<SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
-  }
+  RobotModel::RobotModel(SceneModel& scene)
+    : scene_(scene) {}
 
 } // \namespace path
 

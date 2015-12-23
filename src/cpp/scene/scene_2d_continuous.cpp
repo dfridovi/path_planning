@@ -44,6 +44,7 @@
 #include "scene_model.h"
 #include <math/random_generator.h>
 #include <geometry/point.h>
+#include <geometry/point_2d.h>
 #include <glog/logging.h>
 
 namespace path {

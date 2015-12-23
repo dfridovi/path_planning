@@ -49,7 +49,7 @@
 namespace path {
 
   // The algorithm. See header for references.
-  Trajectory& RRTPlanner::PlanTrajectory() {
+  Trajectory::Ptr RRTPlanner::PlanTrajectory() {
 
     // Check if a path already exists.
     if (tree_.Contains(goal_))

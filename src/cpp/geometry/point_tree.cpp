@@ -46,15 +46,13 @@
 
 namespace path {
 
-  PointTree::PointTree();
-
   // Insert a point. Returns true if successful.
   bool PointTree::Insert(Point::Ptr point) {
     CHECK_NOTNULL(point.get());
 
     // Base case -- empty tree.
     if (registry_.size() == 0) {
-      head_ = Node<Point::Ptr>::Create(point);
+      head_ = Node::Create(point);
       registry_.emplace(point, head_);
       kd_tree_.AddPoint(point);
       return true;
@@ -67,13 +65,13 @@ namespace path {
     Point::Ptr nearest = GetNearest(point);
 
     // Make a new Node and insert.
-    Node<Point::Ptr>::Ptr node = Node<Point::Ptr>::Create(point);
+    Node::Ptr node = Node::Create(point);
 
     const auto match = registry_.find(nearest);
-    CHECK_NOTNULL(match);
-    Node<Point::Ptr>::Ptr parent = match->second;
+    Node::Ptr parent = match->second;
     node->SetParent(parent);
     parent->AddChild(node);
+    return true;
   }
 
   // Does the tree contain this point?
@@ -85,32 +83,31 @@ namespace path {
   Point::Ptr PointTree::GetNearest(Point::Ptr point) {
     Point::Ptr nearest;
     double distance;
-    if (!kd_tree.NearestNeighbor(point, nearest, distance))
+    if (!kd_tree_.NearestNeighbor(point, nearest, distance))
       VLOG(1) << "Did not find a nearest neighbor.";
     return nearest;
   }
 
   // Get the path from the head to a particular goal point.
-  Trajectory& PointTree::GetTrajectory(Point::Ptr goal) {
+  Trajectory::Ptr PointTree::GetTrajectory(Point::Ptr goal) {
 
     // Return empty path if goal is not in the tree.
     if (!Contains(goal)) {
       VLOG(1) << "Tree does not contain the goal point. Returning "
-        "empty trajectory.";
-      Trajectory path;
-      return path;
+        "nullptr.";
+      return nullptr;
     }
 
     // Trace the tree and populate the path.
     std::list<Point::Ptr> trace;
     const auto match = registry_.find(goal);
-    Node<Point::Ptr>::Ptr current_node = match->second;
+    Node::Ptr current_node = match->second;
     while (current_node != nullptr) {
       trace.push_front(current_node->GetData());
       current_node = current_node->GetParent();
     }
 
-    Trajectory path(trace);
+    Trajectory::Ptr path = Trajectory::Create(trace);
     return path;
   }
 

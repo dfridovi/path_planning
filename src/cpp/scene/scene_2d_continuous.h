@@ -74,6 +74,7 @@ namespace path {
     double xmax_;
     double ymin_;
     double ymax_;
+    std::vector<Obstacle::Ptr> obstacles_;
   };
 
 } // \namespace path

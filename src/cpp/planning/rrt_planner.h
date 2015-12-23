@@ -47,7 +47,8 @@
 #ifndef PATH_PLANNING_RRT_PLANNER_H
 #define PATH_PLANNING_RRT_PLANNER_H
 
-#include <path/trajectory.h>
+#include "planner.h"
+#include <geometry/trajectory.h>
 #include <geometry/point.h>
 #include <geometry/point_tree.h>
 
@@ -57,11 +58,11 @@ namespace path {
   class RRTPlanner : public Planner {
   public:
     // The algorithm. See header for references.
-    Trajectory& PlanTrajectory();
+    Trajectory::Ptr PlanTrajectory();
 
   private:
     PointTree tree_;
-  }
+  };
 
 } //\ namespace path
 

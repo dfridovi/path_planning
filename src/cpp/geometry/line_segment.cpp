@@ -67,7 +67,7 @@ namespace path {
 
   // Segment length.
   double LineSegment::GetLength() const {
-    return point1_->DistanceTo(point2);
+    return point1_->DistanceTo(point2_);
   }
 
   // Test intersection with an obstacle. Uses Monte Carlo simulation
@@ -75,29 +75,22 @@ namespace path {
   bool LineSegment::Intersects(Obstacle::Ptr obstacle,
                                unsigned int niter) const {
     CHECK_NOTNULL(obstacle.get());
+    math::RandomGenerator rng(math::RandomGenerator::Seed());
+
+    VectorXd& vector1 = point1_->GetVector();
+    VectorXd& vector2 = point2_->GetVector();
 
     for (unsigned int ii = 0; ii < niter; ii++) {
-      VectorXd& random_vector = GetRandomVector();
-      if (!obstacle->IsFeasible(random_vector))
-        return false;
+       // Parameterize segment as weighted sum of two endpoints.
+       double weight = rng.Double();
+       VectorXd random_vector(vector1.size());
+       random_vector = weight * vector1 + (1.0 - weight) * vector2;
+
+       if (!obstacle->IsFeasible(random_vector))
+         return false;
     }
 
     return true;
   }
-
-  // Pick a random point along the line segment.
-  VectorXd& LineSegment::GetRandomVector() const {
-    math::RandomGenerator rng(math::RandomGenerator::Seed());
-
-    // Parameterize segment as weighted sum of two endpoints.
-    double weight = rng.Double();
-    VectorXd& vector1 = point1_->GetVector();
-    VectorXd& vector2 = point2_->GetVector();
-    VectorXd random_vector(vector1_.size());
-
-    random_vector = weight * vector1 + (1.0 - weight) * vector2;
-    return random_vector;
-  }
-
 
 } //\ namespace path

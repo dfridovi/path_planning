@@ -46,7 +46,7 @@
 #include "point.h"
 #include "trajectory.h"
 #include "flann_point_kdtree.h"
-#include <util/nary_node.h>
+#include "nary_node.h"
 #include <util/disallow_copy_and_assign.h>
 
 #include <memory>
@@ -59,7 +59,7 @@ namespace path {
   // N-ary tree of Points.
   class PointTree {
   public:
-    PointTree();
+    PointTree() {}
     ~PointTree() {}
 
     // Insert a point. Returns true if successful.
@@ -72,11 +72,11 @@ namespace path {
     Point::Ptr GetNearest(Point::Ptr point);
 
     // Get the path from the head to a particular goal point.
-    Trajectory& GetTrajectory(Point::Ptr goal);
+    Trajectory::Ptr GetTrajectory(Point::Ptr goal);
 
   private:
-    Node<Point::Ptr>::Ptr head_;
-    std::unordered_map<Point::Ptr, Node<Point::Ptr>::Ptr> registry_;
+    Node::Ptr head_;
+    std::unordered_map<Point::Ptr, Node::Ptr> registry_;
     FlannPointKDTree kd_tree_;
 
     DISALLOW_COPY_AND_ASSIGN(PointTree);

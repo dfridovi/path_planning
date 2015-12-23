@@ -36,7 +36,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a Node in an N-ary tree of generic objects.
+// This class defines a Node in an N-ary tree of Points.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -44,6 +44,7 @@
 #define PATH_PLANNING_NARY_NODE_H
 
 #include <util/disallow_copy_and_assign.h>
+#include "point.h"
 #include <memory>
 #include <vector>
 #include <glog/logging.h>
@@ -51,7 +52,6 @@
 namespace path {
 
   // Helper class for use with a tree class.
-  template<typename DataType>
   class Node {
   public:
     typedef std::shared_ptr<Node> Ptr;
@@ -60,7 +60,7 @@ namespace path {
     ~Node() {}
 
     // Factory method.
-    Node::Ptr Create(const DataType data);
+    static Node::Ptr Create(const Point::Ptr data);
 
     // Add a child.
     void AddChild(Node::Ptr child);
@@ -75,53 +75,36 @@ namespace path {
     Node::Ptr GetParent();
 
     // Get data.
-    DataType GetData();
+    Point::Ptr GetData();
 
   private:
     // Private constructor. Use the factory method instead.
-    Node(const DataType data) {}
+    Node(const Point::Ptr data);
 
-    DataType data_;
+    Point::Ptr data_;
     Node::Ptr parent_;
     std::vector<Node::Ptr> children_;
   };
 
 // ---------------------------- Implementation ------------------------------ //
 
-  template<typename DataType>
-  Node<DataType>::Node(DataType data)
+  // Constructor and factory methods.
+  Node::Node(const Point::Ptr data)
     : data_(data) {}
 
-  template<typename DataType>
-  Node<DataType>::Ptr Node<DataType>::Create(DataType data) {
-    Node<DataType>::Ptr node(new Node<DataType>(data));
+  Node::Ptr Node::Create(Point::Ptr data) {
+    Node::Ptr node(new Node(data));
     return node;
   }
 
-  template<typename DataType>
-  void Node<DataType>::SetParent(Node<DataType>::Ptr parent) {
-    parent_ = parent;
-  }
+  // Getters and setters.
+  void Node::SetParent(Node::Ptr parent) { parent_ = parent; }
+  Node::Ptr Node::GetParent() { return parent_; }
 
-  template<typename DataType>
-  void Node<DataType>::AddChild(Node<DataType>::Ptr child) {
-    children_.push_back(child);
-  }
+  void Node::AddChild(Node::Ptr child) { children_.push_back(child); }
+  std::vector<Node::Ptr>& Node::GetChildren() { return children_; }
 
-  template<typename DataType>
-  Node<DataType>::Ptr Node<DataType>::GetParent() {
-    return parent_;
-  }
-
-  template<typename DataType>
-  std::vector< Node<DataType>::Ptr >& Node<DataType>::GetChildren() {
-    return children_;
-  }
-
-  template<typename DataType>
-  DataType Node<DataType>::GetData() {
-    return data_;
-  }
+  Point::Ptr Node::GetData() { return data_; }
 
 } //\ namespace path
 
