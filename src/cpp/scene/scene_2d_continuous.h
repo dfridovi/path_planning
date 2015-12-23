@@ -63,8 +63,13 @@ namespace path {
     // What is the cost of occupying this point?
     double Cost(Point::Ptr point) const;
 
+    // Get a random point in the scene.
+    Point::Ptr GetRandomPoint() const;
+
+    // Are there any obstacles between the given two points?
+    bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const;
+
   private:
-    std::vector<Obstacle::Ptr> obstacles_;
     double xmin_;
     double xmax_;
     double ymin_;

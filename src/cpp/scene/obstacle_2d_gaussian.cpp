@@ -66,6 +66,13 @@ namespace path {
     return true;
   }
 
+  // Is this point feasible?
+  bool Obstacle2DGaussian::IsFeasible(VectorXd& point) const {
+    if (Cost(point) > threshold_)
+      return false;
+    return true;
+  }
+
   // What is the cost of occupying this point?
   double Obstacle2DGaussian::Cost(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
@@ -77,11 +84,15 @@ namespace path {
     }
 
     Point2D *ptr = std::static_pointer_cast<Point2D>(point).get();
-    Vector2d p = ptr->GetVector();
+    VectorXd& p = ptr->GetVector();
 
-    double cost = std::exp(-0.5 * (p - mean_).transpose() * inv_ * (p - mean_)) /
+    return Cost(p);
+  }
+
+  // What is the cost of occupying this point?
+  double Obstacle2DGaussian::Cost(VectorXd& point) const {
+    return std::exp(-0.5 * (point - mean_).transpose() * inv_ * (point - mean_)) /
       std::sqrt((2.0 * M_PI) * (2.0 * M_PI) * det_);
-    return cost;
   }
 
   // Default constructor. Threshold is fraction of max cost above which

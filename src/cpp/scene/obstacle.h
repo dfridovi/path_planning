@@ -47,6 +47,9 @@
 #include <geometry/point.h>
 #include <util/disallow_copy_and_assign.h>
 #include <memory>
+#include <Eigen/Dense>
+
+using Eigen::VectorXd;
 
 namespace path {
 
@@ -61,7 +64,9 @@ namespace path {
 
     // Define these methods in a derived class.
     virtual bool IsFeasible(Point::Ptr point) const = 0;
+    virtual bool IsFeasible(VectorXd& point) const = 0;
     virtual double Cost(Point::Ptr point) const = 0;
+    virtual double Cost(VectorXd& point) const = 0;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Obstacle);

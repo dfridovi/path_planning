@@ -61,7 +61,9 @@ namespace path {
 
     // Define these methods in a derived class.
     bool IsFeasible(Point::Ptr point) const;
+    bool IsFeasible(VectorXd& point) const;
     double Cost(Point::Ptr point) const;
+    double Cost(VectorXd& point) const;
 
   private:
     Vector2d mean_;

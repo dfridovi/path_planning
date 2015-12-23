@@ -68,6 +68,9 @@ namespace path {
     // Does the tree contain this point?
     bool Contains(Point::Ptr point);
 
+    // Get nearest point in the tree.
+    Point::Ptr GetNearest(Point::Ptr point);
+
     // Get the path from the head to a particular goal point.
     Trajectory& GetTrajectory(Point::Ptr goal);
 

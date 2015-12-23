@@ -49,16 +49,33 @@
 namespace path {
 
   // The algorithm. See header for references.
-  template<typename RobotModelType, typename SceneModelType>
-  Trajectory RRTPlanner<RobotModelType, SceneModelType>::PlanTrajectory() const {
+  Trajectory& RRTPlanner::PlanTrajectory() {
 
-    // TODO: FILL THIS IN!!!
-  }
+    // Check if a path already exists.
+    if (tree_.Contains(goal_))
+      return tree_.GetTrajectory(goal_);
 
-  private:
-    PointTree tree_;
+    // Initialize the tree.
+    tree_.Insert(origin_);
+
+    // NOTE: this is waaaay oversimplified.
+    while (!tree_.Contains(goal_)) {
+
+      // Pick a random point in the scene.
+      Point::Ptr random_point = scene_.GetRandomPoint();
+
+      // Find nearest point in the tree and insert if visible.
+      Point::Ptr nearest = tree_.GetNearest(random_point);
+      if (scene_.LineOfSight(nearest, random_point))
+        tree_.Insert(random_point);
+
+      // Insert the goal if it is visible.
+      if (scene_.LineOfSight(random_point, goal_))
+        tree_.Insert(goal_);
+    }
+
+    // Return the trajectory.
+    return tree_.GetTrajectory(goal_);
   }
 
 } //\ namespace path
-
-#endif

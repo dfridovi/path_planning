@@ -36,80 +36,42 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class is the basis for all Point objects. For example a Point3D class
-// could be derived from this class, where all Points live in R^3.
+// This is a helper class to model line segments, intended for use with motion
+// planners for tasks like intersection-checking.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_POINT_H
-#define PATH_PLANNING_POINT_H
+#ifndef PATH_PLANNING_LINE_SEGMENT_H
+#define PATH_PLANNING_LINE_SEGMENT_H
 
+#include "point.h"
+#include <scene/obstacle.h>
 #include <Eigen/Dense>
-#include <memory>
-#include <util/disallow_copy_and_assign.h>
-#include <glog/logging.h>
 
 using Eigen::VectorXd;
 
 namespace path {
 
-  // Derive from this class when defining a new Point type.
-  class Point {
+  // A LineSegment is just a pair of points.
+  class LineSegment {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    LineSegment(Point::Ptr point1, Point::Ptr point2);
+    ~LineSegment() {}
 
-    typedef std::shared_ptr<Point> Ptr;
-    typedef std::shared_ptr<const Point> ConstPtr;
+    // Segment length.
+    double GetLength() const;
 
-    // Each Point can only be of a single type.
-    enum PointType {POINT_2D}
-
-    Point() {}
-    virtual ~Point() {}
-
-    // Set point type. This should be called in the derived class' constructor.
-    virtual inline void SetType(const PointType type);
-
-    // Check point type.
-    virtual inline bool IsType(PointType type);
-    virtual inline bool IsSameTypeAs(Point::Ptr point);
-
-    // Get vector.
-    virtual inline VectorXd GetVector();
-
-    // Define these methods in a derived class.
-    virtual double DistanceTo(Point::Ptr point) const = 0;
-
-  protected:
-    VectorXd coordinates_;
+    // Test intersection with an obstacle. Uses Monte Carlo simulation
+    // with 1000 trials by default.
+    bool Intersects(Obstacle::Ptr obstacle, unsigned int niter = 1000) const;
 
   private:
-    const PointType type_;
-    DISALLOW_COPY_AND_ASSIGN(Point);
+    // Pick a random vector along the line segment.
+    VectorXd& GetRandomVector() const;
+
+    Point::Ptr point1_;
+    Point::Ptr point2_;
   };
-
-  // ---------------------------- Implementation ------------------------------ //
-
-  void Point::SetType(const PointType type)
-    : type_(type) {}
-
-  bool Point::IsType(PointType type) {
-    if (type_ == type)
-      return true;
-    return false;
-  }
-
-  bool Point::IsSameTypeAs(Point::Ptr point) {
-    CHECK_NOTNULL(point.get());
-
-    if (type_ == point->type_)
-      return true;
-    return false;
-  }
-
-  VectorXd& Point::GetVector() {
-    return coordinates_;
-  }
 
 } //\ namespace path
 

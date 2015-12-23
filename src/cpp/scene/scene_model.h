@@ -45,6 +45,8 @@
 #define PATH_PLANNING_SCENE_MODEL_H
 
 #include <geometry/point.h>
+#include <geometry/line_segment.h>
+#include "obstacle.h"
 #include <util/disallow_copy_and_assign.h>
 
 namespace path {
@@ -58,8 +60,11 @@ namespace path {
     // Define these methods in a derived class.
     virtual bool IsFeasible(Point::Ptr point) const = 0;
     virtual double Cost(Point::Ptr point) const = 0;
+    virtual Point::Ptr GetRandomPoint() const = 0;
+    virtual bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const = 0;
 
   private:
+    std::vector<Obstacle::Ptr> obstacles_;
     DISALLOW_COPY_AND_ASSIGN(SceneModel);
   };
 

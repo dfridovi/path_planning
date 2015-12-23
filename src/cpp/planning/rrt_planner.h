@@ -54,11 +54,10 @@
 namespace path {
 
   // Derived from base class Planner.
-  template <typename RobotModelType, typename SceneModelType>
-    class RRTPlanner : public Planner<RobotModelType, SceneModelType> {
+  class RRTPlanner : public Planner {
   public:
     // The algorithm. See header for references.
-    Trajectory PlanTrajectory() const;
+    Trajectory& PlanTrajectory();
 
   private:
     PointTree tree_;

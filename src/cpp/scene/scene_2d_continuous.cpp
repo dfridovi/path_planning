@@ -42,6 +42,7 @@
 
 #include "scene_2d_continuous.h"
 #include "scene_model.h"
+#include <math/random_generator.h>
 #include <geometry/point.h>
 #include <glog/logging.h>
 
@@ -83,5 +84,30 @@ namespace path {
 
     return total_cost;
   }
+
+  // Get a random point in the scene.
+  Point::Ptr Scene2DContinuous::GetRandomPoint() const {
+    math::RandomGenerator rng(math::RandomGenerator::Seed());
+
+    double x = rng.DoubleUniform(xmin_, xmax_);
+    double y = rng.DoubleUniform(ymin_, ymax_);
+    Point::Ptr point = Point2D::Create(x, y);
+    return point;
+  }
+
+  // Are there any obstacles between the given two points?
+  bool Scene2DContinuous::LineOfSight(Point::Ptr point1,
+                                      Point::Ptr point2) const {
+    LineSegment line(point1, point2);
+
+    // Check if line segment intersects any obstacle.
+    for (const auto& obstacle : obstacles_) {
+      if (line.Intersects(obstacle))
+        return false;
+    }
+
+    return true;
+  }
+
 
 } // \namespace path

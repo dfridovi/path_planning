@@ -64,12 +64,7 @@ namespace path {
     if (Contains(point)) return false;
 
     // Find nearest point.
-    Point::Ptr nearest;
-    double distance;
-    if (!kd_tree.NearestNeighbor(point, nearest, distance)) {
-      VLOG(1) << "Did not find a nearest neighbor. Could not insert.";
-      return;
-    }
+    Point::Ptr nearest = GetNearest(point);
 
     // Make a new Node and insert.
     Node<Point::Ptr>::Ptr node = Node<Point::Ptr>::Create(point);
@@ -84,6 +79,15 @@ namespace path {
   // Does the tree contain this point?
   bool PointTree::Contains(Point::Ptr point) {
     return registry_.count(point) > 0;
+  }
+
+  // Get nearest point in the tree.
+  Point::Ptr PointTree::GetNearest(Point::Ptr point) {
+    Point::Ptr nearest;
+    double distance;
+    if (!kd_tree.NearestNeighbor(point, nearest, distance))
+      VLOG(1) << "Did not find a nearest neighbor.";
+    return nearest;
   }
 
   // Get the path from the head to a particular goal point.

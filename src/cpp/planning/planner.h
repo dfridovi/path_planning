@@ -51,58 +51,31 @@
 namespace path {
 
   // Derive from this class when defining a specific path planner.
-  template <typename RobotModelType, typename SceneModelType>
-    class Planner {
+  class Planner {
   public:
-    Planner() {}
+    inline virtual Planner(RobotModel& robot, SceneModel& scene,
+                           Point::Ptr origin, Point::Ptr goal);
     virtual ~Planner() {}
 
-    // Set robot and scene models.
-    virtual inline void SetRobotModel(RobotModelType& robot);
-    virtual inline void SetSceneModel(SceneModelType& scene);
-
-    // Set origin and goal points.
-    virtual inline void SetOrigin(Point::Ptr origin);
-    virtual inline void SetGoal(Point::Ptr goal);
-
     // Define these methods in a derived class.
-    virtual Trajectory PlanTrajectory() const = 0;
+    virtual Trajectory& PlanTrajectory() const = 0;
 
   protected:
-    RobotModelType robot_;
-    SceneModelType scene_;
+    RobotModel& robot_;
+    SceneModel& scene_;
     Point::Ptr origin_;
     Point::Ptr goal_;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Planner);
-  }
+  };
 
-  // ---------------------------- Implementation ------------------------------ //
+// ---------------------------- Implementation ------------------------------ //
 
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetRobotModel(RobotModelType& robot) {
-    robot_ = robot;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetOrigin(Point::Ptr origin) {
-    origin_ = origin;
-  }
-
-  template<typename RobotModelType, typename SceneModelType>
-    void Planner<RobotModelType,
-                 SceneModelType>::SetGoal(Point::Ptr goal) {
-    goal_ = goal;
-  }
+  Planner::Planner(RobotModel& robot, SceneModel& scene,
+                   Point::Ptr origin, Point::Ptr goal)
+    : robot_(robot), scene_(scene),
+      origin_(origin), goal_(goal) {}
 
 } // \namespace path
 
