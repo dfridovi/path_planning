@@ -78,37 +78,46 @@ namespace path {
 
     // If visualize flag is set, query a grid and show the cost map.
     if (FLAGS_visualize) {
-      MatrixXf map_matrix(500, 500);
-      map_matrix = MatrixXf::Zero(500, 500);
+      scene.Visualize("Cost map");
+    }
+  }
 
-      for (size_t ii = 0; ii < 500; ii++) {
-        for (size_t jj = 0; jj < 500; jj++) {
-          double x = static_cast<double>(jj) / 500.0;
-          double y = (500.0 - static_cast<double>(ii)) / 500.0;
-          Point::Ptr point = Point2D::Create(x, y);
+  // Test that we can create a Trajectory in the Scene.
+  TEST(SceneModel, TestScene2DContinuousTrajectory) {
+    math::RandomGenerator rng(0);
 
-          map_matrix(ii, jj) = scene.Cost(point);
-        }
-      }
+    // Create a bunch of obstacles.
+    std::vector<Obstacle::Ptr> obstacles;
+    for (size_t ii = 0; ii < 10; ii++) {
+      double x = rng.Double();
+      double y = rng.Double();
+      double sigma_xx = 0.005 * rng.Double();
+      double sigma_yy = 0.005 * rng.Double();
+      double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
 
-      // Normalize.
-      map_matrix /= map_matrix.maxCoeff();
+      Obstacle::Ptr obstacle =
+        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.9);
+      obstacles.push_back(obstacle);
+    }
 
-      // Set infeasible points to 1.0.
-      for (size_t ii = 0; ii < 500; ii++) {
-        for (size_t jj = 0; jj < 500; jj++) {
-          double x = static_cast<double>(jj) / 500.0;
-          double y = (500.0 - static_cast<double>(ii)) / 500.0;
-          Point::Ptr point = Point2D::Create(x, y);
+    // Create a 2D continous scene.
+    Scene2DContinuous scene(0.0, 1.0, 0.0, 1.0, obstacles);
 
-          if (!scene.IsFeasible(point))
-            map_matrix(ii, jj) = 1.0;
-        }
-      }
+    // Create a Trajectory.
+    Trajectory::Ptr path = Trajectory::Create();
+    for (size_t ii = 0; ii < 20; ii++) {
+      double x = 0.5 + 0.25 * std::cos(2.0 * M_PI * static_cast<double>(ii) / 20.0) +
+        rng.DoubleUniform(-0.05, 0.05);
+      double y = 0.5 + 0.25 * std::sin(2.0 * M_PI * static_cast<double>(ii) / 20.0) +
+        rng.DoubleUniform(-0.05, 0.05);
 
-      // Display.
-      Image map_image(map_matrix);
-      map_image.ImShow("Cost map");
+      Point::Ptr point = Point2D::Create(x, y);
+      path->AddPoint(point);
+    }
+
+    // If visualize flag is set, query a grid and show the cost map.
+    if (FLAGS_visualize) {
+      scene.Visualize("Trajectory", path);
     }
   }
 

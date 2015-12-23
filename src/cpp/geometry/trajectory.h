@@ -70,6 +70,12 @@ namespace path {
     // Get path length.
     double GetLength() const;
 
+    // Get point type.
+    Point::PointType GetType() const;
+
+    // Get points.
+    std::vector<Point::Ptr>& GetPoints();
+
   private:
     // Private constructors. Use factory methods instead.
     Trajectory();
@@ -78,6 +84,7 @@ namespace path {
 
 
     std::vector<Point::Ptr> points_;
+    Point::PointType point_type_;
     double length_;
   };
 

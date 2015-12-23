@@ -67,7 +67,7 @@ namespace path {
 
   // A Trajectory is just an ordered list of Points.
   Trajectory::Trajectory()
-    : length_(0.0) {}
+    : length_(0.0), point_type_(Point::PointType::OTHER) {}
 
   // Initialize with a set of points.
   Trajectory::Trajectory(std::vector<Point::Ptr>& points) {
@@ -78,9 +78,16 @@ namespace path {
       Point::Ptr next_point = points[ii];
       CHECK_NOTNULL(next_point.get());
 
-      points_.push_back(next_point);
-      if (ii == 0) continue;
+      if (ii == 0) {
+        point_type_ = next_point->GetType();
+        points_.push_back(next_point);
+        continue;
+      } else if (next_point->GetType() != point_type_) {
+        VLOG(1) << "Point types do not match. Did not insert all points.";
+        break;
+      }
 
+      points_.push_back(next_point);
       Point::Ptr last_point = points[ii - 1];
       length_ += last_point->DistanceTo(next_point);
     }
@@ -95,6 +102,15 @@ namespace path {
     for (const auto& next_point : points) {
       CHECK_NOTNULL(next_point.get());
 
+      if (points_.size() == 0) {
+        point_type_ = next_point->GetType();
+        points_.push_back(next_point);
+        continue;
+      } else if (next_point->GetType() != point_type_) {
+        VLOG(1) << "Point types do not match. Did not insert all points.";
+        break;
+      }
+
       points_.push_back(next_point);
       length_ += last_point->DistanceTo(next_point);
       last_point = next_point;
@@ -103,8 +119,14 @@ namespace path {
 
   // Add a point to the path.
   void Trajectory::AddPoint(Point::Ptr point) {
+    CHECK_NOTNULL(point.get());
+
     if (points_.size() == 0) {
       points_.push_back(point);
+      point_type_ = point->GetType();
+      return;
+    } else if (point->GetType() != point_type_) {
+      VLOG(1) << "Point is of the wrong type. Did not insert.";
       return;
     }
 
@@ -115,6 +137,8 @@ namespace path {
     length_ += last_point->DistanceTo(point);
   }
 
-  // Get path length.
+  // Getters.
+  Point::PointType Trajectory::GetType() const { return point_type_; }
   double Trajectory::GetLength() const { return length_; }
+  std::vector<Point::Ptr>& Trajectory::GetPoints() { return points_; }
 }

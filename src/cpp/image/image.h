@@ -123,6 +123,15 @@ class Image {
   void ConvertToGrayscale();
   void ConvertToRGB();
 
+  // Add a colored circle at the specified location.
+  void Circle(unsigned int u, unsigned int v, unsigned int radius,
+              unsigned int line_thickness);
+
+  // Add a colored circle at the specified location.
+  void Line(unsigned int u1, unsigned int v1,
+            unsigned int u2, unsigned int v2, unsigned int line_thickness);
+
+
   // Open a window to display the image.
   void ImShow(const std::string& window_name = std::string(),
               unsigned int wait_time = 0);

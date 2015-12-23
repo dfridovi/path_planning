@@ -45,7 +45,13 @@
 #include <math/random_generator.h>
 #include <geometry/point.h>
 #include <geometry/point_2d.h>
+
 #include <glog/logging.h>
+#include <Eigen/Dense>
+#include <memory>
+#include <iostream>
+
+using Eigen::MatrixXf;
 
 namespace path {
 
@@ -108,6 +114,96 @@ namespace path {
     }
 
     return true;
+  }
+
+  // Visualize this scene. Optionally pass in the number of pixels
+  // in the x-direction.
+  void Scene2DContinuous::Visualize(const std::string& title, int xsize) const {
+    Visualize(title, nullptr, xsize);
+  }
+
+  // Visualize a Trajectory in this scene. Optionally pass in the
+  // number of pixels in the x-direction.
+  void Scene2DContinuous::Visualize(const std::string& title,
+                                    Trajectory::Ptr path, int xsize) const {
+
+    // Initialize a matrix to represent the scene.
+    int ysize = static_cast<int>(static_cast<double>(xsize) *
+                                 (ymax_ - ymin_) / (xmax_ - xmin_));
+    MatrixXf map_matrix(xsize, ysize);
+    map_matrix = MatrixXf::Zero(xsize, ysize);
+
+    // Calculate cost at each pixel.
+    for (size_t ii = 0; ii < ysize; ii++) {
+      for (size_t jj = 0; jj < xsize; jj++) {
+        double x = xmin_ + static_cast<double>(jj) / static_cast<double>(xsize);
+        double y = ymin_ + static_cast<double>(ysize - ii) / static_cast<double>(ysize);
+        Point::Ptr point = Point2D::Create(x, y);
+
+        map_matrix(ii, jj) = Cost(point);
+      }
+    }
+
+    // Normalize.
+    map_matrix /= map_matrix.maxCoeff();
+
+    // Set infeasible points to 1.0.
+    for (size_t ii = 0; ii < ysize; ii++) {
+      for (size_t jj = 0; jj < xsize; jj++) {
+        double x = xmin_ + static_cast<double>(jj) / static_cast<double>(xsize);
+        double y = ymin_ + static_cast<double>(ysize - ii) / static_cast<double>(ysize);
+        Point::Ptr point = Point2D::Create(x, y);
+
+        if (!IsFeasible(point))
+          map_matrix(ii, jj) = 1.0;
+      }
+    }
+
+    // Convert to an Image.
+    Image map_image(map_matrix);
+
+    // Add Trajectory.
+    if (path != nullptr) {
+      CHECK_NOTNULL(path.get());
+
+      // Check path type.
+      if (path->GetType() != Point::PointType::POINT_2D) {
+        VLOG(1) << "Trajectory is of the wrong type. Aborting.";
+        return;
+      }
+
+      // Convert to RGB.
+      map_image.ConvertToRGB();
+
+      // Draw each point, and put line segments between them.
+      Point::Ptr last_point;
+      for (const auto& next_point : path->GetPoints()) {
+        Point2D* point1 = std::static_pointer_cast<Point2D>(next_point).get();
+        double u1, v1;
+        u1 = static_cast<double>(ysize) * (point1->GetY() - ymin_) / (ymax_ - ymin_);
+        v1 = static_cast<double>(xsize) * (point1->GetX() - xmin_) / (xmax_ - xmin_);
+
+        map_image.Circle(static_cast<unsigned int>(u1), static_cast<unsigned int>(v1),
+                         4,  // radius
+                         2); // line thickness
+
+        if (last_point != nullptr) {
+          Point2D* point2 = std::static_pointer_cast<Point2D>(last_point).get();
+          unsigned int u2, v2;
+          u2 = static_cast<double>(ysize) * (point2->GetY() - ymin_) / (ymax_ - ymin_);
+          v2 = static_cast<double>(xsize) * (point2->GetX() - xmin_) / (xmax_ - xmin_);
+
+          map_image.Line(static_cast<unsigned int>(u2), static_cast<unsigned int>(v2),
+                         static_cast<unsigned int>(u1), static_cast<unsigned int>(v1),
+                         2 /* line thickness */);
+        }
+
+        last_point = next_point;
+      }
+    }
+
+    // Display.
+    map_image.ImShow(title);
   }
 
 

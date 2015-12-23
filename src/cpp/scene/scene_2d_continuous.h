@@ -44,9 +44,13 @@
 #define PATH_PLANNING_SCENE_2D_CONTINUOUS_H
 
 #include "scene_model.h"
-#include <geometry/point.h>
 #include "obstacle.h"
+#include <geometry/point.h>
+#include <geometry/trajectory.h>
+#include <image/image.h>
+
 #include <vector>
+#include <string>
 
 namespace path {
 
@@ -68,6 +72,15 @@ namespace path {
 
     // Are there any obstacles between the given two points?
     bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const;
+
+    // Visualize this scene. Optionally pass in the number of pixels
+    // in the x-direction.
+    void Visualize(const std::string& title, int xsize = 500) const;
+
+    // Visualize a Trajectory in this scene. Optionally pass in the 
+    // number of pixels in the x-direction.
+    void Visualize(const std::string& title, Trajectory::Ptr path,
+                   int xsize = 500) const;
 
   private:
     double xmin_;
