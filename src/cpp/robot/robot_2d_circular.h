@@ -36,39 +36,25 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines the base class for all robot models. Derive from this
-// class to parameterize a particular robot (e.g. the DJI Matrice 100).
-//
-// The idea here is to provide a way to specify constraints on a robot's
-// configuration. For example, a RobotModel can test whether or not it is
-// occupying free space in a SceneModel.
+// This class defines a simple circular robot in two dimensions.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_ROBOT_MODEL_H
-#define PATH_PLANNING_ROBOT_MODEL_H
+#ifndef PATH_PLANNING_ROBOT_2D_CIRCULAR_H
+#define PATH_PLANNING_ROBOT_2D_CIRCULAR_H
 
-#include <scene/scene_model.h>
-#include <geometry/point.h>
-#include <util/disallow_copy_and_assign.h>
+#include "robot_model.h"
 
 namespace path {
 
   // Derive from this class when defining a specific robot model.
-  class RobotModel {
+  class Robot2DCircular : public RobotModel {
   public:
-    RobotModel(SceneModel& scene);
-    virtual ~RobotModel() {}
+    // Test if a particular point is feasible.
+    bool IsFeasible(Point::Ptr point) const;
 
-    // Define these methods in a derived class.
-    virtual bool IsFeasible(Point::Ptr point) const = 0;
-    virtual double Cost(Point::Ptr point) const = 0;
-
-  protected:
-    SceneModel& scene_;
-
-  private:
-    DISALLOW_COPY_AND_ASSIGN(RobotModel);
+    // 
+    double Cost(Point::Ptr point) const;
   };
 
 // ---------------------------- Implementation ------------------------------ //

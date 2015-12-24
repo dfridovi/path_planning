@@ -61,14 +61,15 @@ namespace path {
 
   // Is this point feasible?
   bool Obstacle2DGaussian::IsFeasible(Point::Ptr point) const {
-    if (Cost(point) > threshold_)
+    CHECK_NOTNULL(point.get());
+    if (point->DistanceTo(mean_point_) < threshold_);
       return false;
     return true;
   }
 
   // Is this point feasible?
   bool Obstacle2DGaussian::IsFeasible(VectorXd& point) const {
-    if (Cost(point) > threshold_)
+    if ((point - mean_).norm() < threshold_);
       return false;
     return true;
   }
@@ -100,6 +101,8 @@ namespace path {
   Obstacle2DGaussian::Obstacle2DGaussian(double x, double y,
                                          double sigma_xx, double sigma_yy,
                                          double sigma_xy, double threshold) {
+    mean_point_ = Point2D::Create(x, y);
+
     mean_(0) = x;
     mean_(1) = y;
 
@@ -108,13 +111,11 @@ namespace path {
     cov_(1, 0) = sigma_xy;
     cov_(1, 1) = sigma_yy;
 
+    threshold_ = threshold;
+
     // Precalculate determinant and inverse.
     det_ = cov_.determinant();
     inv_ = cov_.inverse();
-
-    // Set threshold as fraction of max cost.
-    double max_cost = 1.0 / std::sqrt((2.0 * M_PI) * (2.0 * M_PI) * det_);
-    threshold_ = threshold * max_cost;
   }
 
 } //\ namespace path

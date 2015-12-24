@@ -71,14 +71,15 @@ namespace path {
     double threshold_;
 
     // For speed.
+    Point::Ptr mean_point_;
     Matrix2d inv_;
     double det_;
 
-    // Default constructor. Threshold is fraction of max cost above which
-    // a point is considered infeasible.
+    // Default constructor. Threshold is the minimum distance to the obstacle
+    //  below which a point is considered infeasible.
     Obstacle2DGaussian(double x, double y,
                        double sigma_xx, double sigma_yy,
-                       double sigma_xy, double threshold = 0.9);
+                       double sigma_xy, double threshold = 0.05);
   };
 
 } //\ namespace path
