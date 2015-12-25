@@ -71,7 +71,8 @@ namespace path {
     Point::Ptr GetRandomPoint() const;
 
     // Are there any obstacles between the given two points?
-    bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const;
+    bool LineOfSight(Point::Ptr point1, Point::Ptr point2,
+                     RobotModel& robot) const;
 
     // Visualize this scene. Optionally pass in the number of pixels
     // in the x-direction.
@@ -87,10 +88,8 @@ namespace path {
     double xmax_;
     double ymin_;
     double ymax_;
-    std::vector<Obstacle::Ptr> obstacles_;
   };
 
 } // \namespace path
-
 
 #endif

@@ -103,13 +103,13 @@ namespace path {
   }
 
   // Are there any obstacles between the given two points?
-  bool Scene2DContinuous::LineOfSight(Point::Ptr point1,
-                                      Point::Ptr point2) const {
+  bool Scene2DContinuous::LineOfSight(Point::Ptr point1, Point::Ptr point2,
+                                      RobotModel& robot) const {
     LineSegment line(point1, point2);
 
     // Check if line segment intersects any obstacle.
     for (const auto& obstacle : obstacles_) {
-      if (line.Intersects(obstacle))
+      if (obstacle->Intersects(line, robot))
         return false;
     }
 

@@ -43,6 +43,8 @@
 // configuration. For example, a RobotModel can test whether or not it is
 // occupying free space in a SceneModel.
 //
+// For simplicity, we assume that all robots are bounded by a sphere.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef PATH_PLANNING_ROBOT_MODEL_H
@@ -57,12 +59,12 @@ namespace path {
   // Derive from this class when defining a specific robot model.
   class RobotModel {
   public:
-    RobotModel(SceneModel& scene);
+    inline RobotModel(SceneModel& scene);
     virtual ~RobotModel() {}
 
     // Define these methods in a derived class.
-    virtual bool IsFeasible(Point::Ptr point) const = 0;
-    virtual double Cost(Point::Ptr point) const = 0;
+    virtual bool IsFeasible(Point::Ptr location) const = 0;
+    virtual double GetRadius() const = 0;
 
   protected:
     SceneModel& scene_;

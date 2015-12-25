@@ -40,23 +40,14 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_ROBOT_2D_CIRCULAR_H
-#define PATH_PLANNING_ROBOT_2D_CIRCULAR_H
-
-#include "robot_model.h"
+#include "robot_2d_circular.h"
 
 namespace path {
 
-  // Simple 2D circular robot.
-  class Robot2DCircular : public RobotModel {
-  public:
-    // Test if a particular point is feasible.
-    bool IsFeasible(Point::Ptr point) const;
+  // Test if a particular robot location is feasible.
+  bool IsFeasible(Point::Ptr location) const {
 
-    // Get radius.
-    double GetRadius() const;
-  };
+    // Iterate over all obstacles in the scene
+  }
 
 } // \namespace path
-
-#endif

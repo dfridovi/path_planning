@@ -42,10 +42,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "line_segment.h"
-#include <glog/logging.h>
 #include <math/random_generator.h>
-
-using Eigen::VectorXd;
+#include <glog/logging.h>
+#include <cmath>
 
 namespace path {
 
@@ -56,6 +55,7 @@ namespace path {
 
     point1_ = point1;
     point2_ = point2;
+    point_type_ = point1_->GetType();
 
     if (!point1->IsSameTypeAs(point2)) {
       VLOG(1) << "Point types do not match. setting the second point equal "
@@ -64,33 +64,35 @@ namespace path {
     }
   }
 
-
   // Segment length.
   double LineSegment::GetLength() const {
     return point1_->DistanceTo(point2_);
   }
 
-  // Test intersection with an obstacle. Uses Monte Carlo simulation
-  // with 1000 trials by default.
-  bool LineSegment::Intersects(Obstacle::Ptr obstacle,
-                               unsigned int niter) const {
-    CHECK_NOTNULL(obstacle.get());
-    math::RandomGenerator rng(math::RandomGenerator::Seed());
-
-    VectorXd& vector1 = point1_->GetVector();
-    VectorXd& vector2 = point2_->GetVector();
-
-    for (unsigned int ii = 0; ii < niter; ii++) {
-       // Parameterize segment as weighted sum of two endpoints.
-       double weight = rng.Double();
-       VectorXd random_vector(vector1.size());
-       random_vector = weight * vector1 + (1.0 - weight) * vector2;
-
-       if (!obstacle->IsFeasible(random_vector))
-         return false;
+  // Distance between a point and this line segment.
+  double LineSegment::DistanceTo(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+    if (point->GetType() != point_type_) {
+      VLOG(1) << "Point is of the wrong type. Returning infinity.";
+      return std::numeric_limits<double>::infinity();
     }
 
-    return true;
+    // Get vectors from point1_ to point2_ and from point1_ to point.
+    VectorXd direction = point2_->GetVector() - point1_->GetVector();
+    VectorXd vector = point_->GetVector() - point1_->GetVector();
+    direction /= direction.norm();
+
+    // Test if point projects onto line segment.
+    double dot_product = direction.dot(vector);
+    if (dot_product <= GetLength() && dot_product >= 0.0) {
+      // Projects onto line segment.
+      return std::sqrt(vector.normSquared() - dot_product * dot_product);
+    } else {
+      // Doesn't project onto the line segment.
+      double dist1 = point1_->DistanceTo(point);
+      double dist2 = point2_->DistanceTo(point);
+      return std::min(dist1, dist2);
+    }
   }
 
 } //\ namespace path

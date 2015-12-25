@@ -62,7 +62,7 @@ namespace path {
   // Is this point feasible?
   bool Obstacle2DGaussian::IsFeasible(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
-    if (point->DistanceTo(mean_point_) < threshold_);
+    if (point->DistanceTo(location_) < threshold_);
       return false;
     return true;
   }
@@ -96,12 +96,22 @@ namespace path {
       std::sqrt((2.0 * M_PI) * (2.0 * M_PI) * det_);
   }
 
+  // Does this obstacle intersect the given line segment?
+  bool Obstacle2DGaussian::Intersects(LineSegment& line, RobotModel& robot) const {
+    if (line.DistanceTo(location_) < threshold_ + robot.Radius())
+      return false;
+    return true;
+  }
+
+  // Get location.
+  Point::Ptr Obstacle2DGaussian::GetLocation() { return location_; }
+
   // Default constructor. Threshold is fraction of max cost above which
   // a point is considered infeasible.
   Obstacle2DGaussian::Obstacle2DGaussian(double x, double y,
                                          double sigma_xx, double sigma_yy,
                                          double sigma_xy, double threshold) {
-    mean_point_ = Point2D::Create(x, y);
+    location_ = Point2D::Create(x, y);
 
     mean_(0) = x;
     mean_(1) = y;

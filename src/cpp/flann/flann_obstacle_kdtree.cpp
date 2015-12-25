@@ -31,32 +31,53 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a simple circular robot in two dimensions.
+// This class is a wrapper around the FlannPointKDTree class. The idea is to
+// facilitate quick nearest neighbor searching for the nearest obstacle in a
+// scene.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_ROBOT_2D_CIRCULAR_H
-#define PATH_PLANNING_ROBOT_2D_CIRCULAR_H
-
-#include "robot_model.h"
+#include "flann_obstacle_kdtree.h"
+#include <glog/logging.h>
 
 namespace path {
 
-  // Simple 2D circular robot.
-  class Robot2DCircular : public RobotModel {
-  public:
-    // Test if a particular point is feasible.
-    bool IsFeasible(Point::Ptr point) const;
+  // Add obstacles to the index.
+  void FlannObstacleKDTree::AddObstacle(Obstacle::Ptr obstacle) {
+    CHECK_NOTNULL(obstacle.get());
 
-    // Get radius.
-    double GetRadius() const;
-  };
+    Point::Ptr location = obstacle->GetLocation();
+    kd_tree_.AddPoint(location);
+    registry_.emplace(location, obstacle);
+  }
 
-} // \namespace path
+  void FlannObstacleKDTree::AddObstacles(std::vector<Obstacle::Ptr>& obstacles) {
+    for (const auto& obstacle : obstacles)
+      AddObstacle(obstacle);
+  }
 
-#endif
+  // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
+  // not a nearest neighbor was found, and if it was found, the nearest neighbor
+  // and distance to the nearest neighbor. Note that index is based on the 
+  // order in which obstacles were added with AddObstacle() and AddObstacles().
+  bool FlannObstacleKDTree::NearestNeighbor(Obstacle::Ptr query,
+                                            Obstacle::Ptr& nearest,
+                                            double& nn_distance) {
+    CHECK_NOTNULL(query.get());
+
+    // Query kd_tree_.
+    Point::Ptr nearest_point;
+    Point::Ptr query_point = query->GetLocation();
+    kd_tree_.NearestNeighbor(query_point, nearest_point, nn_distance);
+
+    // Map from point back to obstacle.
+    const auto match = registry_.find(nearest_point);
+    nearest = match->second;
+  }
+
+}  //\namespace path

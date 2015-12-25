@@ -53,21 +53,20 @@ using Eigen::VectorXd;
 namespace path {
 
   // A LineSegment is just a pair of points.
-  class LineSegment {
-  public:
+  struct LineSegment {
     LineSegment(Point::Ptr point1, Point::Ptr point2);
     ~LineSegment() {}
 
     // Segment length.
     double GetLength() const;
 
-    // Test intersection with an obstacle. Uses Monte Carlo simulation
-    // with 1000 trials by default.
-    bool Intersects(Obstacle::Ptr obstacle, unsigned int niter = 1000) const;
+    // Distance between a point and this line segment.
+    double DistanceTo(Point::Ptr point) const;
 
-  private:
+    // Public member variables.
     Point::Ptr point1_;
     Point::Ptr point2_;
+    Point::PointType point_type_;
   };
 
 } //\ namespace path

@@ -31,32 +31,52 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a simple circular robot in two dimensions.
+// This class is a wrapper around the FlannPointKDTree class. The idea is to
+// facilitate quick nearest neighbor searching for the nearest obstacle in a
+// scene.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_ROBOT_2D_CIRCULAR_H
-#define PATH_PLANNING_ROBOT_2D_CIRCULAR_H
+#ifndef PATH_PLANNING_FLANN_OBSTACLE_KDTREE_H
+#define PATH_PLANNING_FLANN_OBSTACLE_KDTREE_H
 
-#include "robot_model.h"
+#include <geometry/point.h>
+#include <scene/obstacle.h>
+#include "../util/disallow_copy_and_assign.h"
+
+#include <flann/flann.h>
+#include <unordered_map>
 
 namespace path {
 
-  // Simple 2D circular robot.
-  class Robot2DCircular : public RobotModel {
+  class FlannObstacleKDTree {
   public:
-    // Test if a particular point is feasible.
-    bool IsFeasible(Point::Ptr point) const;
+    FlannObstacleKDTree() {}
+    ~FlannObstacleKDTree() {}
 
-    // Get radius.
-    double GetRadius() const;
-  };
+    // Add obstacles to the index.
+    void AddObstacle(Obstacle::Ptr obstacle);
+    void AddObstacles(std::vector<Obstacle::Ptr>& obstacles);
 
-} // \namespace path
+    // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
+    // not a nearest neighbor was found, and if it was found, the nearest neighbor
+    // and distance to the nearest neighbor. Note that index is based on the 
+    // order in which obstacles were added with AddObstacle() and AddObstacles().
+    bool NearestNeighbor(Obstacle::Ptr query, Obstacle::Ptr& nearest,
+                         double& nn_distance);
+
+  private:
+    FlannPointKDTree kd_tree_;
+    std::unordered_map<Point::Ptr, Obstacle::Ptr> registry_; // to retrieve obstacles
+
+    DISALLOW_COPY_AND_ASSIGN(FlannObstacleKDTree);
+  };  //\class FlannObstacleKDTree
+
+}  //\namespace path
 
 #endif

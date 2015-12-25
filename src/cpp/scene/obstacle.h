@@ -45,6 +45,7 @@
 #define PATH_PLANNING_OBSTACLE_H
 
 #include <geometry/point.h>
+#include <geometry/line_segment.h>
 #include <util/disallow_copy_and_assign.h>
 #include <memory>
 #include <Eigen/Dense>
@@ -67,6 +68,8 @@ namespace path {
     virtual bool IsFeasible(VectorXd& point) const = 0;
     virtual double Cost(Point::Ptr point) const = 0;
     virtual double Cost(VectorXd& point) const = 0;
+    virtual bool Intersects(LineSegment& line, RobotModel& robot) const = 0;
+    virtual Point::Ptr GetLocation() = 0;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Obstacle);
