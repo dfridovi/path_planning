@@ -122,8 +122,10 @@ namespace path {
     // Calculate cost at each pixel.
     for (size_t ii = 0; ii < ysize; ii++) {
       for (size_t jj = 0; jj < xsize; jj++) {
-        double x = xmin_ + static_cast<double>(jj) / static_cast<double>(xsize);
-        double y = ymin_ + static_cast<double>(ysize - ii) / static_cast<double>(ysize);
+        double x = xmin_ +
+          (xmax_ - xmin_) * static_cast<double>(jj) / static_cast<double>(xsize);
+        double y = ymin_ +
+          (ymax_ - ymin_) * static_cast<double>(ysize - ii) / static_cast<double>(ysize);
         Point::Ptr point = Point2D::Create(x, y);
 
         map_matrix(ii, jj) = Cost(point);
@@ -136,8 +138,10 @@ namespace path {
     // Set infeasible points to 1.0.
     for (size_t ii = 0; ii < ysize; ii++) {
       for (size_t jj = 0; jj < xsize; jj++) {
-        double x = xmin_ + static_cast<double>(jj) / static_cast<double>(xsize);
-        double y = ymin_ + static_cast<double>(ysize - ii) / static_cast<double>(ysize);
+        double x = xmin_ +
+          (xmax_ - xmin_) * static_cast<double>(jj) / static_cast<double>(xsize);
+        double y = ymin_ +
+          (ymax_ - ymin_) * static_cast<double>(ysize - ii) / static_cast<double>(ysize);
         Point::Ptr point = Point2D::Create(x, y);
 
         if (!IsFeasible(point))
@@ -166,21 +170,21 @@ namespace path {
       for (const auto& next_point : path->GetPoints()) {
         Point2D* point1 = std::static_pointer_cast<Point2D>(next_point).get();
         double u1, v1;
-        u1 = static_cast<double>(ysize) * (point1->GetY() - ymin_) / (ymax_ - ymin_);
+        u1 = static_cast<double>(ysize) * (1.0 - (point1->GetY() - ymin_) / (ymax_ - ymin_));
         v1 = static_cast<double>(xsize) * (point1->GetX() - xmin_) / (xmax_ - xmin_);
 
-        map_image.Circle(static_cast<unsigned int>(u1), static_cast<unsigned int>(v1),
+        map_image.Circle(static_cast<unsigned int>(v1), static_cast<unsigned int>(u1),
                          4,  // radius
                          2); // line thickness
 
         if (last_point) {
           Point2D* point2 = std::static_pointer_cast<Point2D>(last_point).get();
           unsigned int u2, v2;
-          u2 = static_cast<double>(ysize) * (point2->GetY() - ymin_) / (ymax_ - ymin_);
+          u2 = static_cast<double>(ysize) * (1.0 - (point2->GetY() - ymin_) / (ymax_ - ymin_));
           v2 = static_cast<double>(xsize) * (point2->GetX() - xmin_) / (xmax_ - xmin_);
 
-          map_image.Line(static_cast<unsigned int>(u2), static_cast<unsigned int>(v2),
-                         static_cast<unsigned int>(u1), static_cast<unsigned int>(v1),
+          map_image.Line(static_cast<unsigned int>(v2), static_cast<unsigned int>(u2),
+                         static_cast<unsigned int>(v1), static_cast<unsigned int>(u1),
                          2 /* line thickness */);
         }
 
