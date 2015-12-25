@@ -66,11 +66,11 @@ namespace path {
 
       // Find nearest point in the tree and insert if visible.
       Point::Ptr nearest = tree_.GetNearest(random_point);
-      if (scene_.LineOfSight(nearest, random_point))
+      if (robot_.LineOfSight(nearest, random_point))
         tree_.Insert(random_point);
 
       // Insert the goal if it is visible.
-      if (scene_.LineOfSight(random_point, goal_))
+      if (robot_.LineOfSight(random_point, goal_))
         tree_.Insert(goal_);
     }
 

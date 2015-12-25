@@ -45,9 +45,29 @@
 namespace path {
 
   // Test if a particular robot location is feasible.
-  bool IsFeasible(Point::Ptr location) const {
+  bool Robot2DCircular::IsFeasible(Point::Ptr location) {
 
-    // Iterate over all obstacles in the scene
+    // Find nearest obstacle.
+    Obstacle::Ptr nearest;
+    double nn_distance = -1.0;
+    if (!kd_tree_.NearestNeighbor(location, nearest, nn_distance))
+      return false;
+
+    // Check that it is outside the bounding sphere.
+    return nn_distance > radius_ + nearest->GetRadius();;
+  }
+
+  // Check if there is a valid linear trajectory between these two points.
+  bool Robot2DCircular::LineOfSight(Point::Ptr point1, Point::Ptr point2) const {
+    LineSegment line(point1, point2);
+
+    // Check if line segment intersects any obstacle.
+    for (const auto& obstacle : scene_.GetObstacles()) {
+      if (line.DistanceTo(obstacle->GetLocation()) < obstacle->GetRadius() + radius_)
+        return false;
+    }
+
+    return true;
   }
 
 } // \namespace path

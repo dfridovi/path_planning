@@ -51,10 +51,8 @@ namespace path {
   class Robot2DCircular : public RobotModel {
   public:
     // Test if a particular point is feasible.
-    bool IsFeasible(Point::Ptr point) const;
-
-    // Get radius.
-    double GetRadius() const;
+    bool IsFeasible(Point::Ptr point);
+    bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const = 0;
   };
 
 } // \namespace path

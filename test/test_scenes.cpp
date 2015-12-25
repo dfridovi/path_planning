@@ -69,7 +69,7 @@ namespace path {
       double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
 
       Obstacle::Ptr obstacle =
-        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.9);
+        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.01);
       obstacles.push_back(obstacle);
     }
 
@@ -96,7 +96,7 @@ namespace path {
       double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
 
       Obstacle::Ptr obstacle =
-        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.9);
+        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.01);
       obstacles.push_back(obstacle);
     }
 

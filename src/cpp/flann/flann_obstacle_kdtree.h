@@ -47,6 +47,7 @@
 
 #include <geometry/point.h>
 #include <scene/obstacle.h>
+#include "flann_point_kdtree.h"
 #include "../util/disallow_copy_and_assign.h"
 
 #include <flann/flann.h>
@@ -67,7 +68,7 @@ namespace path {
     // not a nearest neighbor was found, and if it was found, the nearest neighbor
     // and distance to the nearest neighbor. Note that index is based on the 
     // order in which obstacles were added with AddObstacle() and AddObstacles().
-    bool NearestNeighbor(Obstacle::Ptr query, Obstacle::Ptr& nearest,
+    bool NearestNeighbor(Point::Ptr query, Obstacle::Ptr& nearest,
                          double& nn_distance);
 
   private:

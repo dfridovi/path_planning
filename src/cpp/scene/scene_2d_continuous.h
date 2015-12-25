@@ -70,10 +70,6 @@ namespace path {
     // Get a random point in the scene.
     Point::Ptr GetRandomPoint() const;
 
-    // Are there any obstacles between the given two points?
-    bool LineOfSight(Point::Ptr point1, Point::Ptr point2,
-                     RobotModel& robot) const;
-
     // Visualize this scene. Optionally pass in the number of pixels
     // in the x-direction.
     void Visualize(const std::string& title, int xsize = 500) const;

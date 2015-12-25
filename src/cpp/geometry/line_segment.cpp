@@ -79,14 +79,14 @@ namespace path {
 
     // Get vectors from point1_ to point2_ and from point1_ to point.
     VectorXd direction = point2_->GetVector() - point1_->GetVector();
-    VectorXd vector = point_->GetVector() - point1_->GetVector();
+    VectorXd vector = point->GetVector() - point1_->GetVector();
     direction /= direction.norm();
 
     // Test if point projects onto line segment.
     double dot_product = direction.dot(vector);
     if (dot_product <= GetLength() && dot_product >= 0.0) {
       // Projects onto line segment.
-      return std::sqrt(vector.normSquared() - dot_product * dot_product);
+      return std::sqrt(vector.squaredNorm() - dot_product * dot_product);
     } else {
       // Doesn't project onto the line segment.
       double dist1 = point1_->DistanceTo(point);

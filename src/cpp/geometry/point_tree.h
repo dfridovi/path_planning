@@ -45,8 +45,8 @@
 
 #include "point.h"
 #include "trajectory.h"
-#include "flann_point_kdtree.h"
 #include "nary_node.h"
+#include <flann/flann_point_kdtree.h>
 #include <util/disallow_copy_and_assign.h>
 
 #include <memory>

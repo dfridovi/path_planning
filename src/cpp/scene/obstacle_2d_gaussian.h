@@ -57,31 +57,27 @@ namespace path {
     // Factory method.
     static Obstacle::Ptr Create(double x, double y,
                                 double sigma_xx, double sigma_yy,
-                                double sigma_xy, double threshold = 0.9);
+                                double sigma_xy, double radius = 0.9);
 
     // Define these methods in a derived class.
     bool IsFeasible(Point::Ptr point) const;
     bool IsFeasible(VectorXd& point) const;
     double Cost(Point::Ptr point) const;
     double Cost(VectorXd& point) const;
-    bool Intersects(LineSegment& line, RobotModel& robot) const;
-    Point::Ptr GetLocation();
 
   private:
     Vector2d mean_;
     Matrix2d cov_;
-    double threshold_;
 
     // For speed.
-    Point::Ptr location_;
     Matrix2d inv_;
     double det_;
 
-    // Default constructor. Threshold is the minimum distance to the obstacle
+    // Default constructor. Radius is the minimum distance to the obstacle
     // below which a point is considered infeasible.
     Obstacle2DGaussian(double x, double y,
                        double sigma_xx, double sigma_yy,
-                       double sigma_xy, double threshold = 0.05);
+                       double sigma_xy, double radius = 0.05);
   };
 
 } //\ namespace path

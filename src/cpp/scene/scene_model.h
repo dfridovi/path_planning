@@ -46,7 +46,6 @@
 
 #include <geometry/point.h>
 #include <geometry/line_segment.h>
-#include <robot/robot_model.h>
 #include "obstacle.h"
 #include <util/disallow_copy_and_assign.h>
 
@@ -57,7 +56,7 @@ namespace path {
   // Derive from this class when defining a specific scene model.
   class SceneModel {
   public:
-    SceneModel() {}
+    inline SceneModel(std::vector<Obstacle::Ptr>& obstacles);
     virtual ~SceneModel() {}
 
     // Get obstacles.
@@ -67,8 +66,6 @@ namespace path {
     virtual bool IsFeasible(Point::Ptr point) const = 0;
     virtual double Cost(Point::Ptr point) const = 0;
     virtual Point::Ptr GetRandomPoint() const = 0;
-    virtual bool LineOfSight(Point::Ptr point1, Point::Ptr point2,
-                             RobotModel& robot) const = 0;
 
   protected:
     std::vector<Obstacle::Ptr> obstacles_;
@@ -79,6 +76,11 @@ namespace path {
 
 // ---------------------------- Implementation ------------------------------ //
 
+  // Default constructor.
+  SceneModel::SceneModel(std::vector<Obstacle::Ptr>& obstacles)
+    : obstacles_(obstacles) {}
+
+  // Getter.
   std::vector<Obstacle::Ptr>& SceneModel::GetObstacles() { return obstacles_; }
 
 } // \namespace path

@@ -48,7 +48,7 @@
 
 #include <flann/flann.h>
 
-#include "point.h"
+#include <geometry/point.h>
 #include "../util/disallow_copy_and_assign.h"
 
 namespace path {

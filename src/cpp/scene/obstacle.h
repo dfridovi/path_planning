@@ -60,20 +60,36 @@ namespace path {
     typedef std::shared_ptr<Obstacle> Ptr;
     typedef std::shared_ptr<const Obstacle> ConstPtr;
 
-    Obstacle() {}
+    inline Obstacle(double radius, Point::Ptr location);
     virtual ~Obstacle() {}
+
+    // Get radius.
+    virtual inline double GetRadius() const;
+    virtual inline Point::Ptr GetLocation() const;
 
     // Define these methods in a derived class.
     virtual bool IsFeasible(Point::Ptr point) const = 0;
     virtual bool IsFeasible(VectorXd& point) const = 0;
     virtual double Cost(Point::Ptr point) const = 0;
     virtual double Cost(VectorXd& point) const = 0;
-    virtual bool Intersects(LineSegment& line, RobotModel& robot) const = 0;
-    virtual Point::Ptr GetLocation() = 0;
+
+  protected:
+    Point::Ptr location_;
+    double radius_;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Obstacle);
   };
+
+// ---------------------------- Implementation ------------------------------ //
+
+  // Default base constructor. Don't use this!
+  Obstacle::Obstacle(double radius, Point::Ptr location)
+    : radius_(radius), location_(location) {}
+
+  // Getters.
+  double Obstacle::GetRadius() const { return radius_; }
+  Point::Ptr Obstacle::GetLocation() const { return location_; }
 
 } //\ namespace path
 

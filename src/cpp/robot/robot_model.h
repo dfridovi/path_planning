@@ -52,6 +52,7 @@
 
 #include <scene/scene_model.h>
 #include <geometry/point.h>
+#include <flann/flann_obstacle_kdtree.h>
 #include <util/disallow_copy_and_assign.h>
 
 namespace path {
@@ -59,15 +60,20 @@ namespace path {
   // Derive from this class when defining a specific robot model.
   class RobotModel {
   public:
-    inline RobotModel(SceneModel& scene);
+    inline RobotModel(SceneModel& scene, double radius);
     virtual ~RobotModel() {}
 
+    // Get radius.
+    virtual inline double GetRadius() const;
+
     // Define these methods in a derived class.
-    virtual bool IsFeasible(Point::Ptr location) const = 0;
-    virtual double GetRadius() const = 0;
+    virtual bool IsFeasible(Point::Ptr location) = 0;
+    virtual bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const = 0;
 
   protected:
     SceneModel& scene_;
+    FlannObstacleKDTree kd_tree_;
+    double radius_;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(RobotModel);
@@ -75,8 +81,15 @@ namespace path {
 
 // ---------------------------- Implementation ------------------------------ //
 
-  RobotModel::RobotModel(SceneModel& scene)
-    : scene_(scene) {}
+  RobotModel::RobotModel(SceneModel& scene, double radius)
+    : scene_(scene), radius_(radius) {
+
+    // Extract all obstacles and add to kd_tree_.
+    std::vector<Obstacle::Ptr>& obstacles = scene_.GetObstacles();
+    kd_tree_.AddObstacles(obstacles);
+  }
+
+  double RobotModel::GetRadius() const { return radius_; }
 
 } // \namespace path
 

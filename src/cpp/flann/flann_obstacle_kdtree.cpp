@@ -65,19 +65,20 @@ namespace path {
   // not a nearest neighbor was found, and if it was found, the nearest neighbor
   // and distance to the nearest neighbor. Note that index is based on the 
   // order in which obstacles were added with AddObstacle() and AddObstacles().
-  bool FlannObstacleKDTree::NearestNeighbor(Obstacle::Ptr query,
+  bool FlannObstacleKDTree::NearestNeighbor(Point::Ptr query,
                                             Obstacle::Ptr& nearest,
                                             double& nn_distance) {
     CHECK_NOTNULL(query.get());
 
     // Query kd_tree_.
     Point::Ptr nearest_point;
-    Point::Ptr query_point = query->GetLocation();
-    kd_tree_.NearestNeighbor(query_point, nearest_point, nn_distance);
+    if (!kd_tree_.NearestNeighbor(query, nearest_point, nn_distance))
+      return false;
 
     // Map from point back to obstacle.
     const auto match = registry_.find(nearest_point);
     nearest = match->second;
+    return true;
   }
 
 }  //\namespace path

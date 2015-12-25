@@ -52,24 +52,24 @@ namespace path {
   // Factory method.
   Obstacle::Ptr Obstacle2DGaussian::Create(double x, double y,
                                            double sigma_xx, double sigma_yy,
-                                           double sigma_xy, double threshold) {
+                                           double sigma_xy, double radius) {
     Obstacle::Ptr obstacle(new Obstacle2DGaussian(x, y,
                                                   sigma_xx, sigma_yy,
-                                                  sigma_xy, threshold));
+                                                  sigma_xy, radius));
     return obstacle;
   }
 
   // Is this point feasible?
   bool Obstacle2DGaussian::IsFeasible(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
-    if (point->DistanceTo(location_) < threshold_);
+    if (point->DistanceTo(location_) < radius_)
       return false;
     return true;
   }
 
   // Is this point feasible?
   bool Obstacle2DGaussian::IsFeasible(VectorXd& point) const {
-    if ((point - mean_).norm() < threshold_);
+    if ((point - mean_).norm() < radius_)
       return false;
     return true;
   }
@@ -96,22 +96,11 @@ namespace path {
       std::sqrt((2.0 * M_PI) * (2.0 * M_PI) * det_);
   }
 
-  // Does this obstacle intersect the given line segment?
-  bool Obstacle2DGaussian::Intersects(LineSegment& line, RobotModel& robot) const {
-    if (line.DistanceTo(location_) < threshold_ + robot.Radius())
-      return false;
-    return true;
-  }
-
-  // Get location.
-  Point::Ptr Obstacle2DGaussian::GetLocation() { return location_; }
-
-  // Default constructor. Threshold is fraction of max cost above which
-  // a point is considered infeasible.
+  // Default constructor.
   Obstacle2DGaussian::Obstacle2DGaussian(double x, double y,
                                          double sigma_xx, double sigma_yy,
-                                         double sigma_xy, double threshold) {
-    location_ = Point2D::Create(x, y);
+                                         double sigma_xy, double radius)
+    : Obstacle(radius, Point2D::Create(x, y)) {
 
     mean_(0) = x;
     mean_(1) = y;
@@ -120,8 +109,6 @@ namespace path {
     cov_(0, 1) = sigma_xy;
     cov_(1, 0) = sigma_xy;
     cov_(1, 1) = sigma_yy;
-
-    threshold_ = threshold;
 
     // Precalculate determinant and inverse.
     det_ = cov_.determinant();

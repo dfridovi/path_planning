@@ -58,9 +58,9 @@ namespace path {
   Scene2DContinuous::Scene2DContinuous(double xmin, double xmax,
                                        double ymin, double ymax,
                                        std::vector<Obstacle::Ptr>& obstacles)
-    : xmin_(xmin), xmax_(xmax),
-      ymin_(ymin), ymax_(ymax),
-      obstacles_(obstacles) {
+    : SceneModel(obstacles),
+      xmin_(xmin), xmax_(xmax),
+      ymin_(ymin), ymax_(ymax) {
 
     // Check that all obstacle pointers are not null.
     for (const auto& obstacle : obstacles_)
@@ -100,20 +100,6 @@ namespace path {
     double y = rng.DoubleUniform(ymin_, ymax_);
     Point::Ptr point = Point2D::Create(x, y);
     return point;
-  }
-
-  // Are there any obstacles between the given two points?
-  bool Scene2DContinuous::LineOfSight(Point::Ptr point1, Point::Ptr point2,
-                                      RobotModel& robot) const {
-    LineSegment line(point1, point2);
-
-    // Check if line segment intersects any obstacle.
-    for (const auto& obstacle : obstacles_) {
-      if (obstacle->Intersects(line, robot))
-        return false;
-    }
-
-    return true;
   }
 
   // Visualize this scene. Optionally pass in the number of pixels
