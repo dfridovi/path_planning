@@ -50,9 +50,13 @@ namespace path {
   // Simple 2D circular robot.
   class Robot2DCircular : public RobotModel {
   public:
+    Robot2DCircular(SceneModel& scene, double radius) :
+      RobotModel(scene, radius) {}
+    ~Robot2DCircular() {}
+
     // Test if a particular point is feasible.
     bool IsFeasible(Point::Ptr point);
-    bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const = 0;
+    bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const;
   };
 
 } // \namespace path

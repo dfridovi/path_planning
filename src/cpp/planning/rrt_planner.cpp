@@ -45,6 +45,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "rrt_planner.h"
+#include <iostream>
+#include <glog/logging.h>
 
 namespace path {
 
@@ -62,16 +64,29 @@ namespace path {
     while (!tree_.Contains(goal_)) {
 
       // Pick a random point in the scene.
+      std::cout << "Picking a random point..." << std::endl;
       Point::Ptr random_point = scene_.GetRandomPoint();
 
       // Find nearest point in the tree and insert if visible.
       Point::Ptr nearest = tree_.GetNearest(random_point);
-      if (robot_.LineOfSight(nearest, random_point))
-        tree_.Insert(random_point);
+      std::cout << nearest->GetVector() << std::endl;
+      std::cout << "Got nearest neighbor. Checking line of sight." << std::endl;
+      if (robot_.LineOfSight(nearest, random_point)) {
+        std::cout << "Passed line of sight test. Inserting..." << std::endl;
+        if (!tree_.Insert(random_point)) {
+          VLOG(1) << "Could not insert this point. Skipping.";
+          std::cout << "Could not insert this point. Skipping." << std::endl;
+        }
+      }
 
       // Insert the goal if it is visible.
-      if (robot_.LineOfSight(random_point, goal_))
-        tree_.Insert(goal_);
+      std::cout << "Checking if goal is visible..." << std::endl;
+      if (robot_.LineOfSight(random_point, goal_)) {
+        if (!tree_.Insert(goal_, random_point))
+          VLOG(1) << "Could not insert the goal point.";
+        std::cout << "Success! Inserted goal." << std::endl;
+        std::cout << tree_.Contains(goal_) << std::endl;
+      }
     }
 
     // Return the trajectory.

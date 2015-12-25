@@ -105,7 +105,7 @@ namespace path {
   // Visualize this scene. Optionally pass in the number of pixels
   // in the x-direction.
   void Scene2DContinuous::Visualize(const std::string& title, int xsize) const {
-    Visualize(title, nullptr, xsize);
+    Visualize(title, Trajectory::Ptr(nullptr), xsize);
   }
 
   // Visualize a Trajectory in this scene. Optionally pass in the
@@ -149,7 +149,7 @@ namespace path {
     Image map_image(map_matrix);
 
     // Add Trajectory.
-    if (path != nullptr) {
+    if (path) {
       CHECK_NOTNULL(path.get());
 
       // Check path type.
@@ -173,7 +173,7 @@ namespace path {
                          4,  // radius
                          2); // line thickness
 
-        if (last_point != nullptr) {
+        if (last_point) {
           Point2D* point2 = std::static_pointer_cast<Point2D>(last_point).get();
           unsigned int u2, v2;
           u2 = static_cast<double>(ysize) * (point2->GetY() - ymin_) / (ymax_ - ymin_);

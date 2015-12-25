@@ -64,6 +64,7 @@ namespace path {
 
     // Insert a point. Returns true if successful.
     bool Insert(Point::Ptr point);
+    bool Insert(Point::Ptr point, Point::Ptr parent);
 
     // Does the tree contain this point?
     bool Contains(Point::Ptr point);

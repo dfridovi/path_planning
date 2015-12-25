@@ -36,39 +36,27 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the RRT (rapidly-exploring random tree) class, which is
-// a derived class based on the Planner class. It is implemented according to
-// the following descriptions:
-// + https://www.cs.cmu.edu/~motionplanning/lecture/lec20.pdf
-// + http://msl.cs.uiuc.edu/rrt/about.html
+// This class defines a Node in an N-ary tree of Points.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_RRT_PLANNER_H
-#define PATH_PLANNING_RRT_PLANNER_H
-
-#include "planner.h"
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <geometry/point_tree.h>
+#include "nary_node.h"
 
 namespace path {
 
-  // Derived from base class Planner.
-  class RRTPlanner : public Planner {
-  public:
-    RRTPlanner(RobotModel& robot, SceneModel& scene,
-               Point::Ptr origin, Point::Ptr goal)
-      : Planner(robot, scene, origin, goal) {}
-    ~RRTPlanner() {}
+  // Factory method.
+  Node::Ptr Node::Create(Point::Ptr data) {
+    Node::Ptr node(new Node(data));
+    return node;
+  }
 
-    // The algorithm. See header for references.
-    Trajectory::Ptr PlanTrajectory();
+  // Getters and setters.
+  void Node::SetParent(Node::Ptr parent) { parent_ = parent; }
+  Node::Ptr Node::GetParent() { return parent_; }
 
-  private:
-    PointTree tree_;
-  };
+  void Node::AddChild(Node::Ptr child) { children_.push_back(child); }
+  std::vector<Node::Ptr>& Node::GetChildren() { return children_; }
+
+  Point::Ptr Node::GetData() { return data_; }
 
 } //\ namespace path
-
-#endif

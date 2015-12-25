@@ -76,8 +76,7 @@ namespace path {
       return false;
 
     // Map from point back to obstacle.
-    const auto match = registry_.find(nearest_point);
-    nearest = match->second;
+    nearest = registry_.at(nearest_point);
     return true;
   }
 

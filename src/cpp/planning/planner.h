@@ -55,12 +55,12 @@ namespace path {
   // Derive from this class when defining a specific path planner.
   class Planner {
   public:
-    Planner(RobotModel& robot, SceneModel& scene,
-            Point::Ptr origin, Point::Ptr goal);
+    inline Planner(RobotModel& robot, SceneModel& scene,
+                   Point::Ptr origin, Point::Ptr goal);
     virtual ~Planner() {}
 
     // Define these methods in a derived class.
-    virtual Trajectory& PlanTrajectory() const = 0;
+    virtual Trajectory::Ptr PlanTrajectory() = 0;
 
   protected:
     RobotModel& robot_;

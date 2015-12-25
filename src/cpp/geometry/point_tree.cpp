@@ -43,6 +43,7 @@
 
 #include "point_tree.h"
 #include <list>
+#include <iostream>
 
 namespace path {
 
@@ -66,11 +67,36 @@ namespace path {
 
     // Make a new Node and insert.
     Node::Ptr node = Node::Create(point);
-
-    const auto match = registry_.find(nearest);
-    Node::Ptr parent = match->second;
+    Node::Ptr parent = registry_.at(nearest);
     node->SetParent(parent);
     parent->AddChild(node);
+
+    // Update the registry.
+    registry_.emplace(point, node);
+    return true;
+  }
+
+  // Insert a point at a specified node. Returns true if successful.
+  bool PointTree::Insert(Point::Ptr point, Point::Ptr parent) {
+    CHECK_NOTNULL(point.get());
+
+    // Ensure parent exists.
+    if (!Contains(parent)) {
+      VLOG(1) << "Specified parent does not exist. Did not insert.";
+      return false;
+    }
+
+    // Don't insert if the tree already contains this point.
+    if (Contains(point)) return false;
+
+    // Make a new Node and insert.
+    Node::Ptr node = Node::Create(point);
+    Node::Ptr parent_node = registry_.at(parent);
+    node->SetParent(parent_node);
+    parent_node->AddChild(node);
+
+    // Update the registry.
+    registry_.emplace(point, node);
     return true;
   }
 
@@ -95,14 +121,13 @@ namespace path {
     if (!Contains(goal)) {
       VLOG(1) << "Tree does not contain the goal point. Returning "
         "nullptr.";
-      return nullptr;
+      return Trajectory::Ptr(nullptr);
     }
 
     // Trace the tree and populate the path.
     std::list<Point::Ptr> trace;
-    const auto match = registry_.find(goal);
-    Node::Ptr current_node = match->second;
-    while (current_node != nullptr) {
+    Node::Ptr current_node = registry_.at(goal);
+    while (current_node) {
       trace.push_front(current_node->GetData());
       current_node = current_node->GetParent();
     }

@@ -79,32 +79,13 @@ namespace path {
 
   private:
     // Private constructor. Use the factory method instead.
-    Node(const Point::Ptr data);
+    Node(const Point::Ptr data)
+      : data_(data) {}
 
     Point::Ptr data_;
     Node::Ptr parent_;
     std::vector<Node::Ptr> children_;
   };
-
-// ---------------------------- Implementation ------------------------------ //
-
-  // Constructor and factory methods.
-  Node::Node(const Point::Ptr data)
-    : data_(data) {}
-
-  Node::Ptr Node::Create(Point::Ptr data) {
-    Node::Ptr node(new Node(data));
-    return node;
-  }
-
-  // Getters and setters.
-  void Node::SetParent(Node::Ptr parent) { parent_ = parent; }
-  Node::Ptr Node::GetParent() { return parent_; }
-
-  void Node::AddChild(Node::Ptr child) { children_.push_back(child); }
-  std::vector<Node::Ptr>& Node::GetChildren() { return children_; }
-
-  Point::Ptr Node::GetData() { return data_; }
 
 } //\ namespace path
 

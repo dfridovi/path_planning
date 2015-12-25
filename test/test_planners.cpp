@@ -36,6 +36,8 @@
 
 #include <geometry/trajectory.h>
 #include <geometry/point_2d.h>
+#include <planning/rrt_planner.h>
+#include <robot/robot_2d_circular.h>
 #include <math/random_generator.h>
 #include <scene/scene_2d_continuous.h>
 #include <scene/obstacle_2d_gaussian.h>
@@ -49,75 +51,69 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-DEFINE_bool(visualize_scenes, false, "Visualize scene?");
-
-using Eigen::MatrixXf;
+DEFINE_bool(visualize_planner, true, "Visualize path?");
 
 namespace path {
 
   // Test that we can construct and destroy a scene.
-  TEST(SceneModel, TestScene2DContinuous) {
+  TEST(Planner, TestRRTPlanner) {
     math::RandomGenerator rng(0);
 
     // Create a bunch of obstacles.
     std::vector<Obstacle::Ptr> obstacles;
-    for (size_t ii = 0; ii < 10; ii++) {
+    for (size_t ii = 0; ii < 50; ii++) {
       double x = rng.Double();
       double y = rng.Double();
       double sigma_xx = 0.005 * rng.Double();
       double sigma_yy = 0.005 * rng.Double();
       double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
+      double radius = rng.DoubleUniform(0.01, 0.02);
 
       Obstacle::Ptr obstacle =
-        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.01);
+        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, radius);
       obstacles.push_back(obstacle);
     }
 
     // Create a 2D continous scene.
     Scene2DContinuous scene(0.0, 1.0, 0.0, 1.0, obstacles);
 
-    // If visualize flag is set, query a grid and show the cost map.
-    if (FLAGS_visualize_scenes) {
-      scene.Visualize("Cost map");
-    }
-  }
+    // Create a robot.
+    Robot2DCircular robot(scene, 0.01);
 
-  // Test that we can create a Trajectory in the Scene.
-  TEST(SceneModel, TestScene2DContinuousTrajectory) {
-    math::RandomGenerator rng(0);
-
-    // Create a bunch of obstacles.
-    std::vector<Obstacle::Ptr> obstacles;
-    for (size_t ii = 0; ii < 10; ii++) {
+    // Choose origin/goal.
+    Point::Ptr origin, goal;
+    while (!origin) {
       double x = rng.Double();
       double y = rng.Double();
-      double sigma_xx = 0.005 * rng.Double();
-      double sigma_yy = 0.005 * rng.Double();
-      double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
-
-      Obstacle::Ptr obstacle =
-        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.01);
-      obstacles.push_back(obstacle);
-    }
-
-    // Create a 2D continous scene.
-    Scene2DContinuous scene(0.0, 1.0, 0.0, 1.0, obstacles);
-
-    // Create a Trajectory.
-    Trajectory::Ptr path = Trajectory::Create();
-    for (size_t ii = 0; ii < 20; ii++) {
-      double x = 0.5 + 0.25 * std::cos(2.0 * M_PI * static_cast<double>(ii) / 20.0) +
-        rng.DoubleUniform(-0.05, 0.05);
-      double y = 0.5 + 0.25 * std::sin(2.0 * M_PI * static_cast<double>(ii) / 20.0) +
-        rng.DoubleUniform(-0.05, 0.05);
-
       Point::Ptr point = Point2D::Create(x, y);
-      path->AddPoint(point);
+
+      if (robot.IsFeasible(point))
+        origin = point;
+    }
+    while (!goal) {
+      double x = rng.Double();
+      double y = rng.Double();
+      Point::Ptr point = Point2D::Create(x, y);
+
+      if (robot.IsFeasible(point) && origin->DistanceTo(point) > 0.4)
+        goal = point;
     }
 
+    // Visualize the map.
+    if (FLAGS_visualize_planner) {
+      Trajectory::Ptr direct_route = Trajectory::Create();
+      direct_route->AddPoint(origin);
+      direct_route->AddPoint(goal);
+      scene.Visualize("Direct route", direct_route);
+    }
+
+    // Plan a route.
+    RRTPlanner planner(robot, scene, origin, goal);
+    Trajectory::Ptr route = planner.PlanTrajectory();
+
     // If visualize flag is set, query a grid and show the cost map.
-    if (FLAGS_visualize_scenes) {
-      scene.Visualize("Trajectory", path);
+    if (FLAGS_visualize_planner) {
+      scene.Visualize("RRT route", route);
     }
   }
 
