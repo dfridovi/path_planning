@@ -32,89 +32,72 @@
  *
  * Please contact the author(s) of this library if you have any questions.
  * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ *          Erik Nelson            ( eanelson@eecs.berkeley.edu )
  */
 
-#include <geometry/trajectory.h>
+#include <flann/flann_point_kdtree.h>
+#include <geometry/point.h>
 #include <geometry/point_2d.h>
-#include <planning/rrt_planner.h>
-#include <robot/robot_2d_circular.h>
 #include <math/random_generator.h>
-#include <scene/scene_2d_continuous.h>
-#include <scene/obstacle_2d_gaussian.h>
-#include <image/image.h>
 
-#include <vector>
-#include <cmath>
-#include <gtest/gtest.h>
-#include <glog/logging.h>
+#include <limits>
+#include <memory>
 #include <gflags/gflags.h>
-#include <iostream>
-#include <Eigen/Dense>
-
-DEFINE_bool(visualize_planner, true, "Visualize path?");
+#include <gtest/gtest.h>
 
 namespace path {
 
-  // Test that we can construct and destroy a scene.
-  TEST(Planner, TestRRTPlanner) {
-    math::RandomGenerator rng(math::RandomGenerator::Seed());
+  TEST(FlannPointKDTree, TestFlannPointKDTree) {
+    math::RandomGenerator rng(0);
 
-    // Create a bunch of obstacles.
-    std::vector<Obstacle::Ptr> obstacles;
-    for (size_t ii = 0; ii < 10; ii++) {
-      double x = rng.Double();
-      double y = rng.Double();
-      double sigma_xx = 0.005 * rng.Double();
-      double sigma_yy = 0.005 * rng.Double();
-      double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
-      double radius = rng.DoubleUniform(0.05, 0.2);
+    // Make a FLANN kd-tree.
+    FlannPointKDTree point_kdtree;
 
-      Obstacle::Ptr obstacle =
-        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, radius);
-      obstacles.push_back(obstacle);
-    }
-
-    // Create a 2D continous scene.
-    Scene2DContinuous scene(0.0, 1.0, 0.0, 1.0, obstacles);
-
-    // Create a robot.
-    Robot2DCircular robot(scene, 0.005);
-
-    // Choose origin/goal.
-    Point::Ptr origin, goal;
-    while (!origin) {
+    // Make a bunch of points and incrementally insert them into the kd tree.
+    std::vector<Point::Ptr> points;
+    for (int ii = 0; ii < 100; ++ii) {
       double x = rng.Double();
       double y = rng.Double();
       Point::Ptr point = Point2D::Create(x, y);
 
-      if (robot.IsFeasible(point))
-        origin = point;
+      points.push_back(point);
+      point_kdtree.AddPoint(point);
+      EXPECT_EQ(point_kdtree.Size(), points.size());
     }
-    while (!goal) {
+
+    // Add a batch of points at once.
+    std::vector<Point::Ptr> points2;
+    for (int ii = 0; ii < 100; ++ii) {
       double x = rng.Double();
       double y = rng.Double();
       Point::Ptr point = Point2D::Create(x, y);
+      points2.push_back(point);
+    }
+    point_kdtree.AddPoints(points2);
+    EXPECT_EQ(point_kdtree.Size(), points.size() + points2.size());
 
-      if (robot.IsFeasible(point) && origin->DistanceTo(point) > 0.4)
-        goal = point;
+    // Query the kd tree for nearest neighbor.
+    Point::Ptr query = Point2D::Create(rng.Double(), rng.Double());
+    Point::Ptr nearest;
+    double nn_distance = -1.0;
+    EXPECT_TRUE(point_kdtree.NearestNeighbor(query, nearest, nn_distance));
+    EXPECT_NE(nearest, nullptr);
+
+    // Manually compute distance between all points and the query.
+    points.insert(points.end(), points2.begin(), points2.end());
+
+    double min_distance = std::numeric_limits<double>::max();
+    size_t min_distance_index = 0;
+    for (size_t ii = 0; ii < points.size(); ++ii) {
+      double distance = points[ii]->DistanceTo(query);
+      if (distance < min_distance) {
+        min_distance = distance;
+        min_distance_index = ii;
+      }
     }
 
-    // Visualize the map.
-    if (FLAGS_visualize_planner) {
-      Trajectory::Ptr direct_route = Trajectory::Create();
-      direct_route->AddPoint(origin);
-      direct_route->AddPoint(goal);
-      scene.Visualize("Direct route", direct_route);
-    }
-
-    // Plan a route.
-    RRTPlanner planner(robot, scene, origin, goal, 0.01);
-    Trajectory::Ptr route = planner.PlanTrajectory();
-
-    // If visualize flag is set, query a grid and show the cost map.
-    if (FLAGS_visualize_planner) {
-      scene.Visualize("RRT route", route);
-    }
+    EXPECT_NEAR(points[min_distance_index]->DistanceTo(nearest), 0, 1e-8);
+    EXPECT_NEAR(min_distance, nn_distance, 1e-8);
   }
 
-} //\ namespace path
+}  //\namespace bsfm

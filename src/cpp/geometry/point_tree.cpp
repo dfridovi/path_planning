@@ -71,8 +71,10 @@ namespace path {
     node->SetParent(parent);
     parent->AddChild(node);
 
-    // Update the registry.
+    // Update the registry and add to the kdtree.
     registry_.emplace(point, node);
+    kd_tree_.AddPoint(point);
+
     return true;
   }
 
@@ -95,8 +97,10 @@ namespace path {
     node->SetParent(parent_node);
     parent_node->AddChild(node);
 
-    // Update the registry.
+    // Update the registry and add to the kdtree.
     registry_.emplace(point, node);
+    kd_tree_.AddPoint(point);
+
     return true;
   }
 
@@ -107,7 +111,7 @@ namespace path {
 
   // Tree size.
   int PointTree::Size() const {
-    return static_cast<int>(registry_.size());
+    return static_cast<int>(kd_tree_.Size());
   }
 
   // Get nearest point in the tree.

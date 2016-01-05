@@ -58,6 +58,9 @@ namespace path {
     FlannPointKDTree();
     ~FlannPointKDTree();
 
+    // Number of points in the tree.
+    int Size() const;
+
     // Add points to the index.
     void AddPoint(Point::Ptr point);
     void AddPoints(std::vector<Point::Ptr>& points);
@@ -70,7 +73,7 @@ namespace path {
                          double& nn_distance);
 
   private:
-    std::shared_ptr< flann::Index<flann::L2<double> > > index_;
+    std::shared_ptr< flann::Index< flann::L2<double> > > index_;
     std::vector<Point::Ptr> registry_; // to retrieve original points
     Point::PointType point_type_;
 

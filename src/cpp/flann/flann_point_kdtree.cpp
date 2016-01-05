@@ -46,6 +46,7 @@
 #include "flann_point_kdtree.h"
 #include <glog/logging.h>
 #include <iostream>
+#include <cmath>
 
 using Eigen::VectorXd;
 
@@ -62,6 +63,11 @@ namespace path {
         delete[] point;
       }
     }
+  }
+
+  // Number of points in the tree.
+  int FlannPointKDTree::Size() const {
+    return index_->size();
   }
 
   // Add points to the index.
@@ -150,7 +156,7 @@ namespace path {
     // If we found a nearest neighbor, assign output.
     if (num_neighbors_found > 0) {
       nearest = registry_[ query_match_indices[0][0] ];
-      nn_distance = query_distances[0][0];
+      nn_distance = std::sqrt(query_distances[0][0]);
       return true;
     }
 
