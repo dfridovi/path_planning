@@ -80,4 +80,24 @@ namespace path {
     return true;
   }
 
+  // Queries the kd tree for all neighbors of 'query' within the specified radius.
+  // Returns whether or not the search exited successfully.
+  bool FlannObstacleKDTree::RadiusSearch(Point::Ptr query,
+                                         std::vector<Obstacle::Ptr>& neighbors,
+                                         double radius) {
+    CHECK_NOTNULL(query.get());
+
+    // Query kd_tree_.
+    std::vector<Point::Ptr> nearest_points;
+    if (!kd_tree_.RadiusSearch(query, nearest_points, radius))
+      return false;
+
+    // Map from point back to obstacle.
+    neighbors.clear();
+    for (size_t ii = 0; ii < nearest_points.size(); ii++)
+      neighbors.push_back(registry_.at(nearest_points[ii]));
+
+    return true;
+  }
+
 }  //\namespace path

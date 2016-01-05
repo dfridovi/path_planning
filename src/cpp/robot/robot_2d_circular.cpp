@@ -50,7 +50,7 @@ namespace path {
     // Find nearest obstacle.
     Obstacle::Ptr nearest;
     double nn_distance = -1.0;
-    if (!kd_tree_.NearestNeighbor(location, nearest, nn_distance))
+    if (!obstacle_tree_.NearestNeighbor(location, nearest, nn_distance))
       return false;
 
     // Check that it is outside the bounding sphere.
@@ -61,7 +61,10 @@ namespace path {
   bool Robot2DCircular::LineOfSight(Point::Ptr point1, Point::Ptr point2) const {
     LineSegment line(point1, point2);
 
-    // Check if line segment intersects any obstacle.
+    // Check if line segment intersects any obstacle within the appropriate radius.
+    Point::Ptr midpoint = line.MidPoint();
+    double radius = radius_ + scene_.GetLargestObstacleRadius() + 0.5 * line.GetLength();
+
     for (const auto& obstacle : scene_.GetObstacles()) {
       if (line.DistanceTo(obstacle->GetLocation()) < obstacle->GetRadius() + radius_)
         return false;

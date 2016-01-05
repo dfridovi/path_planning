@@ -163,4 +163,48 @@ namespace path {
     return false;
   }
 
-}  //\namespace bsfm
+  // Queries the kd tree for all neighbors of 'query' within the specified radius.
+  // Returns whether or not the search exited successfully.
+  bool FlannPointKDTree::RadiusSearch(Point::Ptr query,
+                                      std::vector<Point::Ptr>& neighbors,
+                                      double radius) {
+    if (index_ == nullptr) {
+      VLOG(1) << "Index has not been built. Points must be added before "
+        "querying the kd tree";
+      return false;
+    }
+
+    CHECK_NOTNULL(query.get());
+
+    // Check point type.
+    if (!query->IsType(point_type_)) {
+      VLOG(1) << "Tried to query point of the wrong type. Did not insert.";
+      return false;
+    }
+
+    // Extract vector.
+    VectorXd coordinates = query->GetVector();
+
+    // Convert the input point to the FLANN format. We can use Eigen's memory
+    // here, since we will have our answer before leaving function scope.
+    flann::Matrix<double> flann_query(coordinates.data(), 1, index_->veclen());
+
+    // Search the kd tree for the nearest neighbor to the query.
+    std::vector< std::vector<int> > query_match_indices;
+    std::vector< std::vector<double> > query_distances;
+
+    int num_neighbors_found =
+      index_->radiusSearch(flann_query, query_match_indices,
+                           query_distances, static_cast<float>(radius),
+                           flann::SearchParams(flann::FLANN_CHECKS_UNLIMITED) /* no approx */);
+
+    // If we found a nearest neighbor, assign output.
+    neighbors.clear();
+    for (size_t ii = 0; ii < num_neighbors_found; ii++)
+      neighbors.push_back(registry_[ query_match_indices[0][ii] ]);
+
+    return true;
+  }
+
+
+}  //\namespace path

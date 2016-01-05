@@ -51,7 +51,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-DEFINE_bool(visualize_planner, true, "Visualize path?");
+DEFINE_bool(visualize_planner, false, "Visualize path?");
 
 namespace path {
 

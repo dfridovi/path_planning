@@ -69,6 +69,11 @@ namespace path {
     return point1_->DistanceTo(point2_);
   }
 
+  // Midpoint.
+  Point::Ptr LineSegment::MidPoint() const {
+    return point1_->StepToward(point2_, 0.5 * GetLength());
+  }
+
   // Distance between a point and this line segment.
   double LineSegment::DistanceTo(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());

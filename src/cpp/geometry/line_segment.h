@@ -60,6 +60,9 @@ namespace path {
     // Segment length.
     double GetLength() const;
 
+    // Midpoint.
+    Point::Ptr MidPoint() const;
+
     // Distance between a point and this line segment.
     double DistanceTo(Point::Ptr point) const;
 

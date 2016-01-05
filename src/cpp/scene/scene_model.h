@@ -62,6 +62,7 @@ namespace path {
 
     // Get obstacles.
     virtual inline std::vector<Obstacle::Ptr>& GetObstacles();
+    virtual inline double GetLargestObstacleRadius() const;
 
     // Define these methods in a derived class.
     virtual bool IsFeasible(Point::Ptr point) const = 0;
@@ -71,6 +72,7 @@ namespace path {
   protected:
     std::vector<Obstacle::Ptr> obstacles_;
     math::RandomGenerator rng_;
+    double largest_obstacle_radius_;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(SceneModel);
@@ -80,10 +82,20 @@ namespace path {
 
   // Default constructor.
   SceneModel::SceneModel(std::vector<Obstacle::Ptr>& obstacles)
-    : obstacles_(obstacles) {}
+    : obstacles_(obstacles) {
 
-  // Getter.
+    largest_obstacle_radius_ = 0.0;
+    for (const auto& obstacle : obstacles) {
+      CHECK_NOTNULL(obstacle.get());
+
+      if (obstacle->GetRadius() > largest_obstacle_radius_)
+        largest_obstacle_radius_ = obstacle->GetRadius();
+    }
+  }
+
+  // Getters.
   std::vector<Obstacle::Ptr>& SceneModel::GetObstacles() { return obstacles_; }
+  double SceneModel::GetLargestObstacleRadius() const { return largest_obstacle_radius_; }
 
 } // \namespace path
 

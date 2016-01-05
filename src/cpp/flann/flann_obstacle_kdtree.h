@@ -66,10 +66,14 @@ namespace path {
 
     // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
     // not a nearest neighbor was found, and if it was found, the nearest neighbor
-    // and distance to the nearest neighbor. Note that index is based on the 
-    // order in which obstacles were added with AddObstacle() and AddObstacles().
+    // and distance to the nearest neighbor.
     bool NearestNeighbor(Point::Ptr query, Obstacle::Ptr& nearest,
                          double& nn_distance);
+
+    // Queries the kd tree for all neighbors of 'query' within the specified radius.
+    // Returns whether or not the search exited successfully.
+    bool RadiusSearch(Point::Ptr query, std::vector<Obstacle::Ptr>& neighbors,
+                      double radius);
 
   private:
     FlannPointKDTree kd_tree_;
