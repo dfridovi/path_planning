@@ -123,13 +123,14 @@ class Image {
   void ConvertToGrayscale();
   void ConvertToRGB();
 
-  // Add a colored circle at the specified location.
+  // Add a colored circle at the specified location. 'heat' is on a red-blue colormap.
   void Circle(unsigned int u, unsigned int v, unsigned int radius,
-              unsigned int line_thickness);
+              unsigned int line_thickness, double heat = 0.5);
 
-  // Add a colored circle at the specified location.
+  // Add a colored line at the specified location. 'heat' is on a red-blue colormap.
   void Line(unsigned int u1, unsigned int v1,
-            unsigned int u2, unsigned int v2, unsigned int line_thickness);
+            unsigned int u2, unsigned int v2,
+            unsigned int line_thickness, double heat = 0.5);
 
 
   // Open a window to display the image.

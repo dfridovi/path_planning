@@ -93,11 +93,9 @@ namespace path {
   }
 
   // Get a random point in the scene.
-  Point::Ptr Scene2DContinuous::GetRandomPoint() const {
-    math::RandomGenerator rng(math::RandomGenerator::Seed());
-
-    double x = rng.DoubleUniform(xmin_, xmax_);
-    double y = rng.DoubleUniform(ymin_, ymax_);
+  Point::Ptr Scene2DContinuous::GetRandomPoint() {
+    double x = rng_.DoubleUniform(xmin_, xmax_);
+    double y = rng_.DoubleUniform(ymin_, ymax_);
     Point::Ptr point = Point2D::Create(x, y);
     return point;
   }
@@ -167,15 +165,18 @@ namespace path {
 
       // Draw each point, and put line segments between them.
       Point::Ptr last_point;
+      size_t cnt = 0;
       for (const auto& next_point : path->GetPoints()) {
         Point2D* point1 = std::static_pointer_cast<Point2D>(next_point).get();
         double u1, v1;
         u1 = static_cast<double>(ysize) * (1.0 - (point1->GetY() - ymin_) / (ymax_ - ymin_));
         v1 = static_cast<double>(xsize) * (point1->GetX() - xmin_) / (xmax_ - xmin_);
 
+        double heat = static_cast<double>(cnt) / static_cast<double>(path->GetPoints().size() - 1);
         map_image.Circle(static_cast<unsigned int>(v1), static_cast<unsigned int>(u1),
                          4,  // radius
-                         2); // line thickness
+                         2,  // line thickness
+                         heat);
 
         if (last_point) {
           Point2D* point2 = std::static_pointer_cast<Point2D>(last_point).get();
@@ -185,10 +186,12 @@ namespace path {
 
           map_image.Line(static_cast<unsigned int>(v2), static_cast<unsigned int>(u2),
                          static_cast<unsigned int>(v1), static_cast<unsigned int>(u1),
-                         2 /* line thickness */);
+                         2, // line thickness
+                         heat);
         }
 
         last_point = next_point;
+        cnt++;
       }
     }
 

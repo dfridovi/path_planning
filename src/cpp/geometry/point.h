@@ -72,15 +72,16 @@ namespace path {
     virtual inline void SetType(const PointType type);
 
     // Check point type.
-    virtual inline PointType GetType();
-    virtual inline bool IsType(PointType type);
-    virtual inline bool IsSameTypeAs(Point::Ptr point);
+    virtual inline PointType GetType() const;
+    virtual inline bool IsType(PointType type) const;
+    virtual inline bool IsSameTypeAs(Point::Ptr point) const;
 
     // Get vector.
     virtual inline VectorXd& GetVector();
 
     // Define these methods in a derived class.
     virtual double DistanceTo(Point::Ptr point) const = 0;
+    virtual Point::Ptr StepToward(Point::Ptr point, double step_size) const = 0;
 
   protected:
     VectorXd coordinates_;
@@ -96,16 +97,16 @@ namespace path {
   Point::Point()
     : type_(Point::PointType::OTHER) {}
 
-  Point::PointType Point::GetType() { return type_; }
+  Point::PointType Point::GetType() const { return type_; }
   void Point::SetType(const Point::PointType type) { type_ = type; }
 
-  bool Point::IsType(Point::PointType type) {
+  bool Point::IsType(Point::PointType type) const {
     if (type_ == type)
       return true;
     return false;
   }
 
-  bool Point::IsSameTypeAs(Point::Ptr point) {
+  bool Point::IsSameTypeAs(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
 
     if (type_ == point->type_)
@@ -116,7 +117,6 @@ namespace path {
   VectorXd& Point::GetVector() {
     return coordinates_;
   }
-
 
 } //\ namespace path
 

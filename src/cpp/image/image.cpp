@@ -201,20 +201,30 @@ namespace path {
 
   // Add a colored circle at the specified location.
   void Image::Circle(unsigned int u, unsigned int v, unsigned int radius,
-                     unsigned int line_thickness) {
+                     unsigned int line_thickness, double heat) {
+    if (heat > 1.0 || heat < 0.0) {
+      VLOG(1) << "Heat value is out of bounds.";
+      return;
+    }
+
     cv::Point center;
     center.x = u;
     center.y = v;
 
-    // Make a green circle.
-    cv::Scalar color(0.0, 1.0, 0.0);
+    // Make a circle.
+    cv::Scalar color(heat, 0.0, 1.0 - heat);
     cv::circle(*(image_.get()), center, radius, color, line_thickness);
   }
 
   // Add a colored circle at the specified location.
   void Image::Line(unsigned int u1, unsigned int v1,
                    unsigned int u2, unsigned int v2,
-                   unsigned int line_thickness) {
+                   unsigned int line_thickness, double heat) {
+    if (heat > 1.0 || heat < 0.0) {
+      VLOG(1) << "Heat value is out of bounds.";
+      return;
+    }
+
     cv::Point point1, point2;
     point1.x = u1;
     point1.y = v1;
@@ -222,7 +232,7 @@ namespace path {
     point2.y = v2;
 
     // Make a green line.
-    cv::Scalar color(0.2, 0.7, 0.2);
+    cv::Scalar color(heat, 0.0, 1.0 - heat);
     cv::line(*(image_.get()), point1, point2, color, line_thickness);
   }
 

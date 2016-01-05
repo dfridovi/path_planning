@@ -67,7 +67,10 @@ namespace path {
     bool Insert(Point::Ptr point, Point::Ptr parent);
 
     // Does the tree contain this point?
-    bool Contains(Point::Ptr point);
+    bool Contains(Point::Ptr point) const;
+
+    // Tree size.
+    int Size() const;
 
     // Get nearest point in the tree.
     Point::Ptr GetNearest(Point::Ptr point);

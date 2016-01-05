@@ -44,6 +44,10 @@ RandomGenerator::RandomGenerator(unsigned long seed) {
   srand(seed);
 }
 
+RandomGenerator::RandomGenerator() {
+  srand(Seed());
+}
+
 unsigned long RandomGenerator::Seed() {
   // Hash from: http://burtleburtle.net/bob/hash/doobs.html
   // TODO(eanelson): Update this to read a seed from /dev/urandom instead.

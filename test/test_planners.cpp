@@ -57,17 +57,17 @@ namespace path {
 
   // Test that we can construct and destroy a scene.
   TEST(Planner, TestRRTPlanner) {
-    math::RandomGenerator rng(0);
+    math::RandomGenerator rng(math::RandomGenerator::Seed());
 
     // Create a bunch of obstacles.
     std::vector<Obstacle::Ptr> obstacles;
-    for (size_t ii = 0; ii < 50; ii++) {
+    for (size_t ii = 0; ii < 10; ii++) {
       double x = rng.Double();
       double y = rng.Double();
       double sigma_xx = 0.005 * rng.Double();
       double sigma_yy = 0.005 * rng.Double();
       double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
-      double radius = rng.DoubleUniform(0.01, 0.02);
+      double radius = rng.DoubleUniform(0.05, 0.2);
 
       Obstacle::Ptr obstacle =
         Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, radius);
@@ -78,7 +78,7 @@ namespace path {
     Scene2DContinuous scene(0.0, 1.0, 0.0, 1.0, obstacles);
 
     // Create a robot.
-    Robot2DCircular robot(scene, 0.01);
+    Robot2DCircular robot(scene, 0.005);
 
     // Choose origin/goal.
     Point::Ptr origin, goal;

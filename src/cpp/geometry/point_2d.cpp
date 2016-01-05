@@ -86,4 +86,29 @@ namespace path {
     return std::sqrt(dx*dx + dy*dy);
   }
 
+  Point::Ptr Point2D::StepToward(Point::Ptr point, double step_size) const {
+    // Ensure that types match.
+    if (!IsSameTypeAs(point)) {
+      VLOG(1) << "Point types do not match. Returning a null pointer.";
+      Point::Ptr dummy(nullptr);
+      return dummy;
+    }
+
+    // Take a step.
+    double length = DistanceTo(point);
+    if (length <= step_size) return point;
+
+    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
+    double dx = point2d->coordinates_(0) - coordinates_(0);
+    double dy = point2d->coordinates_(1) - coordinates_(1);
+
+    double step_x = coordinates_(0) + step_size * (dx / length);
+    double step_y = coordinates_(1) + step_size * (dy / length); 
+
+    Point::Ptr step = Create(step_x, step_y);
+    return step;
+  }
+
+
+
 } //\ namespace path

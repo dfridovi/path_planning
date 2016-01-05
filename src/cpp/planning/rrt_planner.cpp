@@ -60,37 +60,46 @@ namespace path {
     // Initialize the tree.
     tree_.Insert(origin_);
 
-    // NOTE: this is waaaay oversimplified.
-    while (!tree_.Contains(goal_)) {
+    // Algorithm:
+    // 1. Choose a random point.
+    // 2. Take a step toward that point if possible.
+    Point::Ptr last_point;
+    while (!tree_.Contains(goal_) && tree_.Size() < 10000) {
+      std::cout << "Tree size: " << tree_.Size() << std::endl;
 
       // Pick a random point in the scene.
-      std::cout << "Picking a random point..." << std::endl;
       Point::Ptr random_point = scene_.GetRandomPoint();
+      std::cout << "Random point : " << random_point->GetVector().transpose() << std::endl;
 
-      // Find nearest point in the tree and insert if visible.
+      // Find nearest point in the tree.
       Point::Ptr nearest = tree_.GetNearest(random_point);
-      std::cout << nearest->GetVector() << std::endl;
-      std::cout << "Got nearest neighbor. Checking line of sight." << std::endl;
-      if (robot_.LineOfSight(nearest, random_point)) {
+      std::cout << "Nearest neighbor : " << nearest->GetVector().transpose() << std::endl;
+
+      // Take a step toward the random point.
+      Point::Ptr step = nearest->StepToward(random_point, step_size_);
+      std::cout << "Step : " << step->GetVector().transpose() << std::endl;
+      if (robot_.LineOfSight(nearest, step)) {
         std::cout << "Passed line of sight test. Inserting..." << std::endl;
-        if (!tree_.Insert(random_point)) {
+        if (!tree_.Insert(step)) {
           VLOG(1) << "Could not insert this point. Skipping.";
           std::cout << "Could not insert this point. Skipping." << std::endl;
         }
+        last_point = step;
       }
 
       // Insert the goal if it is visible.
       std::cout << "Checking if goal is visible..." << std::endl;
-      if (robot_.LineOfSight(random_point, goal_)) {
-        if (!tree_.Insert(goal_, random_point))
+      if (robot_.LineOfSight(step, goal_)) {
+        if (!tree_.Insert(goal_, step))
           VLOG(1) << "Could not insert the goal point.";
         std::cout << "Success! Inserted goal." << std::endl;
         std::cout << tree_.Contains(goal_) << std::endl;
+        last_point = goal_;
       }
     }
 
     // Return the trajectory.
-    return tree_.GetTrajectory(goal_);
+    return tree_.GetTrajectory(last_point);
   }
 
 } //\ namespace path

@@ -45,6 +45,7 @@
 
 #include "flann_point_kdtree.h"
 #include <glog/logging.h>
+#include <iostream>
 
 using Eigen::VectorXd;
 
@@ -81,7 +82,7 @@ namespace path {
     registry_.push_back(point);
 
     // Extract vector.
-    VectorXd& coordinates = point->GetVector();
+    VectorXd coordinates = point->GetVector();
 
     // Copy the input point into FLANN's Matrix type.
     const size_t cols = coordinates.size();
@@ -131,7 +132,7 @@ namespace path {
     }
 
     // Extract vector.
-    VectorXd& coordinates = query->GetVector();
+    VectorXd coordinates = query->GetVector();
 
     // Convert the input point to the FLANN format. We can use Eigen's memory
     // here, since we will have our answer before leaving function scope.

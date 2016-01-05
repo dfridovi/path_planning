@@ -101,8 +101,13 @@ namespace path {
   }
 
   // Does the tree contain this point?
-  bool PointTree::Contains(Point::Ptr point) {
+  bool PointTree::Contains(Point::Ptr point) const {
     return registry_.count(point) > 0;
+  }
+
+  // Tree size.
+  int PointTree::Size() const {
+    return static_cast<int>(registry_.size());
   }
 
   // Get nearest point in the tree.

@@ -48,6 +48,7 @@
 #include <geometry/line_segment.h>
 #include "obstacle.h"
 #include <util/disallow_copy_and_assign.h>
+#include <math/random_generator.h>
 
 #include <vector>
 
@@ -65,10 +66,11 @@ namespace path {
     // Define these methods in a derived class.
     virtual bool IsFeasible(Point::Ptr point) const = 0;
     virtual double Cost(Point::Ptr point) const = 0;
-    virtual Point::Ptr GetRandomPoint() const = 0;
+    virtual Point::Ptr GetRandomPoint() = 0;
 
   protected:
     std::vector<Obstacle::Ptr> obstacles_;
+    math::RandomGenerator rng_;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(SceneModel);

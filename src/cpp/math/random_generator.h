@@ -51,8 +51,9 @@ namespace math {
 
 class RandomGenerator {
  public:
-  // Construct with "RandomGenerator(RandomGenerator::Seed())".
-  explicit RandomGenerator(unsigned long seed);
+  // Constructors.
+  RandomGenerator(unsigned long seed);
+  RandomGenerator();
 
   // Creates a damn good seed.
   static unsigned long Seed();

@@ -58,8 +58,9 @@ namespace path {
   class RRTPlanner : public Planner {
   public:
     RRTPlanner(RobotModel& robot, SceneModel& scene,
-               Point::Ptr origin, Point::Ptr goal)
-      : Planner(robot, scene, origin, goal) {}
+               Point::Ptr origin, Point::Ptr goal, double step_size = 0.1)
+      : Planner(robot, scene, origin, goal),
+        step_size_(step_size) {}
     ~RRTPlanner() {}
 
     // The algorithm. See header for references.
@@ -67,6 +68,7 @@ namespace path {
 
   private:
     PointTree tree_;
+    const double step_size_;
   };
 
 } //\ namespace path

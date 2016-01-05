@@ -68,7 +68,7 @@ namespace path {
     double Cost(Point::Ptr point) const;
 
     // Get a random point in the scene.
-    Point::Ptr GetRandomPoint() const;
+    Point::Ptr GetRandomPoint();
 
     // Visualize this scene. Optionally pass in the number of pixels
     // in the x-direction.

@@ -67,6 +67,7 @@ namespace path {
 
     // Compute the distance to another 2D point.
     double DistanceTo(Point::Ptr point) const;
+    Point::Ptr StepToward(Point::Ptr point, double step_size) const;
 
   private:
     // Default constructor.
