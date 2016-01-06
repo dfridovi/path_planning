@@ -51,7 +51,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-DEFINE_bool(visualize_planner, false, "Visualize path?");
+DEFINE_bool(visualize_planner, true, "Visualize path?");
 
 namespace path {
 
@@ -61,13 +61,13 @@ namespace path {
 
     // Create a bunch of obstacles.
     std::vector<Obstacle::Ptr> obstacles;
-    for (size_t ii = 0; ii < 10; ii++) {
+    for (size_t ii = 0; ii < 200; ii++) {
       double x = rng.Double();
       double y = rng.Double();
       double sigma_xx = 0.005 * rng.Double();
       double sigma_yy = 0.005 * rng.Double();
       double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
-      double radius = rng.DoubleUniform(0.05, 0.2);
+      double radius = rng.DoubleUniform(0.01, 0.02);
 
       Obstacle::Ptr obstacle =
         Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, radius);
@@ -108,7 +108,7 @@ namespace path {
     }
 
     // Plan a route.
-    RRTPlanner planner(robot, scene, origin, goal, 0.01);
+    RRTPlanner planner(robot, scene, origin, goal, 0.05);
     Trajectory::Ptr route = planner.PlanTrajectory();
 
     // If visualize flag is set, query a grid and show the cost map.
