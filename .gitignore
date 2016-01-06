@@ -1,7 +1,8 @@
-# Data, build, binary directories
+# Data, build, binary, resources directories
 data
 build
 bin
+resources
 
 # Swap files
 *.swp
