@@ -16,6 +16,11 @@ find_package( Flann REQUIRED )
 include_directories(SYSTEM ${FLANN_INCLUDE_DIRS})
 list(APPEND path_planning_LIBRARIES ${FLANN_LIBRARIES})
 
+# Find PCL.
+find_package( PCL 1.3 REQUIRED COMPONENTS common )
+include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
+list(APPEND path_planning_LIBRARIES ${PCL_LIBRARIES})
+
 # Find OpenCV.
 find_package( OpenCV REQUIRED )
 include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
