@@ -36,54 +36,29 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a 2D continuous scene, templated on the type of obstacle.
+// This class defines a 2D occupancy grid.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_SCENE_2D_CONTINUOUS_H
-#define PATH_PLANNING_SCENE_2D_CONTINUOUS_H
+#ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
+#define PATH_PLANNING_OCCUPANCY_GRID_2D_H
 
-#include "scene_model.h"
-#include "obstacle.h"
-#include <geometry/point.h>
-#include <geometry/trajectory.h>
-#include <image/image.h>
-
-#include <vector>
-#include <string>
+#include "occupancy_grid.h"
 
 namespace path {
 
-  // Derived class to model 2D continuous scenes.
-  class Scene2DContinuous : public SceneModel {
+  // Derive from this class when defining a specific occupancy grid.
+  class OccupancyGrid2D : public OccupancyGrid {
   public:
-    Scene2DContinuous(double xmin, double xmax,
-                      double ymin, double ymax,
-                      std::vector<Obstacle::Ptr>& obstacles);
+    OccupancyGrid() {}
+    virtual ~OccupancyGrid() {}
 
-    // Is this point feasible?
-    bool IsFeasible(Point::Ptr point) const;
-
-    // What is the cost of occupying this point?
-    double Cost(Point::Ptr point) const;
-
-    // Get a random point in the scene.
-    Point::Ptr GetRandomPoint();
-
-    // Visualize this scene. Optionally pass in the number of pixels
-    // in the x-direction.
-    void Visualize(const std::string& title, int xsize = 500) const;
-
-    // Visualize a Trajectory in this scene. Optionally pass in the
-    // number of pixels in the x-direction.
-    void Visualize(const std::string& title, Trajectory::Ptr path,
-                   int xsize = 500) const;
+    // Define these methods in a derived class.
+    virtual int GetCountAt(Point::Ptr point) const = 0;
+    virtual Point::Ptr GetBinCenter(Point::Ptr point) const = 0;
 
   private:
-    double xmin_;
-    double xmax_;
-    double ymin_;
-    double ymax_;
+    
   };
 
 } // \namespace path

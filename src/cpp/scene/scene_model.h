@@ -94,8 +94,13 @@ namespace path {
   }
 
   // Getters.
-  std::vector<Obstacle::Ptr>& SceneModel::GetObstacles() { return obstacles_; }
-  double SceneModel::GetLargestObstacleRadius() const { return largest_obstacle_radius_; }
+  std::vector<Obstacle::Ptr>& SceneModel::GetObstacles() {
+    return obstacles_;
+  }
+
+  double SceneModel::GetLargestObstacleRadius() const {
+    return largest_obstacle_radius_;
+  }
 
 } // \namespace path
 
