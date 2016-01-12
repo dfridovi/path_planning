@@ -57,9 +57,15 @@ namespace path {
   // Derived class to model 2D continuous scenes.
   class Scene2DContinuous : public SceneModel {
   public:
+    Scene2DContinuous();
+    Scene2DContinuous(double xmin, double xmax,
+                      double ymin, double ymax);
     Scene2DContinuous(double xmin, double xmax,
                       double ymin, double ymax,
                       std::vector<Obstacle::Ptr>& obstacles);
+
+    // Setter.
+    void SetBounds(double xmin, double xmax, double ymin, double ymax);
 
     // Is this point feasible?
     bool IsFeasible(Point::Ptr point) const;

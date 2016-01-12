@@ -62,7 +62,7 @@ namespace path {
     typedef std::shared_ptr<const Point> ConstPtr;
 
     // Each Point can only be of a single type.
-    enum PointType {POINT_2D, OTHER};
+    enum PointType {POINT_2D, ORIENTATION_2D, OTHER};
 
     // Derived classes must write their own constructors.
     inline Point();

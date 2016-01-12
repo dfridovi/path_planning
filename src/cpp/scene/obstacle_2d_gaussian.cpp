@@ -100,7 +100,7 @@ namespace path {
   Obstacle2DGaussian::Obstacle2DGaussian(double x, double y,
                                          double sigma_xx, double sigma_yy,
                                          double sigma_xy, double radius)
-    : Obstacle(radius, Point2D::Create(x, y)) {
+    : Obstacle(Point2D::Create(x, y), radius) {
 
     mean_(0) = x;
     mean_(1) = y;

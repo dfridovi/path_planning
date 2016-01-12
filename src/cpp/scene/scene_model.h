@@ -44,9 +44,10 @@
 #ifndef PATH_PLANNING_SCENE_MODEL_H
 #define PATH_PLANNING_SCENE_MODEL_H
 
+#include "obstacle.h"
 #include <geometry/point.h>
 #include <geometry/line_segment.h>
-#include "obstacle.h"
+#include <flann/flann_obstacle_kdtree.h>
 #include <util/disallow_copy_and_assign.h>
 #include <math/random_generator.h>
 
@@ -57,11 +58,16 @@ namespace path {
   // Derive from this class when defining a specific scene model.
   class SceneModel {
   public:
+    inline SceneModel();
     inline SceneModel(std::vector<Obstacle::Ptr>& obstacles);
     virtual ~SceneModel() {}
 
+    // Add an obstacle.
+    virtual inline void AddObstacle(Obstacle::Ptr obstacle);
+
     // Get obstacles.
     virtual inline std::vector<Obstacle::Ptr>& GetObstacles();
+    virtual inline FlannObstacleKDTree& GetObstacleTree();
     virtual inline double GetLargestObstacleRadius() const;
 
     // Define these methods in a derived class.
@@ -71,6 +77,7 @@ namespace path {
 
   protected:
     std::vector<Obstacle::Ptr> obstacles_;
+    FlannObstacleKDTree obstacle_tree_;
     math::RandomGenerator rng_;
     double largest_obstacle_radius_;
 
@@ -80,10 +87,12 @@ namespace path {
 
 // ---------------------------- Implementation ------------------------------ //
 
-  // Default constructor.
+  // Constructors.
+  SceneModel::SceneModel() : largest_obstacle_radius_(0.0) {}
   SceneModel::SceneModel(std::vector<Obstacle::Ptr>& obstacles)
     : obstacles_(obstacles) {
 
+    // Largest obstacle radius.
     largest_obstacle_radius_ = 0.0;
     for (const auto& obstacle : obstacles) {
       CHECK_NOTNULL(obstacle.get());
@@ -91,11 +100,26 @@ namespace path {
       if (obstacle->GetRadius() > largest_obstacle_radius_)
         largest_obstacle_radius_ = obstacle->GetRadius();
     }
+
+    // Obstacle tree.
+    obstacle_tree_.AddObstacles(obstacles);
+  }
+
+  // Add an obstacle.
+  void SceneModel::AddObstacle(Obstacle::Ptr obstacle) {
+    CHECK_NOTNULL(obstacle.get());
+
+    obstacles_.push_back(obstacle);
+    obstacle_tree_.AddObstacle(obstacle);
   }
 
   // Getters.
   std::vector<Obstacle::Ptr>& SceneModel::GetObstacles() {
     return obstacles_;
+  }
+
+  FlannObstacleKDTree& SceneModel::GetObstacleTree() {
+    return obstacle_tree_;
   }
 
   double SceneModel::GetLargestObstacleRadius() const {

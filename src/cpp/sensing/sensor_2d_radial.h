@@ -36,56 +36,32 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a 2D occupancy grid.
+// This class defines the simplest type of sensor model -- a 2D radially
+// symmetric sensor.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
-#define PATH_PLANNING_OCCUPANCY_GRID_2D_H
+#ifndef PATH_PLANNING_SENSOR_MODEL_2D_RADIAL_H
+#define PATH_PLANNING_SENSOR_MODEL_2D_RADIAL_H
 
-#include "occupancy_grid.h"
-#include <scene/scene_2d_continuous.h>
-#include <Eigen/Dense>
-
-using Eigen::MatrixXi;
+#include "sensor_model.h"
+#include <occupancy/occupancy_grid_2d.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific occupancy grid.
-  class OccupancyGrid2D : public OccupancyGrid {
+  // Derive from this class when defining a specific type of sensor model.
+  class Sensor2DRadial : public SensorModel {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    Sensor2DRadial(OccupancyGrid2D& grid, double radius)
+      : grid_(grid), radius_(radius) {}
+    ~Sensor2DRadial() {}
 
-    OccupancyGrid2D(double xmin, double xmax, double ymin, double ymax,
-                    double block_size);
-    ~OccupancyGrid2D() {}
-
-    // Getters.
-    Scene2DContinuous& GetScene() { return scene_; }
-    double GetBlockSize() const { return block_size_; }
-    double GetXMin() const { return xmin_; }
-    double GetXMax() const { return xmax_; }
-    double GetYMin() const { return ymin_; }
-    double GetYMax() const { return ymax_; }
-
-    // Define these methods in a derived class.
-    void Insert(Point::Ptr point);
-    int GetCountAt(Point::Ptr point) const;
-    Point::Ptr GetBinCenter(Point::Ptr point) const;
+    // How many known obstacles are visible to the robot?
+    int GetObstacleCount(Point::Ptr pose) const;
 
   private:
-    // Check if a point is valid.
-    bool IsValidPoint(Point::Ptr point) const;
-
-    MatrixXi grid_;
-    Scene2DContinuous scene_;
-    double block_size_;
-    const double xmin_;
-    const double xmax_;
-    const double ymin_;
-    const double ymax_;
-    int nrows_;
-    int ncols_;
+    OccupancyGrid2D& grid_;
+    const double radius_;
   };
 
 } // \namespace path

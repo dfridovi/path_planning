@@ -36,58 +36,60 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a 2D occupancy grid.
+// This class defines the simplest type of sensor model -- a 2D radially
+// symmetric sensor.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
-#define PATH_PLANNING_OCCUPANCY_GRID_2D_H
+#include "sensor_2d_radial.h"
+#include <geometry/point.h>
+#include <geometry/point_2d.h>
+#include <geometry/orientation_2d.h>
+#include <robot/robot_2d_circular.h>
 
-#include "occupancy_grid.h"
-#include <scene/scene_2d_continuous.h>
-#include <Eigen/Dense>
-
-using Eigen::MatrixXi;
+#include <glog/logging.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific occupancy grid.
-  class OccupancyGrid2D : public OccupancyGrid {
-  public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // How many known obstacles are visible to the robot?
+  int Sensor2DRadial::GetObstacleCount(Point::Ptr pose) const {
+    CHECK_NOTNULL(pose.get());
 
-    OccupancyGrid2D(double xmin, double xmax, double ymin, double ymax,
-                    double block_size);
-    ~OccupancyGrid2D() {}
+    // Check pose type.
+    if (!pose->IsType(Point::PointType::ORIENTATION_2D)) {
+      VLOG(1) << "Point (pose) is not of type ORIENTATION_2D. Returning -1.";
+      return -1;
+    }
 
-    // Getters.
-    Scene2DContinuous& GetScene() { return scene_; }
-    double GetBlockSize() const { return block_size_; }
-    double GetXMin() const { return xmin_; }
-    double GetXMax() const { return xmax_; }
-    double GetYMin() const { return ymin_; }
-    double GetYMax() const { return ymax_; }
+    // Create robot and test point.
+    Robot2DCircular robot(grid_.GetScene(), 0.0 /* radius */);
+    Orientation2D *orientation =
+      std::static_pointer_cast<Orientation2D>(pose).get();
+    Point::Ptr location = orientation->GetPoint();
 
-    // Define these methods in a derived class.
-    void Insert(Point::Ptr point);
-    int GetCountAt(Point::Ptr point) const;
-    Point::Ptr GetBinCenter(Point::Ptr point) const;
+    // Get bounding box.
+    VectorXd location_vector = location->GetVector();
+    double xmin = std::max(location_vector(0) - radius_, grid_.GetXMin());
+    double xmax = std::min(location_vector(0) + radius_, grid_.GetXMax());
+    double ymin = std::max(location_vector(1) - radius_, grid_.GetYMin());
+    double ymax = std::min(location_vector(1) + radius_, grid_.GetYMax());
+    double step = grid_.GetBlockSize();
 
-  private:
-    // Check if a point is valid.
-    bool IsValidPoint(Point::Ptr point) const;
+    // For all visible points, check line of sight.
+    int obstacle_count = 0;
+    for (double x = xmin; x < xmax; x += step) {
+      for (double y = ymin; y < ymax; y += step) {
+        Point::Ptr test = Point2D::Create(x, y);
+        Point::Ptr bin = grid_.GetBinCenter(test);
+        if (location->DistanceTo(bin) > radius_)
+          continue;
 
-    MatrixXi grid_;
-    Scene2DContinuous scene_;
-    double block_size_;
-    const double xmin_;
-    const double xmax_;
-    const double ymin_;
-    const double ymax_;
-    int nrows_;
-    int ncols_;
-  };
+        if (robot.LineOfSight(location, bin))
+          obstacle_count += grid_.GetCountAt(bin);
+      }
+    }
+
+    return obstacle_count;
+  }
 
 } // \namespace path
-
-#endif

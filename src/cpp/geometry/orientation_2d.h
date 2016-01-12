@@ -36,58 +36,40 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a 2D occupancy grid.
+// This class defines a 2D orientation, which is a child class of Point.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
-#define PATH_PLANNING_OCCUPANCY_GRID_2D_H
+#ifndef PATH_PLANNING_ORIENTATION_2D_H
+#define PATH_PLANNING_ORIENTATION_2D_H
 
-#include "occupancy_grid.h"
-#include <scene/scene_2d_continuous.h>
-#include <Eigen/Dense>
-
-using Eigen::MatrixXi;
+#include "point.h"
+#include <glog/logging.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific occupancy grid.
-  class OccupancyGrid2D : public OccupancyGrid {
+  // Derive from this class when defining a new Point type.
+  class Orientation2D : public Point {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    // Factory method.
+    static Point::Ptr Create(double x, double y, double theta);
 
-    OccupancyGrid2D(double xmin, double xmax, double ymin, double ymax,
-                    double block_size);
-    ~OccupancyGrid2D() {}
+    // Compute the distance/angle to a 2D point.
+    double DistanceTo(Point::Ptr point) const;
+    double AngleTo(Point::Ptr point) const;
 
     // Getters.
-    Scene2DContinuous& GetScene() { return scene_; }
-    double GetBlockSize() const { return block_size_; }
-    double GetXMin() const { return xmin_; }
-    double GetXMax() const { return xmax_; }
-    double GetYMin() const { return ymin_; }
-    double GetYMax() const { return ymax_; }
+    Point::Ptr GetPoint() const;
+    double GetTheta() const;
 
-    // Define these methods in a derived class.
-    void Insert(Point::Ptr point);
-    int GetCountAt(Point::Ptr point) const;
-    Point::Ptr GetBinCenter(Point::Ptr point) const;
+    // Step toward the given orientation. Returns a null pointer.
+    Point::Ptr StepToward(Point::Ptr point, double step_size) const;
 
   private:
-    // Check if a point is valid.
-    bool IsValidPoint(Point::Ptr point) const;
-
-    MatrixXi grid_;
-    Scene2DContinuous scene_;
-    double block_size_;
-    const double xmin_;
-    const double xmax_;
-    const double ymin_;
-    const double ymax_;
-    int nrows_;
-    int ncols_;
+    // Default constructor.
+    Orientation2D(double x, double y, double theta);
   };
 
-} // \namespace path
+} //\ namespace path
 
 #endif

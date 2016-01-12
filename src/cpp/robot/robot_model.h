@@ -72,7 +72,6 @@ namespace path {
 
   protected:
     SceneModel& scene_;
-    FlannObstacleKDTree obstacle_tree_;
     double radius_;
 
   private:
@@ -82,13 +81,7 @@ namespace path {
 // ---------------------------- Implementation ------------------------------ //
 
   RobotModel::RobotModel(SceneModel& scene, double radius)
-    : scene_(scene), radius_(radius) {
-
-    // Extract all obstacles and add to kd_tree_.
-    std::vector<Obstacle::Ptr>& obstacles = scene_.GetObstacles();
-    obstacle_tree_.AddObstacles(obstacles);
-  }
-
+    : scene_(scene), radius_(radius) {}
   double RobotModel::GetRadius() const { return radius_; }
 
 } // \namespace path

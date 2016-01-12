@@ -36,56 +36,32 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a 2D occupancy grid.
+// This class is the base class for all sensor models. The general idea is that
+// OccupancyGrid + SensorModel gives a way to generate expected landmark
+// observations, e.g. for plugging into an objective function.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
-#define PATH_PLANNING_OCCUPANCY_GRID_2D_H
+#ifndef PATH_PLANNING_SENSOR_MODEL_H
+#define PATH_PLANNING_SENSOR_MODEL_H
 
-#include "occupancy_grid.h"
-#include <scene/scene_2d_continuous.h>
-#include <Eigen/Dense>
-
-using Eigen::MatrixXi;
+#include <geometry/point.h>
+#include <occupancy/occupancy_grid.h>
+#include <util/disallow_copy_and_assign.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific occupancy grid.
-  class OccupancyGrid2D : public OccupancyGrid {
+  // Derive from this class when defining a specific type of sensor model.
+  class SensorModel {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-    OccupancyGrid2D(double xmin, double xmax, double ymin, double ymax,
-                    double block_size);
-    ~OccupancyGrid2D() {}
-
-    // Getters.
-    Scene2DContinuous& GetScene() { return scene_; }
-    double GetBlockSize() const { return block_size_; }
-    double GetXMin() const { return xmin_; }
-    double GetXMax() const { return xmax_; }
-    double GetYMin() const { return ymin_; }
-    double GetYMax() const { return ymax_; }
+    SensorModel() {}
+    virtual ~SensorModel() {}
 
     // Define these methods in a derived class.
-    void Insert(Point::Ptr point);
-    int GetCountAt(Point::Ptr point) const;
-    Point::Ptr GetBinCenter(Point::Ptr point) const;
+    virtual int GetObstacleCount(Point::Ptr pose) const = 0;
 
   private:
-    // Check if a point is valid.
-    bool IsValidPoint(Point::Ptr point) const;
-
-    MatrixXi grid_;
-    Scene2DContinuous scene_;
-    double block_size_;
-    const double xmin_;
-    const double xmax_;
-    const double ymin_;
-    const double ymax_;
-    int nrows_;
-    int ncols_;
+    DISALLOW_COPY_AND_ASSIGN(SensorModel);
   };
 
 } // \namespace path

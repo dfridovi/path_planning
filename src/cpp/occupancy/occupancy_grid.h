@@ -59,6 +59,7 @@ namespace path {
     virtual ~OccupancyGrid() {}
 
     // Define these methods in a derived class.
+    virtual void Insert(Point::Ptr point) = 0;
     virtual int GetCountAt(Point::Ptr point) const = 0;
     virtual Point::Ptr GetBinCenter(Point::Ptr point) const = 0;
 

@@ -40,7 +40,7 @@
 #include <robot/robot_2d_circular.h>
 #include <math/random_generator.h>
 #include <scene/scene_2d_continuous.h>
-#include <scene/obstacle_2d_gaussian.h>
+#include <scene/obstacle_2d.h>
 #include <image/image.h>
 
 #include <vector>
@@ -51,7 +51,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-DEFINE_bool(visualize_planner, true, "Visualize path?");
+DEFINE_bool(visualize_planner, false, "Visualize path?");
 
 namespace path {
 
@@ -64,13 +64,10 @@ namespace path {
     for (size_t ii = 0; ii < 200; ii++) {
       double x = rng.Double();
       double y = rng.Double();
-      double sigma_xx = 0.005 * rng.Double();
-      double sigma_yy = 0.005 * rng.Double();
-      double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
       double radius = rng.DoubleUniform(0.01, 0.02);
 
       Obstacle::Ptr obstacle =
-        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, radius);
+        Obstacle2D::Create(x, y, radius);
       obstacles.push_back(obstacle);
     }
 

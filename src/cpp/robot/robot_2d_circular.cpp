@@ -50,7 +50,7 @@ namespace path {
     // Find nearest obstacle.
     Obstacle::Ptr nearest;
     double nn_distance = -1.0;
-    if (!obstacle_tree_.NearestNeighbor(location, nearest, nn_distance))
+    if (!scene_.GetObstacleTree().NearestNeighbor(location, nearest, nn_distance))
       return false;
 
     // Check that it is outside the bounding sphere.
@@ -63,7 +63,8 @@ namespace path {
 
     // Check if line segment intersects any obstacle within the appropriate radius.
     Point::Ptr midpoint = line.MidPoint();
-    double radius = radius_ + scene_.GetLargestObstacleRadius() + 0.5 * line.GetLength();
+    double radius = radius_ + scene_.GetLargestObstacleRadius() +
+      0.5 * line.GetLength();
 
     for (const auto& obstacle : scene_.GetObstacles()) {
       if (line.DistanceTo(obstacle->GetLocation()) < obstacle->GetRadius() + radius_)

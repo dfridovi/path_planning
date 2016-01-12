@@ -36,58 +36,66 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a 2D occupancy grid.
+// This class models 2D point obstacles.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
-#define PATH_PLANNING_OCCUPANCY_GRID_2D_H
-
-#include "occupancy_grid.h"
-#include <scene/scene_2d_continuous.h>
-#include <Eigen/Dense>
-
-using Eigen::MatrixXi;
+#include "obstacle_2d.h"
+#include <geometry/point_2d.h>
+#include <glog/logging.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific occupancy grid.
-  class OccupancyGrid2D : public OccupancyGrid {
-  public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // Factory methods.
+  Obstacle::Ptr Obstacle2D::Create(double x, double y, double radius) {
+    Obstacle::Ptr obstacle(new Obstacle2D(x, y, radius));
+    return obstacle;
+  }
 
-    OccupancyGrid2D(double xmin, double xmax, double ymin, double ymax,
-                    double block_size);
-    ~OccupancyGrid2D() {}
+  Obstacle::Ptr Obstacle2D::Create(Point::Ptr point, double radius) {
+    Obstacle::Ptr obstacle(new Obstacle2D(point, radius));
+    return obstacle;
+  }
 
-    // Getters.
-    Scene2DContinuous& GetScene() { return scene_; }
-    double GetBlockSize() const { return block_size_; }
-    double GetXMin() const { return xmin_; }
-    double GetXMax() const { return xmax_; }
-    double GetYMin() const { return ymin_; }
-    double GetYMax() const { return ymax_; }
+  // Is this point feasible?
+  bool Obstacle2D::IsFeasible(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+    if (point->DistanceTo(location_) < radius_)
+      return false;
+    return true;
+  }
 
-    // Define these methods in a derived class.
-    void Insert(Point::Ptr point);
-    int GetCountAt(Point::Ptr point) const;
-    Point::Ptr GetBinCenter(Point::Ptr point) const;
+  // Is this point feasible?
+  bool Obstacle2D::IsFeasible(VectorXd& point) const {
+    if ((point - location_->GetVector()).norm() < radius_)
+      return false;
+    return true;
+  }
 
-  private:
-    // Check if a point is valid.
-    bool IsValidPoint(Point::Ptr point) const;
+  // Cost of occupying this point. Either zero or infinity.
+  double Obstacle2D::Cost(Point::Ptr point) const {
+    if (!IsFeasible(point))
+      return std::numeric_limits<double>::infinity();
+    return 0.0;
+  }
 
-    MatrixXi grid_;
-    Scene2DContinuous scene_;
-    double block_size_;
-    const double xmin_;
-    const double xmax_;
-    const double ymin_;
-    const double ymax_;
-    int nrows_;
-    int ncols_;
-  };
+  // Cost of occupying this point. Either zero or infinity.
+  double Obstacle2D::Cost(VectorXd& point) const {
+    if (!IsFeasible(point))
+      return std::numeric_limits<double>::infinity();
+    return 0.0;
+  }
 
-} // \namespace path
+  // Default constructors. Radius is the minimum distance to the obstacle
+  // below which a point is considered infeasible.
+  Obstacle2D::Obstacle2D(double x, double y, double radius)
+    : Obstacle(Point2D::Create(x, y), radius) {}
 
-#endif
+  Obstacle2D::Obstacle2D(Point::Ptr point, double radius)
+    : Obstacle(point, radius) {
+    // Check point type.
+    if (!point->IsType(Point::PointType::POINT_2D))
+      VLOG(1) << "Caution! Creating Obstacle2D with a point of the wrong type.";
+  }
+
+} //\ namespace path

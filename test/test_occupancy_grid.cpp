@@ -31,63 +31,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// This class defines a 2D occupancy grid.
-//
-///////////////////////////////////////////////////////////////////////////////
+#include <geometry/point_2d.h>
+#include <math/random_generator.h>
+#include <occupancy/occupancy_grid_2d.h>
 
-#ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
-#define PATH_PLANNING_OCCUPANCY_GRID_2D_H
-
-#include "occupancy_grid.h"
-#include <scene/scene_2d_continuous.h>
+#include <vector>
+#include <cmath>
+#include <gtest/gtest.h>
+#include <glog/logging.h>
+#include <gflags/gflags.h>
+#include <iostream>
 #include <Eigen/Dense>
-
-using Eigen::MatrixXi;
 
 namespace path {
 
-  // Derive from this class when defining a specific occupancy grid.
-  class OccupancyGrid2D : public OccupancyGrid {
-  public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  // Test that we can construct and destroy a 2D occupancy grid.
+  TEST(OccupancyGrid, TestOccupancyGrid2D) {
+    math::RandomGenerator rng(0);
 
-    OccupancyGrid2D(double xmin, double xmax, double ymin, double ymax,
-                    double block_size);
-    ~OccupancyGrid2D() {}
+    // Create an empty occupancy grid.
+    OccupancyGrid2D grid(0.0, 1.0, 0.0, 1.0, 0.05);
 
-    // Getters.
-    Scene2DContinuous& GetScene() { return scene_; }
-    double GetBlockSize() const { return block_size_; }
-    double GetXMin() const { return xmin_; }
-    double GetXMax() const { return xmax_; }
-    double GetYMin() const { return ymin_; }
-    double GetYMax() const { return ymax_; }
+    // Create a bunch of points and add to the grid.
+    for (size_t ii = 0; ii < 1000; ii++) {
+      double x = rng.Double();
+      double y = rng.Double();
+      Point::Ptr point = Point2D::Create(x, y);
+      grid.Insert(point);
+    }
+  }
 
-    // Define these methods in a derived class.
-    void Insert(Point::Ptr point);
-    int GetCountAt(Point::Ptr point) const;
-    Point::Ptr GetBinCenter(Point::Ptr point) const;
-
-  private:
-    // Check if a point is valid.
-    bool IsValidPoint(Point::Ptr point) const;
-
-    MatrixXi grid_;
-    Scene2DContinuous scene_;
-    double block_size_;
-    const double xmin_;
-    const double xmax_;
-    const double ymin_;
-    const double ymax_;
-    int nrows_;
-    int ncols_;
-  };
-
-} // \namespace path
-
-#endif
+} //\ namespace path

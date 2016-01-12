@@ -50,8 +50,8 @@ namespace path {
   // Simple 2D circular robot.
   class Robot2DCircular : public RobotModel {
   public:
-    Robot2DCircular(SceneModel& scene, double radius) :
-      RobotModel(scene, radius) {}
+    Robot2DCircular(SceneModel& scene, double radius)
+      : RobotModel(scene, radius) {}
     ~Robot2DCircular() {}
 
     // Test if a particular point is feasible.

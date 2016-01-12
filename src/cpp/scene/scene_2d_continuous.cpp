@@ -55,16 +55,33 @@ using Eigen::MatrixXf;
 
 namespace path {
 
+  // Dummy constructor. MUST call SetBounds after this.
+  Scene2DContinuous::Scene2DContinuous()
+    : SceneModel(),
+      xmin_(0.0), xmax_(0.0),
+      ymin_(0.0), ymax_(0.0) {}
+
+  // Better to use these constructors if possible.
+  Scene2DContinuous::Scene2DContinuous(double xmin, double xmax,
+                                       double ymin, double ymax)
+    : SceneModel(),
+      xmin_(xmin), xmax_(xmax),
+      ymin_(ymin), ymax_(ymax) {}
+
   Scene2DContinuous::Scene2DContinuous(double xmin, double xmax,
                                        double ymin, double ymax,
                                        std::vector<Obstacle::Ptr>& obstacles)
     : SceneModel(obstacles),
       xmin_(xmin), xmax_(xmax),
-      ymin_(ymin), ymax_(ymax) {
+      ymin_(ymin), ymax_(ymax) {}
 
-    // Check that all obstacle pointers are not null.
-    for (const auto& obstacle : obstacles_)
-      CHECK_NOTNULL(obstacle.get());
+  // Setter.
+  void Scene2DContinuous::SetBounds(double xmin, double xmax,
+                                    double ymin, double ymax) {
+    xmin_ = xmin;
+    xmax_ = xmax;
+    ymin_ = ymin;
+    ymax_ = ymax;
   }
 
   // Is this point feasible?

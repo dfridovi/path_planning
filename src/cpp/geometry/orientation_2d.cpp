@@ -36,61 +36,81 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class is the basis for all Obstacle objects. For example, one type
-// of obstacle we care about is point obstacles with some covariance.
+// This class defines a 2D orientation, which is a child class of Point.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_OBSTACLE_H
-#define PATH_PLANNING_OBSTACLE_H
-
-#include <geometry/point.h>
-#include <geometry/line_segment.h>
-#include <util/disallow_copy_and_assign.h>
-#include <memory>
-#include <Eigen/Dense>
+#include "orientation_2d.h"
+#include "point_2d.h"
 
 using Eigen::VectorXd;
 
 namespace path {
 
-  // Derive from this class when defining a new Obstacle type.
-  class Obstacle {
-  public:
-    typedef std::shared_ptr<Obstacle> Ptr;
-    typedef std::shared_ptr<const Obstacle> ConstPtr;
-
-    inline Obstacle(Point::Ptr location, double radius);
-    virtual ~Obstacle() {}
-
-    // Get radius.
-    virtual inline double GetRadius() const;
-    virtual inline Point::Ptr GetLocation() const;
-
-    // Define these methods in a derived class.
-    virtual bool IsFeasible(Point::Ptr point) const = 0;
-    virtual bool IsFeasible(VectorXd& point) const = 0;
-    virtual double Cost(Point::Ptr point) const = 0;
-    virtual double Cost(VectorXd& point) const = 0;
-
-  protected:
-    Point::Ptr location_;
-    double radius_;
-
-  private:
-    DISALLOW_COPY_AND_ASSIGN(Obstacle);
-  };
-
-// ---------------------------- Implementation ------------------------------ //
-
-  // Default base constructor.
-  Obstacle::Obstacle(Point::Ptr location, double radius)
-    : radius_(radius), location_(location) {}
+  // Factory method.
+  Point::Ptr Orientation2D::Create(double x, double y, double theta) {
+    Point::Ptr orientation(new Orientation2D(x, y, theta));
+    return orientation;
+  }
 
   // Getters.
-  double Obstacle::GetRadius() const { return radius_; }
-  Point::Ptr Obstacle::GetLocation() const { return location_; }
+  Point::Ptr Orientation2D::GetPoint() const {
+    Point::Ptr point = Point2D::Create(coordinates_(0), coordinates_(1));
+    return point;
+  }
+
+  double Orientation2D::GetTheta() const {
+    return coordinates_(2);
+  }
+
+  // Compute the distance to a 2D point.
+  double Orientation2D::DistanceTo(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+
+    // Type check.
+    if (!point->IsType(Point::PointType::POINT_2D)) {
+      VLOG(1) << "Point types do not match. Returning a distance of -1.0.";
+      return -1.0;
+    }
+
+    VectorXd position = point->GetVector();
+    double dx = coordinates_(0) - position(0);
+    double dy = coordinates_(1) - position(1);
+
+    return std::sqrt(dx*dx + dy*dy);
+  }
+
+  // Compute the relative angle to a 2D point.
+  double Orientation2D::AngleTo(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+
+    // Type check.
+    if (!point->IsType(Point::PointType::POINT_2D)) {
+      VLOG(1) << "Point types do not match. Returning an angle of 0.0.";
+      return 0.0;
+    }
+
+    VectorXd position = point->GetVector();
+    double dx = coordinates_(0) - position(0);
+    double dy = coordinates_(1) - position(1);
+
+    return coordinates_(2) - std::atan2(dy, dx);
+  }
+
+  // Step toward the given orientation. Returns a null pointer.
+  Point::Ptr Orientation2D::StepToward(Point::Ptr point,
+                                       double step_size) const {
+    return Point::Ptr(nullptr);
+  }
+
+  // Default constructor.
+  Orientation2D::Orientation2D(double x, double y, double theta) {
+    coordinates_ = VectorXd::Zero(3);
+    coordinates_(0) = x;
+    coordinates_(1) = y;
+    coordinates_(2) = theta;
+
+    SetType(Point::PointType::ORIENTATION_2D);
+  }
 
 } //\ namespace path
-
-#endif

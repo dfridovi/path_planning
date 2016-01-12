@@ -36,58 +36,38 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a 2D occupancy grid.
+// This class models 2D point obstacles.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
-#define PATH_PLANNING_OCCUPANCY_GRID_2D_H
+#ifndef PATH_PLANNING_OBSTACLE_2D_H
+#define PATH_PLANNING_OBSTACLE_2D_H
 
-#include "occupancy_grid.h"
-#include <scene/scene_2d_continuous.h>
+#include "obstacle.h"
 #include <Eigen/Dense>
-
-using Eigen::MatrixXi;
 
 namespace path {
 
-  // Derive from this class when defining a specific occupancy grid.
-  class OccupancyGrid2D : public OccupancyGrid {
+  // 2D obstacle with circular symmetry.
+  class Obstacle2D : public Obstacle {
   public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-    OccupancyGrid2D(double xmin, double xmax, double ymin, double ymax,
-                    double block_size);
-    ~OccupancyGrid2D() {}
-
-    // Getters.
-    Scene2DContinuous& GetScene() { return scene_; }
-    double GetBlockSize() const { return block_size_; }
-    double GetXMin() const { return xmin_; }
-    double GetXMax() const { return xmax_; }
-    double GetYMin() const { return ymin_; }
-    double GetYMax() const { return ymax_; }
+    // Factory methods.
+    static Obstacle::Ptr Create(double x, double y, double radius);
+    static Obstacle::Ptr Create(Point::Ptr point, double radius);
 
     // Define these methods in a derived class.
-    void Insert(Point::Ptr point);
-    int GetCountAt(Point::Ptr point) const;
-    Point::Ptr GetBinCenter(Point::Ptr point) const;
+    bool IsFeasible(Point::Ptr point) const;
+    bool IsFeasible(VectorXd& point) const;
+    double Cost(Point::Ptr point) const;
+    double Cost(VectorXd& point) const;
 
   private:
-    // Check if a point is valid.
-    bool IsValidPoint(Point::Ptr point) const;
-
-    MatrixXi grid_;
-    Scene2DContinuous scene_;
-    double block_size_;
-    const double xmin_;
-    const double xmax_;
-    const double ymin_;
-    const double ymax_;
-    int nrows_;
-    int ncols_;
+    // Default constructors. Radius is the minimum distance to the obstacle
+    // below which a point is considered infeasible.
+    Obstacle2D(double x, double y, double radius);
+    Obstacle2D(Point::Ptr point, double radius);
   };
 
-} // \namespace path
+} //\ namespace path
 
 #endif
