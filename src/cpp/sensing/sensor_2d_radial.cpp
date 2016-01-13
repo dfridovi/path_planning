@@ -77,8 +77,8 @@ namespace path {
 
     // For all visible points, check line of sight.
     int obstacle_count = 0;
-    for (double x = xmin; x < xmax; x += step) {
-      for (double y = ymin; y < ymax; y += step) {
+    for (double x = xmin - 1e-16; x < xmax + step + 1e-16; x += step) {
+      for (double y = ymin - 1e-16; y < ymax + step + 1e-16; y += step) {
         Point::Ptr test = Point2D::Create(x, y);
         Point::Ptr bin = grid_.GetBinCenter(test);
 
@@ -86,12 +86,12 @@ namespace path {
         if (location->DistanceTo(bin) > radius_)
           continue;
 
-        //        std::cout << "hi" << std::endl;
-
         // Check line of sight.
-        if (robot.LineOfSight(location, bin)) {
+        Point::Ptr close = bin->StepToward(location, 0.5 * step + 1e-16);
+        if (robot.LineOfSight(location, close)) {
           obstacle_count += grid_.GetCountAt(bin);
-          std::cout << obstacle_count << std::endl;
+          //          if (grid_.GetCountAt(bin) > 0)
+          //            std::cout << bin->GetVector().transpose() << std::endl;
         }
       }
     }

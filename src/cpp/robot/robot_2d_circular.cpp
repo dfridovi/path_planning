@@ -63,11 +63,20 @@ namespace path {
 
     // Check if line segment intersects any obstacle within the appropriate radius.
     Point::Ptr midpoint = line.MidPoint();
-    double radius = radius_ + scene_.GetLargestObstacleRadius() +
-      0.5 * line.GetLength();
+    double max_distance =
+      radius_ + scene_.GetLargestObstacleRadius() + 0.5 * line.GetLength();
 
-    for (const auto& obstacle : scene_.GetObstacles()) {
-      if (line.DistanceTo(obstacle->GetLocation()) < obstacle->GetRadius() + radius_)
+    FlannObstacleKDTree& obstacle_tree = scene_.GetObstacleTree();
+    std::vector<Obstacle::Ptr> obstacles;
+    if (!obstacle_tree.RadiusSearch(midpoint, obstacles, max_distance)) {
+      VLOG(1) << "Radius search failed during LineOfSight() test. "
+              << "Returning false.";
+      return false;
+    }
+
+    for (const auto& obstacle : obstacles) {
+      if (line.DistanceTo(obstacle->GetLocation()) <
+          obstacle->GetRadius() + radius_)
         return false;
     }
 

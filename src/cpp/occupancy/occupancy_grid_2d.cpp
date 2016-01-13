@@ -69,6 +69,9 @@ namespace path {
 
     // Create the grid.
     grid_ = MatrixXi::Zero(nrows_, ncols_);
+    for (size_t ii = 0; ii < nrows_; ii++)
+      for (size_t jj = 0; jj < ncols_; jj++)
+        grid_(ii, jj) = 0;
   }
 
   // Insert a point.
@@ -84,15 +87,15 @@ namespace path {
     ii = nrows_ - ii;
     grid_(ii, jj)++;
 
+    // Increment count_.
+    count_++;
+
     // Add to scene if bin is empty.
-    if (GetCountAt(point) == 1) {
+    if (grid_(ii, jj) == 1) {
       Obstacle::Ptr obstacle = Obstacle2D::Create(GetBinCenter(point),
                                                   0.5 * block_size_);
       scene_.AddObstacle(obstacle);
     }
-
-    // Increment count_.
-    count_++;
   }
 
   // Get number of points in the bin containing the specified point.
@@ -106,6 +109,7 @@ namespace path {
     int jj = static_cast<int>(static_cast<double>(ncols_) *
                               (point2d->GetX() - xmin_) / (xmax_ - xmin_));
     ii = nrows_ - ii;
+
     return grid_(ii, jj);
   }
 

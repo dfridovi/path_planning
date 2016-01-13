@@ -48,7 +48,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-DEFINE_bool(visualize_occupancy, true, "Visualize occupancy grids?");
+DEFINE_bool(visualize_occupancy, false, "Visualize occupancy grids?");
 
 namespace path {
 
@@ -57,7 +57,7 @@ namespace path {
     math::RandomGenerator rng(0);
 
     // Create an empty occupancy grid.
-    OccupancyGrid2D grid(0.0, 1.0, 0.0, 1.0, 0.05);
+    OccupancyGrid2D grid(0.0, 1.0, 0.0, 1.0, 0.005);
 
     // Create a bunch of points and add to the grid.
     for (size_t ii = 0; ii < 1000; ii++) {
@@ -66,23 +66,25 @@ namespace path {
       Point::Ptr point = Point2D::Create(x, y);
       grid.Insert(point);
     }
+
+    if (FLAGS_visualize_occupancy)
+      grid.Visualize("Test grid.");
   }
 
   // Test that we can construct and destroy a 2D occupancy grid.
   TEST(OccupancyGrid, TestSensor2DRadial) {
-    math::RandomGenerator rng(0);
-
     // Create an empty occupancy grid.
-    OccupancyGrid2D grid(0.0, 1.0, 0.0, 1.0, 0.002);
+    OccupancyGrid2D grid(0.0, 1.0, 0.0, 1.0, 0.01);
 
     // Create a bunch of points in a circle and add to the grid.
-    for (double theta = 0.0; theta < 2.0 * M_PI; theta += 0.1) {
-      Point::Ptr point = Point2D::Create(0.5 + 0.2 * std::cos(theta),
-                                         0.5 + 0.2 * std::sin(theta));
+    for (double theta = 0.0; theta < 2.0 * M_PI; theta += 1.0) {
+      Point::Ptr point = Point2D::Create(0.5 + 0.1 * std::cos(theta),
+                                         0.5 + 0.1 * std::sin(theta));
       grid.Insert(point);
     }
 
-    grid.Visualize("Dummy.");
+    if (FLAGS_visualize_occupancy)
+      grid.Visualize("Test grid.");
 
     // Create a new sensor.
     Sensor2DRadial sensor(grid, 0.3);
