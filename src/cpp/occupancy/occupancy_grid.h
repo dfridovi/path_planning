@@ -55,13 +55,19 @@ namespace path {
   // Derive from this class when defining a specific occupancy grid.
   class OccupancyGrid {
   public:
-    OccupancyGrid() {}
+    OccupancyGrid() : count_(0) {}
     virtual ~OccupancyGrid() {}
+
+    // Get total number of points inserted in the grid.
+    virtual int GetTotalCount() const { return count_; }
 
     // Define these methods in a derived class.
     virtual void Insert(Point::Ptr point) = 0;
     virtual int GetCountAt(Point::Ptr point) const = 0;
     virtual Point::Ptr GetBinCenter(Point::Ptr point) const = 0;
+
+  protected:
+    int count_;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(OccupancyGrid);

@@ -35,8 +35,10 @@
  */
 
 #include <geometry/point_2d.h>
+#include <geometry/orientation_2d.h>
 #include <math/random_generator.h>
 #include <occupancy/occupancy_grid_2d.h>
+#include <sensing/sensor_2d_radial.h>
 
 #include <vector>
 #include <cmath>
@@ -45,6 +47,8 @@
 #include <gflags/gflags.h>
 #include <iostream>
 #include <Eigen/Dense>
+
+DEFINE_bool(visualize_occupancy, true, "Visualize occupancy grids?");
 
 namespace path {
 
@@ -62,6 +66,30 @@ namespace path {
       Point::Ptr point = Point2D::Create(x, y);
       grid.Insert(point);
     }
+  }
+
+  // Test that we can construct and destroy a 2D occupancy grid.
+  TEST(OccupancyGrid, TestSensor2DRadial) {
+    math::RandomGenerator rng(0);
+
+    // Create an empty occupancy grid.
+    OccupancyGrid2D grid(0.0, 1.0, 0.0, 1.0, 0.002);
+
+    // Create a bunch of points in a circle and add to the grid.
+    for (double theta = 0.0; theta < 2.0 * M_PI; theta += 0.1) {
+      Point::Ptr point = Point2D::Create(0.5 + 0.2 * std::cos(theta),
+                                         0.5 + 0.2 * std::sin(theta));
+      grid.Insert(point);
+    }
+
+    grid.Visualize("Dummy.");
+
+    // Create a new sensor.
+    Sensor2DRadial sensor(grid, 0.3);
+
+    // Ensure sensor can see all points from the center.
+    EXPECT_EQ(sensor.GetObstacleCount(Orientation2D::Create(0.5, 0.5, 0.0)),
+              grid.GetTotalCount());
   }
 
 } //\ namespace path

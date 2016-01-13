@@ -47,6 +47,8 @@
 #include <cmath>
 #include <glog/logging.h>
 
+using Eigen::MatrixXf;
+
 namespace path {
 
   // Constructor.
@@ -88,6 +90,9 @@ namespace path {
                                                   0.5 * block_size_);
       scene_.AddObstacle(obstacle);
     }
+
+    // Increment count_.
+    count_++;
   }
 
   // Get number of points in the bin containing the specified point.
@@ -120,6 +125,16 @@ namespace path {
     return Point2D::Create(x, y);
   }
 
+  // Visualize this occupancy grid.
+  void OccupancyGrid2D::Visualize(const std::string& title) const {
+    MatrixXf map_matrix = grid_.cast<float>();
+    map_matrix /= map_matrix.maxCoeff();
+
+    // Convert to an Image and display.
+    Image map_image(map_matrix);
+    map_image.ImShow(title);
+  }
+
   // Check if a point is valid.
   bool OccupancyGrid2D::IsValidPoint(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
@@ -140,6 +155,5 @@ namespace path {
 
     return true;
   }
-
 
 } // \namespace path

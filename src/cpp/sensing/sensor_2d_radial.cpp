@@ -81,11 +81,18 @@ namespace path {
       for (double y = ymin; y < ymax; y += step) {
         Point::Ptr test = Point2D::Create(x, y);
         Point::Ptr bin = grid_.GetBinCenter(test);
+
+        // Check in range.
         if (location->DistanceTo(bin) > radius_)
           continue;
 
-        if (robot.LineOfSight(location, bin))
+        //        std::cout << "hi" << std::endl;
+
+        // Check line of sight.
+        if (robot.LineOfSight(location, bin)) {
           obstacle_count += grid_.GetCountAt(bin);
+          std::cout << obstacle_count << std::endl;
+        }
       }
     }
 

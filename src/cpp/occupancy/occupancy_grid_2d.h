@@ -73,6 +73,9 @@ namespace path {
     int GetCountAt(Point::Ptr point) const;
     Point::Ptr GetBinCenter(Point::Ptr point) const;
 
+    // Visualize this occupancy grid.
+    void Visualize(const std::string& title) const;
+
   private:
     // Check if a point is valid.
     bool IsValidPoint(Point::Ptr point) const;
