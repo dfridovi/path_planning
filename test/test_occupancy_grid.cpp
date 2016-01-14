@@ -106,14 +106,14 @@ namespace path {
       grid.Insert(point);
     }
 
-    grid.GetScene().Visualize("Test scene");
     if (FLAGS_visualize_occupancy) {
+      grid.GetScene().Visualize("Test scene");
       grid.Visualize("Test grid");
+      sensor.Visualize(Orientation2D::Create(0.5, 0.5, 0.0));
     }
 
     // Create a new sensor.
     Sensor2DRadial sensor(grid, 0.5);
-    sensor.Visualize(Orientation2D::Create(0.5, 0.5, 0.0));
 
     // Ensure sensor can see all points from the center.
     EXPECT_EQ(sensor.GetObstacleCount(Orientation2D::Create(0.5, 0.5, 0.0)),
