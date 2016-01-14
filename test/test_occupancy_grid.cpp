@@ -71,23 +71,49 @@ namespace path {
       grid.Visualize("Test grid.");
   }
 
-  // Test that we can construct and destroy a 2D occupancy grid.
-  TEST(OccupancyGrid, TestSensor2DRadial) {
+  // Test behavior of 1x1 grid.
+  TEST(OccupancyGrid, TestOccupancyGrid2DSmall) {
     // Create an empty occupancy grid.
-    OccupancyGrid2D grid(0.0, 1.0, 0.0, 1.0, 0.01);
+    OccupancyGrid2D grid(0.0, 1.0, 0.0, 1.0, 1.0);
 
     // Create a bunch of points in a circle and add to the grid.
-    for (double theta = 0.0; theta < 2.0 * M_PI; theta += 1.0) {
-      Point::Ptr point = Point2D::Create(0.5 + 0.1 * std::cos(theta),
-                                         0.5 + 0.1 * std::sin(theta));
+    for (double theta = 0.0; theta < 2.0 * M_PI; theta += 0.01) {
+      Point::Ptr point = Point2D::Create(0.5 + 0.2 * std::cos(theta),
+                                         0.5 + 0.2 * std::sin(theta));
       grid.Insert(point);
     }
 
     if (FLAGS_visualize_occupancy)
-      grid.Visualize("Test grid.");
+      grid.GetScene().Visualize("1x1 Scene");
 
     // Create a new sensor.
-    Sensor2DRadial sensor(grid, 0.3);
+    Sensor2DRadial sensor(grid, 0.5);
+
+    // Ensure sensor can see all points from the center.
+    EXPECT_EQ(sensor.GetObstacleCount(Orientation2D::Create(0.5, 0.5, 0.0)),
+              grid.GetTotalCount());
+  }
+
+  // Test that we can construct and destroy a 2D occupancy grid.
+  TEST(OccupancyGrid, TestSensor2DRadial) {
+    // Create an empty occupancy grid.
+    OccupancyGrid2D grid(0.0, 1.0, 0.0, 1.0, 0.02);
+
+    // Create a bunch of points in a circle and add to the grid.
+    for (double theta = 0.0; theta < 0.999; theta += 0.1) {
+      Point::Ptr point = Point2D::Create(0.5 + 0.2*std::cos(2.0*M_PI * theta),
+                                         0.5 + 0.2*std::sin(2.0*M_PI * theta));
+      grid.Insert(point);
+    }
+
+    grid.GetScene().Visualize("Test scene");
+    if (FLAGS_visualize_occupancy) {
+      grid.Visualize("Test grid");
+    }
+
+    // Create a new sensor.
+    Sensor2DRadial sensor(grid, 0.5);
+    sensor.Visualize(Orientation2D::Create(0.5, 0.5, 0.0));
 
     // Ensure sensor can see all points from the center.
     EXPECT_EQ(sensor.GetObstacleCount(Orientation2D::Create(0.5, 0.5, 0.0)),

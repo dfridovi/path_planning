@@ -59,6 +59,10 @@ namespace path {
     // How many known obstacles are visible to the robot?
     int GetObstacleCount(Point::Ptr pose) const;
 
+    // Visualize which voxels are visible to this robot.
+    void Visualize(Point::Ptr pose,
+                   const std::string& title = std::string()) const;
+
   private:
     OccupancyGrid2D& grid_;
     const double radius_;

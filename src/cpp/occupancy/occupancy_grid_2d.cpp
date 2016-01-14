@@ -64,6 +64,7 @@ namespace path {
     // Determine nrows and ncols.
     nrows_ = static_cast<int>(std::ceil((ymax_ - ymin_) / block_size));
     ncols_ = static_cast<int>(std::ceil((xmax_ - xmin_) / block_size));
+
     block_size_ = std::max((xmax_ - xmin_) / static_cast<double>(ncols_),
                            (ymax_ - ymin_) / static_cast<double>(nrows_));
 
@@ -80,11 +81,9 @@ namespace path {
     Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
 
     // Find the nearest bin and insert.
-    int ii = static_cast<int>(static_cast<double>(nrows_) *
-                              (point2d->GetY() - ymin_) / (ymax_ - ymin_));
-    int jj = static_cast<int>(static_cast<double>(ncols_) *
-                              (point2d->GetX() - xmin_) / (xmax_ - xmin_));
-    ii = nrows_ - ii;
+    int jj = static_cast<int>((point2d->GetX() - xmin_) / block_size_);
+    int ii = static_cast<int>((point2d->GetY() - ymin_) / block_size_);
+    ii = nrows_ - ii - 1;
     grid_(ii, jj)++;
 
     // Increment count_.
@@ -92,8 +91,9 @@ namespace path {
 
     // Add to scene if bin is empty.
     if (grid_(ii, jj) == 1) {
-      Obstacle::Ptr obstacle = Obstacle2D::Create(GetBinCenter(point),
-                                                  0.5 * block_size_);
+      Point::Ptr bin_center = GetBinCenter(point);
+      Obstacle::Ptr obstacle =
+        Obstacle2D::Create(bin_center, 0.5 * block_size_);
       scene_.AddObstacle(obstacle);
     }
   }
@@ -104,11 +104,9 @@ namespace path {
     Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
 
     // Get count.
-    int ii = static_cast<int>(static_cast<double>(nrows_) *
-                              (point2d->GetY() - ymin_) / (ymax_ - ymin_));
-    int jj = static_cast<int>(static_cast<double>(ncols_) *
-                              (point2d->GetX() - xmin_) / (xmax_ - xmin_));
-    ii = nrows_ - ii;
+    int jj = static_cast<int>((point2d->GetX() - xmin_) / block_size_);
+    int ii = static_cast<int>((point2d->GetY() - ymin_) / block_size_);
+    ii = nrows_ - ii - 1;
 
     return grid_(ii, jj);
   }
@@ -119,14 +117,11 @@ namespace path {
     Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
 
     // Get rounded coordinates.
-    int xbin = static_cast<int>(static_cast<double>(ncols_) *
-                                (point2d->GetX() - xmin_) / (xmax_ - xmin_));
-    int ybin = static_cast<int>(static_cast<double>(nrows_) *
-                                (point2d->GetY() - ymin_) / (ymax_ - ymin_));
-    double x = static_cast<double>(xbin) * block_size_;
-    double y = static_cast<double>(ybin) * block_size_;
+    int jj = static_cast<int>((point2d->GetX() - xmin_) / block_size_);
+    int ii = static_cast<int>((point2d->GetY() - ymin_) / block_size_);
 
-    return Point2D::Create(x, y);
+    return Point2D::Create((static_cast<double>(jj) + 0.5) * block_size_,
+                           (static_cast<double>(ii) + 0.5) * block_size_);
   }
 
   // Visualize this occupancy grid.

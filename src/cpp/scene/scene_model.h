@@ -69,6 +69,7 @@ namespace path {
     virtual inline std::vector<Obstacle::Ptr>& GetObstacles();
     virtual inline FlannObstacleKDTree& GetObstacleTree();
     virtual inline double GetLargestObstacleRadius() const;
+    virtual inline int GetObstacleCount() const;
 
     // Define these methods in a derived class.
     virtual bool IsFeasible(Point::Ptr point) const = 0;
@@ -124,6 +125,10 @@ namespace path {
 
   double SceneModel::GetLargestObstacleRadius() const {
     return largest_obstacle_radius_;
+  }
+
+  int SceneModel::GetObstacleCount() const {
+    return static_cast<int>(obstacles_.size());
   }
 
 } // \namespace path

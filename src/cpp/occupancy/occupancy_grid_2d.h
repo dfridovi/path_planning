@@ -67,6 +67,8 @@ namespace path {
     double GetXMax() const { return xmax_; }
     double GetYMin() const { return ymin_; }
     double GetYMax() const { return ymax_; }
+    int GetNRows() const { return nrows_ ; }
+    int GetNCols() const { return ncols_ ; }
 
     // Define these methods in a derived class.
     void Insert(Point::Ptr point);
@@ -74,7 +76,7 @@ namespace path {
     Point::Ptr GetBinCenter(Point::Ptr point) const;
 
     // Visualize this occupancy grid.
-    void Visualize(const std::string& title) const;
+    void Visualize(const std::string& title = std::string()) const;
 
   private:
     // Check if a point is valid.

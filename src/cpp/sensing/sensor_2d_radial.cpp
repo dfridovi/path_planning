@@ -49,6 +49,8 @@
 
 #include <glog/logging.h>
 
+using Eigen::MatrixXi;
+
 namespace path {
 
   // How many known obstacles are visible to the robot?
@@ -75,28 +77,109 @@ namespace path {
     double ymax = std::min(location_vector(1) + radius_, grid_.GetYMax());
     double step = grid_.GetBlockSize();
 
+    Point::Ptr tl_bin = grid_.GetBinCenter(Point2D::Create(xmin, ymax));
+    Point::Ptr br_bin = grid_.GetBinCenter(Point2D::Create(xmax, ymin));
+    xmin = tl_bin->GetVector()(0);
+    ymax = tl_bin->GetVector()(1);
+    xmax = br_bin->GetVector()(0);
+    ymin = br_bin->GetVector()(1);
+
     // For all visible points, check line of sight.
     int obstacle_count = 0;
-    for (double x = xmin - 1e-16; x < xmax + step + 1e-16; x += step) {
-      for (double y = ymin - 1e-16; y < ymax + step + 1e-16; y += step) {
+    for (double y = ymax; y >= ymin; y -= step) {
+      for (double x = xmin; x <= xmax; x += step) {
         Point::Ptr test = Point2D::Create(x, y);
         Point::Ptr bin = grid_.GetBinCenter(test);
+        if (!bin) continue;
 
         // Check in range.
-        if (location->DistanceTo(bin) > radius_)
+        if (location->DistanceTo(bin) > radius_) {
           continue;
+        }
+
+        // Check occupancy.
+        int occupancy = grid_.GetCountAt(test);
+        if (occupancy == 0) {
+          continue;
+        }
 
         // Check line of sight.
-        Point::Ptr close = bin->StepToward(location, 0.5 * step + 1e-16);
+        Point::Ptr close = bin->StepToward(location, step);
         if (robot.LineOfSight(location, close)) {
-          obstacle_count += grid_.GetCountAt(bin);
-          //          if (grid_.GetCountAt(bin) > 0)
-          //            std::cout << bin->GetVector().transpose() << std::endl;
+          obstacle_count += occupancy;
         }
       }
     }
 
     return obstacle_count;
   }
+
+  // Visualize which voxels are visible to this robot.
+  void Sensor2DRadial::Visualize(Point::Ptr pose,
+                                 const std::string& title) const {
+    CHECK_NOTNULL(pose.get());
+
+    // Check pose type.
+    if (!pose->IsType(Point::PointType::ORIENTATION_2D)) {
+      VLOG(1) << "Point (pose) is not of type ORIENTATION_2D.";
+      return;
+    }
+
+    // Create robot and test point.
+    Robot2DCircular robot(grid_.GetScene(), 0.0 /* radius */);
+    Orientation2D *orientation =
+      std::static_pointer_cast<Orientation2D>(pose).get();
+    Point::Ptr location = orientation->GetPoint();
+
+    // Create sensor view matrix.
+    MatrixXf view_matrix = MatrixXf::Zero(grid_.GetNRows(), grid_.GetNCols());
+
+    // Get bounding box.
+    VectorXd location_vector = location->GetVector();
+    double xmin = std::max(location_vector(0) - radius_, grid_.GetXMin());
+    double xmax = std::min(location_vector(0) + radius_, grid_.GetXMax());
+    double ymin = std::max(location_vector(1) - radius_, grid_.GetYMin());
+    double ymax = std::min(location_vector(1) + radius_, grid_.GetYMax());
+    double step = grid_.GetBlockSize();
+
+    Point::Ptr tl_bin = grid_.GetBinCenter(Point2D::Create(xmin, ymax));
+    Point::Ptr br_bin = grid_.GetBinCenter(Point2D::Create(xmax, ymin));
+    xmin = tl_bin->GetVector()(0);
+    ymax = tl_bin->GetVector()(1);
+    xmax = br_bin->GetVector()(0);
+    ymin = br_bin->GetVector()(1);
+
+    // For all visible points, check line of sight.
+    for (double y = ymax; y >= ymin; y -= step) {
+      for (double x = xmin; x <= xmax; x += step) {
+        Point::Ptr test = Point2D::Create(x, y);
+        Point::Ptr bin = grid_.GetBinCenter(test);
+        if (!bin) continue;
+
+        // Check in range.
+        if (location->DistanceTo(bin) > radius_) {
+          continue;
+        }
+
+        // Check line of sight.
+        Point::Ptr close = bin->StepToward(location, step);
+        if (robot.LineOfSight(location, close)) {
+          int jj = static_cast<int>((x - grid_.GetXMin()) / step);
+          int ii = static_cast<int>((y - grid_.GetYMin()) / step);
+          ii = grid_.GetNRows() - ii - 1;
+          if (view_matrix(ii, jj) > 0.0) {
+            std::cout << "Double-counting a bin." << std::endl;
+          }
+
+          view_matrix(ii, jj) = 1.0;
+        }
+      }
+    }
+
+    // Display.
+    Image view_image(view_matrix);
+    view_image.ImShow(title);
+  }
+
 
 } // \namespace path

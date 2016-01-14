@@ -78,12 +78,13 @@ namespace path {
 
     // Visualize this scene. Optionally pass in the number of pixels
     // in the x-direction.
-    void Visualize(const std::string& title, int xsize = 500) const;
+    void Visualize(const std::string& title,
+                   int xsize = 500) const;
 
     // Visualize a Trajectory in this scene. Optionally pass in the
     // number of pixels in the x-direction.
-    void Visualize(const std::string& title, Trajectory::Ptr path,
-                   int xsize = 500) const;
+    void Visualize(const std::string& title,
+                   Trajectory::Ptr path, int xsize = 500) const;
 
   private:
     double xmin_;
