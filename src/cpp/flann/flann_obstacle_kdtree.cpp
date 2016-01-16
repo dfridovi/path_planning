@@ -67,7 +67,7 @@ namespace path {
   // order in which obstacles were added with AddObstacle() and AddObstacles().
   bool FlannObstacleKDTree::NearestNeighbor(Point::Ptr query,
                                             Obstacle::Ptr& nearest,
-                                            double& nn_distance) {
+                                            double& nn_distance) const {
     CHECK_NOTNULL(query.get());
 
     // Query kd_tree_.
@@ -84,7 +84,7 @@ namespace path {
   // Returns whether or not the search exited successfully.
   bool FlannObstacleKDTree::RadiusSearch(Point::Ptr query,
                                          std::vector<Obstacle::Ptr>& neighbors,
-                                         double radius) {
+                                         double radius) const {
     CHECK_NOTNULL(query.get());
 
     // Query kd_tree_.

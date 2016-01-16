@@ -57,10 +57,6 @@ namespace path {
     // Factory method.
     static Point::Ptr Create(double x, double y);
 
-    // Setters.
-    void SetX(double x);
-    void SetY(double y);
-
     // Getters.
     double GetX() const;
     double GetY() const;

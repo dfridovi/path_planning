@@ -65,7 +65,7 @@ namespace path {
     enum PointType {POINT_2D, ORIENTATION_2D, OTHER};
 
     // Derived classes must write their own constructors.
-    inline Point();
+    inline Point(const VectorXd& point, PointType type);
     virtual ~Point() {}
 
     // Set point type. This should be called in the derived class' constructor.
@@ -77,14 +77,14 @@ namespace path {
     virtual inline bool IsSameTypeAs(Point::Ptr point) const;
 
     // Get vector.
-    virtual inline VectorXd& GetVector();
+    virtual inline const VectorXd& GetVector() const;
 
     // Define these methods in a derived class.
     virtual double DistanceTo(Point::Ptr point) const = 0;
     virtual Point::Ptr StepToward(Point::Ptr point, double step_size) const = 0;
 
   protected:
-    VectorXd coordinates_;
+    const VectorXd coordinates_;
 
   private:
     PointType type_;
@@ -93,9 +93,9 @@ namespace path {
 
 // -------------------------- IMPLEMENTATION ---------------------------- //
 
-  // Don't use this!
-  Point::Point()
-    : type_(Point::PointType::OTHER) {}
+  // Default base constructor.
+  Point::Point(const VectorXd& point, PointType type)
+    : coordinates_(point), type_(type) {}
 
   Point::PointType Point::GetType() const { return type_; }
   void Point::SetType(const Point::PointType type) { type_ = type; }
@@ -114,7 +114,7 @@ namespace path {
     return false;
   }
 
-  VectorXd& Point::GetVector() {
+  const VectorXd& Point::GetVector() const {
     return coordinates_;
   }
 

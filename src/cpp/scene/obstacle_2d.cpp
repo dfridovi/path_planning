@@ -66,7 +66,7 @@ namespace path {
   }
 
   // Is this point feasible?
-  bool Obstacle2D::IsFeasible(VectorXd& point) const {
+  bool Obstacle2D::IsFeasible(const VectorXd& point) const {
     if ((point - location_->GetVector()).norm() < radius_)
       return false;
     return true;
@@ -80,10 +80,23 @@ namespace path {
   }
 
   // Cost of occupying this point. Either zero or infinity.
-  double Obstacle2D::Cost(VectorXd& point) const {
+  double Obstacle2D::Cost(const VectorXd& point) const {
     if (!IsFeasible(point))
       return std::numeric_limits<double>::infinity();
     return 0.0;
+  }
+
+  // Derivative of the cost function by position. In this case, since the
+  // cost function is a step, the derivative is always zero (or undefined,
+  // but for simplicity we just always return zero).
+  Point::Ptr Obstacle2D::Derivative(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+
+    // Check point type.
+    if (!point->IsType(Point::PointType::POINT_2D))
+      VLOG(1) << "Point is not of type POINT_2D. Returning zero vector anyway.";
+
+    return Point2D::Create(0.0, 0.0);
   }
 
   // Default constructors. Radius is the minimum distance to the obstacle

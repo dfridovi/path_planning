@@ -46,23 +46,14 @@
 namespace path {
 
   // Default constructor.
-  Point2D::Point2D(double x, double y) {
-    coordinates_ = VectorXd::Zero(2);
-    coordinates_(0) = x;
-    coordinates_(1) = y;
-
-    SetType(Point::PointType::POINT_2D);
-  }
+  Point2D::Point2D(double x, double y)
+    : Point((VectorXd(2) << x, y).finished(), Point::PointType::POINT_2D) {}
 
   // Factory method.
   Point::Ptr Point2D::Create(double x, double y) {
     Point::Ptr point(new Point2D(x, y));
     return point;
   }
-
-  // Setters.
-  void Point2D::SetX(double x) { coordinates_(0) = x; }
-  void Point2D::SetY(double y) { coordinates_(1) = y; }
 
   // Getters.
   double Point2D::GetX() const { return coordinates_(0); }

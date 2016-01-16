@@ -122,7 +122,7 @@ namespace path {
 
   // Queries the kd tree for the nearest neighbor of 'query'.
   bool FlannPointKDTree::NearestNeighbor(Point::Ptr query, Point::Ptr& nearest,
-                                         double& nn_distance) {
+                                         double& nn_distance) const {
     if (index_ == nullptr) {
       VLOG(1) << "Index has not been built. Points must be added before "
         "querying the kd tree";
@@ -167,7 +167,7 @@ namespace path {
   // Returns whether or not the search exited successfully.
   bool FlannPointKDTree::RadiusSearch(Point::Ptr query,
                                       std::vector<Point::Ptr>& neighbors,
-                                      double radius) {
+                                      double radius) const {
     if (index_ == nullptr) {
       VLOG(1) << "Index has not been built. Points must be added before "
         "querying the kd tree";

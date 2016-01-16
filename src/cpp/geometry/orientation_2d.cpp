@@ -104,13 +104,8 @@ namespace path {
   }
 
   // Default constructor.
-  Orientation2D::Orientation2D(double x, double y, double theta) {
-    coordinates_ = VectorXd::Zero(3);
-    coordinates_(0) = x;
-    coordinates_(1) = y;
-    coordinates_(2) = theta;
-
-    SetType(Point::PointType::ORIENTATION_2D);
-  }
+  Orientation2D::Orientation2D(double x, double y, double theta)
+    : Point((VectorXd(3) << x, y, theta).finished(),
+            Point::PointType::ORIENTATION_2D) {}
 
 } //\ namespace path

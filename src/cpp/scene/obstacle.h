@@ -69,9 +69,10 @@ namespace path {
 
     // Define these methods in a derived class.
     virtual bool IsFeasible(Point::Ptr point) const = 0;
-    virtual bool IsFeasible(VectorXd& point) const = 0;
+    virtual bool IsFeasible(const VectorXd& point) const = 0;
     virtual double Cost(Point::Ptr point) const = 0;
-    virtual double Cost(VectorXd& point) const = 0;
+    virtual double Cost(const VectorXd& point) const = 0;
+    virtual Point::Ptr Derivative(Point::Ptr point) const = 0;
 
   protected:
     Point::Ptr location_;

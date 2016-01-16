@@ -52,6 +52,7 @@
 #include <iostream>
 
 using Eigen::MatrixXf;
+using Eigen::Vector2d;
 
 namespace path {
 
@@ -88,8 +89,17 @@ namespace path {
   bool Scene2DContinuous::IsFeasible(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
 
+    // Get a list of all obstacles in range.
+    std::vector<Obstacle::Ptr> obstacles_in_range;
+    if (!obstacle_tree_.RadiusSearch(point, obstacles_in_range,
+                                     largest_obstacle_radius_)) {
+      VLOG(1) << "Radius search failed during feasibility test. "
+              << "Returning false.";
+      return false;
+    }
+
     // Check each obstacle.
-    for (const auto& obstacle : obstacles_) {
+    for (const auto& obstacle : obstacles_in_range) {
       if (!obstacle->IsFeasible(point))
         return false;
     }
@@ -97,23 +107,58 @@ namespace path {
     return true;
   }
 
-  // What is the cost of occupying this point?
+  // What is the cost of occupying this point? For speed, only compute
+  // cost from obstacles within a specific radius.
   double Scene2DContinuous::Cost(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
 
-    // Iterate over all obstacles and add costs.
+    // Get a list of all obstacles in range.
+    std::vector<Obstacle::Ptr> obstacles_in_range;
+    if (!obstacle_tree_.RadiusSearch(point, obstacles_in_range,
+                                     10.0 * largest_obstacle_radius_)) {
+      VLOG(1) << "Radius search failed during cost evaluation. "
+              << "Returning infinite cost.";
+      return std::numeric_limits<double>::infinity();
+    }
+
+    // Iterate over all obstacles in range.
     double total_cost = 0.0;
-    for (const auto& obstacle : obstacles_)
+    for (const auto& obstacle : obstacles_in_range)
       total_cost += obstacle->Cost(point);
 
     return total_cost;
   }
 
+  // Compute the derivative of cost by position. This is used for
+  // trajectory optimization.
+  Point::Ptr Scene2DContinuous::Derivative(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+
+    // Get a list of all obstacles in range.
+    std::vector<Obstacle::Ptr> obstacles_in_range;
+    if (!obstacle_tree_.RadiusSearch(point, obstacles_in_range,
+                                     10.0 * largest_obstacle_radius_)) {
+      VLOG(1) << "Radius search failed during derivative evaluation. "
+              << "Returning zero derivative.";
+      return Point2D::Create(0.0, 0.0);
+    }
+
+    // Iterate over all obstacles in range.
+    Vector2d total_derivative = VectorXd::Zero(2);
+    for (const auto& obstacle : obstacles_in_range) {
+      Point::Ptr derivative = obstacle->Derivative(point);
+      total_derivative += derivative->GetVector();
+    }
+
+    return Point2D::Create(total_derivative(0), total_derivative(1));
+  }
+
   // Get a random point in the scene.
-  Point::Ptr Scene2DContinuous::GetRandomPoint() {
+  Point::Ptr Scene2DContinuous::GetRandomPoint() const {
     double x = rng_.DoubleUniform(xmin_, xmax_);
     double y = rng_.DoubleUniform(ymin_, ymax_);
     Point::Ptr point = Point2D::Create(x, y);
+
     return point;
   }
 

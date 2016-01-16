@@ -47,6 +47,8 @@
 #include <cmath>
 #include <iostream>
 
+using Eigen::Vector2d;
+
 namespace path {
 
   // Factory method.
@@ -68,7 +70,7 @@ namespace path {
   }
 
   // Is this point feasible?
-  bool Obstacle2DGaussian::IsFeasible(VectorXd& point) const {
+  bool Obstacle2DGaussian::IsFeasible(const VectorXd& point) const {
     if ((point - mean_).norm() < radius_)
       return false;
     return true;
@@ -85,15 +87,30 @@ namespace path {
     }
 
     Point2D *ptr = std::static_pointer_cast<Point2D>(point).get();
-    VectorXd& p = ptr->GetVector();
+    const VectorXd& p = ptr->GetVector();
 
     return Cost(p);
   }
 
   // What is the cost of occupying this point?
-  double Obstacle2DGaussian::Cost(VectorXd& point) const {
+  double Obstacle2DGaussian::Cost(const VectorXd& point) const {
     return std::exp(-0.5 * (point - mean_).transpose() * inv_ * (point - mean_)) /
       std::sqrt((2.0 * M_PI) * (2.0 * M_PI) * det_);
+  }
+
+  // Derivative of the cost function by position. This is used for
+  // trajectory optimization.
+  Point::Ptr Obstacle2DGaussian::Derivative(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+
+    // Check point type.
+    if (!point->IsType(Point::PointType::POINT_2D)) {
+      VLOG(1) << "Point types do not match. Returning zero derivative..";
+      return Point2D::Create(0.0, 0.0);
+    }
+
+    Vector2d vector_derivative = -Cost(point) * inv_ * (point->GetVector() - mean_);
+    return Point2D::Create(vector_derivative(0), vector_derivative(1));
   }
 
   // Default constructor.
