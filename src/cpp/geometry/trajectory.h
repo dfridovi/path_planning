@@ -67,27 +67,25 @@ namespace path {
     // Add a point to the path.
     void AddPoint(Point::Ptr point);
 
-    // Get path length.
+    // Upsample by adding k points linearly between each pair of points
+    // in this Trajectory.
+    void Upsample(unsigned int k);
+
+    // Getters.
     double GetLength() const;
-
-    // Get point type.
     Point::PointType GetType() const;
-
-    // Get points.
     std::vector<Point::Ptr>& GetPoints();
 
   private:
+    std::vector<Point::Ptr> points_;
+    Point::PointType point_type_;
+    double length_;
+
     // Private constructors. Use factory methods instead.
     Trajectory();
     Trajectory(std::vector<Point::Ptr>& points);
     Trajectory(std::list<Point::Ptr>& points);
-
-
-    std::vector<Point::Ptr> points_;
-    Point::PointType point_type_;
-    double length_;
   };
-
 } //\ namespace path
 
 #endif

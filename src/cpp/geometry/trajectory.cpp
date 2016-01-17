@@ -137,6 +137,32 @@ namespace path {
     length_ += last_point->DistanceTo(point);
   }
 
+  // Upsample by adding k points linearly between each pair of points
+  // in this Trajectory.
+  void Trajectory::Upsample(unsigned int k) {
+    std::vector<Point::Ptr> old_points(points_);
+    points_.clear();
+
+    for (size_t ii = 0; ii < old_points.size() - 1; ii++) {
+      Point::Ptr current_point = old_points[ii];
+      Point::Ptr next_point = old_points[ii + 1];
+      double length = current_point->DistanceTo(next_point);
+      double step_size = length / static_cast<double>(k + 1);
+
+      points_.push_back(current_point);
+      for (unsigned int jj = 1; jj <= k; jj++) {
+        Point::Ptr step =
+          current_point->StepToward(next_point,
+                                    static_cast<double>(jj) * step_size);
+        points_.push_back(step);
+      }
+
+      // Make sure to push back final point.
+      if (ii == old_points.size() - 1)
+        points_.push_back(next_point);
+    }
+  }
+
   // Getters.
   Point::PointType Trajectory::GetType() const { return point_type_; }
   double Trajectory::GetLength() const { return length_; }

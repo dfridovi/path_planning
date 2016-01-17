@@ -113,7 +113,7 @@ namespace path {
 
     // Create a bunch of obstacles.
     std::vector<Obstacle::Ptr> obstacles;
-    for (size_t ii = 0; ii < 200; ii++) {
+    for (size_t ii = 0; ii < 50; ii++) {
       double x = rng.Double();
       double y = rng.Double();
       double sigma_xx = 0.005 * rng.DoubleUniform(0.25, 0.75);
@@ -154,6 +154,7 @@ namespace path {
     // Plan a route.
     RRTPlanner planner(robot, scene, origin, goal, 0.05);
     Trajectory::Ptr route = planner.PlanTrajectory();
+    route->Upsample(100);
 
     // If visualize flag is set, query a grid and show the cost map.
     if (FLAGS_visualize_planner) {
@@ -162,7 +163,7 @@ namespace path {
 
     // Optimize path.
     Trajectory::Ptr optimized_path =
-      scene.OptimizeTrajectory(route, 1e-6, 1e-5, 1000);
+      scene.OptimizeTrajectory(route, 1e-6, 1e-4, 1000);
 
     // If visualize flag is set, query a grid and show the cost map.
     if (FLAGS_visualize_planner) {

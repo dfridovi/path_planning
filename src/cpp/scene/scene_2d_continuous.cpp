@@ -183,7 +183,7 @@ namespace path {
            num_iters < max_iters) {
       total_displacement = 0.0;
 
-      for (size_t ii = 0; ii < points.size(); ii++) {
+      for (size_t ii = 1; ii < points.size() - 1; ii++) {
         Point::Ptr derivative = Derivative(points[ii]);
         const VectorXd& step_vector = points[ii]->GetVector() -
           gradient_weight * derivative->GetVector();
