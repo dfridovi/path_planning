@@ -80,6 +80,12 @@ namespace path {
     // Get a random point in the scene.
     Point::Ptr GetRandomPoint() const;
 
+    // Optimize the given trajectory to minimize cost.
+    Trajectory::Ptr OptimizeTrajectory(Trajectory::Ptr path,
+                                       double gradient_weight,
+                                       double min_avg_displacement,
+                                       size_t max_iters) const;
+
     // Visualize this scene. Optionally pass in the number of pixels
     // in the x-direction.
     void Visualize(const std::string& title,

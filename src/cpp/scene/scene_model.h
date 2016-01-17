@@ -76,7 +76,10 @@ namespace path {
     virtual double Cost(Point::Ptr point) const = 0;
     virtual Point::Ptr Derivative(Point::Ptr point) const = 0;
     virtual Point::Ptr GetRandomPoint() const = 0;
-
+    virtual Trajectory::Ptr OptimizeTrajectory(Trajectory::Ptr path,
+                                               double gradient_weight = 0.1,
+                                               double min_avg_displacement = 0.01,
+                                               size_t max_iters = 1000) const = 0;
   protected:
     std::vector<Obstacle::Ptr> obstacles_;
     FlannObstacleKDTree obstacle_tree_;

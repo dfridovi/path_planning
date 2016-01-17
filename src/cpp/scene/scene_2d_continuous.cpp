@@ -162,6 +162,44 @@ namespace path {
     return point;
   }
 
+  // Optimize the given trajectory to minimize cost.
+  Trajectory::Ptr OptimizeTrajectory(Trajectory::Ptr path,
+                                     double gradient_weight,
+                                     double min_avg_displacement,
+                                     size_t max_iters) const {
+    CHECK_NOTNULL(path.get());
+
+    // Extract points from the given trajectory.
+    std::vector<Point::Ptr> points(path->GetPoints());
+    double num_points = static_cast<double>(points.size());
+
+    // While the average displacement of all points is large and the total
+    // number of iterations does not exceed the threshold, iterate over
+    // all points and move each point a small distance in the direction
+    // of the negative gradient.
+    double total_displacement = std::numeric_limits<double>::infinity();
+    size_t num_iters = 0;
+    while (total_displacement / num_points > min_avg_displacement &&
+           num_iters < max_iters) {
+      total_displacement = 0.0;
+
+      for (const auto& point : points) {
+        Point::Ptr derivative = Derivative(point);
+        const VectorXd& step_vector = point->GetVector() -
+          gradient_weight * derivative->GetVector();
+
+        Point::Ptr step_point = Point2D::Create(step_vector(0), step_vector(1));
+        total_displacement += point->DistanceTo(step_point);
+      }
+
+      num_iters++;
+    }
+
+    // Create a new trajectory from these optimized points.
+    Trajectory::Ptr optimized = Trajectory::Create(points);
+    return optimized;
+  }
+
   // Visualize this scene. Optionally pass in the number of pixels
   // in the x-direction.
   void Scene2DContinuous::Visualize(const std::string& title, int xsize) const {
