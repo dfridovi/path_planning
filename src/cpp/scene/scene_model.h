@@ -47,6 +47,7 @@
 #include "obstacle.h"
 #include <geometry/point.h>
 #include <geometry/line_segment.h>
+#include <geometry/trajectory.h>
 #include <flann/flann_obstacle_kdtree.h>
 #include <util/disallow_copy_and_assign.h>
 #include <math/random_generator.h>

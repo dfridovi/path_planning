@@ -163,10 +163,10 @@ namespace path {
   }
 
   // Optimize the given trajectory to minimize cost.
-  Trajectory::Ptr OptimizeTrajectory(Trajectory::Ptr path,
-                                     double gradient_weight,
-                                     double min_avg_displacement,
-                                     size_t max_iters) const {
+  Trajectory::Ptr Scene2DContinuous::OptimizeTrajectory(Trajectory::Ptr path,
+                                                        double gradient_weight,
+                                                        double min_avg_displacement,
+                                                        size_t max_iters) const {
     CHECK_NOTNULL(path.get());
 
     // Extract points from the given trajectory.
@@ -183,13 +183,14 @@ namespace path {
            num_iters < max_iters) {
       total_displacement = 0.0;
 
-      for (const auto& point : points) {
-        Point::Ptr derivative = Derivative(point);
-        const VectorXd& step_vector = point->GetVector() -
+      for (size_t ii = 0; ii < points.size(); ii++) {
+        Point::Ptr derivative = Derivative(points[ii]);
+        const VectorXd& step_vector = points[ii]->GetVector() -
           gradient_weight * derivative->GetVector();
 
         Point::Ptr step_point = Point2D::Create(step_vector(0), step_vector(1));
-        total_displacement += point->DistanceTo(step_point);
+        total_displacement += points[ii]->DistanceTo(step_point);
+        points[ii] = step_point;
       }
 
       num_iters++;

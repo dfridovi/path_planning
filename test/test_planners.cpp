@@ -41,6 +41,7 @@
 #include <math/random_generator.h>
 #include <scene/scene_2d_continuous.h>
 #include <scene/obstacle_2d.h>
+#include <scene/obstacle_2d_gaussian.h>
 #include <image/image.h>
 
 #include <vector>
@@ -96,12 +97,58 @@ namespace path {
         goal = point;
     }
 
-    // Visualize the map.
+    // Plan a route.
+    RRTPlanner planner(robot, scene, origin, goal, 0.05);
+    Trajectory::Ptr route = planner.PlanTrajectory();
+
+    // If visualize flag is set, query a grid and show the cost map.
     if (FLAGS_visualize_planner) {
-      Trajectory::Ptr direct_route = Trajectory::Create();
-      direct_route->AddPoint(origin);
-      direct_route->AddPoint(goal);
-      scene.Visualize("Direct route", direct_route);
+      scene.Visualize("RRT route", route);
+    }
+  }
+
+    // Test that we can construct and destroy a scene.
+  TEST(Planner, TestOptimizePath) {
+    math::RandomGenerator rng(math::RandomGenerator::Seed());
+
+    // Create a bunch of obstacles.
+    std::vector<Obstacle::Ptr> obstacles;
+    for (size_t ii = 0; ii < 200; ii++) {
+      double x = rng.Double();
+      double y = rng.Double();
+      double sigma_xx = 0.005 * rng.DoubleUniform(0.25, 0.75);
+      double sigma_yy = 0.005 * rng.DoubleUniform(0.25, 0.75);
+      double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
+      double radius = rng.DoubleUniform(0.01, 0.02);
+
+      Obstacle::Ptr obstacle =
+        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, radius);
+      obstacles.push_back(obstacle);
+     }
+
+    // Create a 2D continous scene.
+    Scene2DContinuous scene(0.0, 1.0, 0.0, 1.0, obstacles);
+
+    // Create a robot.
+    Robot2DCircular robot(scene, 0.005);
+
+    // Choose origin/goal.
+    Point::Ptr origin, goal;
+    while (!origin) {
+      double x = rng.Double();
+      double y = rng.Double();
+      Point::Ptr point = Point2D::Create(x, y);
+
+      if (robot.IsFeasible(point))
+        origin = point;
+    }
+    while (!goal) {
+      double x = rng.Double();
+      double y = rng.Double();
+      Point::Ptr point = Point2D::Create(x, y);
+
+      if (robot.IsFeasible(point) && origin->DistanceTo(point) > 0.4)
+        goal = point;
     }
 
     // Plan a route.
@@ -111,6 +158,15 @@ namespace path {
     // If visualize flag is set, query a grid and show the cost map.
     if (FLAGS_visualize_planner) {
       scene.Visualize("RRT route", route);
+    }
+
+    // Optimize path.
+    Trajectory::Ptr optimized_path =
+      scene.OptimizeTrajectory(route, 1e-6, 1e-5, 1000);
+
+    // If visualize flag is set, query a grid and show the cost map.
+    if (FLAGS_visualize_planner) {
+      scene.Visualize("Smoothed route", optimized_path);
     }
   }
 
