@@ -165,6 +165,7 @@ namespace path {
   // Optimize the given trajectory to minimize cost.
   Trajectory::Ptr Scene2DContinuous::OptimizeTrajectory(Trajectory::Ptr path,
                                                         double gradient_weight,
+                                                        double max_point_displacement,
                                                         double min_avg_displacement,
                                                         size_t max_iters) const {
     CHECK_NOTNULL(path.get());
@@ -188,9 +189,11 @@ namespace path {
         const VectorXd& step_vector = points[ii]->GetVector() -
           gradient_weight * derivative->GetVector();
 
-        Point::Ptr step_point = Point2D::Create(step_vector(0), step_vector(1));
-        total_displacement += points[ii]->DistanceTo(step_point);
-        points[ii] = step_point;
+        Point::Ptr initial_step = Point2D::Create(step_vector(0), step_vector(1));
+        Point::Ptr truncated_step =
+          points[ii]->StepToward(initial_step, max_point_displacement);
+        total_displacement += points[ii]->DistanceTo(truncated_step);
+        points[ii] = truncated_step;
       }
 
       num_iters++;

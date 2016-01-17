@@ -43,9 +43,11 @@
 #include "obstacle_2d_gaussian.h"
 #include <geometry/point.h>
 #include <geometry/point_2d.h>
+
 #include <memory>
 #include <cmath>
 #include <iostream>
+#include <Eigen/SVD>
 
 using Eigen::Vector2d;
 
@@ -54,10 +56,10 @@ namespace path {
   // Factory method.
   Obstacle::Ptr Obstacle2DGaussian::Create(double x, double y,
                                            double sigma_xx, double sigma_yy,
-                                           double sigma_xy, double radius) {
+                                           double sigma_xy, double radius_zscore) {
     Obstacle::Ptr obstacle(new Obstacle2DGaussian(x, y,
                                                   sigma_xx, sigma_yy,
-                                                  sigma_xy, radius));
+                                                  sigma_xy, radius_zscore));
     return obstacle;
   }
 
@@ -116,11 +118,11 @@ namespace path {
   // Default constructor.
   Obstacle2DGaussian::Obstacle2DGaussian(double x, double y,
                                          double sigma_xx, double sigma_yy,
-                                         double sigma_xy, double radius)
-    : Obstacle(Point2D::Create(x, y), radius) {
-
+                                         double sigma_xy, double radius_zscore) {
+    // Set mean and covariance.
     mean_(0) = x;
     mean_(1) = y;
+    location_ = Point2D::Create(x, y);
 
     cov_(0, 0) = sigma_xx;
     cov_(0, 1) = sigma_xy;
@@ -130,6 +132,11 @@ namespace path {
     // Precalculate determinant and inverse.
     det_ = cov_.determinant();
     inv_ = cov_.inverse();
+
+    // Determine radius from zscore. Note that the largest eigenvalue of the
+    // covariance matrix is the variance along the principle axis.
+    Eigen::JacobiSVD<Matrix2d> svd(cov_, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    radius_ = radius_zscore * svd.singularValues()(0);
   }
 
 } //\ namespace path

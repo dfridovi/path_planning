@@ -83,6 +83,7 @@ namespace path {
     // Optimize the given trajectory to minimize cost.
     Trajectory::Ptr OptimizeTrajectory(Trajectory::Ptr path,
                                        double gradient_weight,
+                                       double max_point_displacement,
                                        double min_avg_displacement,
                                        size_t max_iters) const;
 

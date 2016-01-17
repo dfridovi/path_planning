@@ -60,6 +60,7 @@ namespace path {
     typedef std::shared_ptr<Obstacle> Ptr;
     typedef std::shared_ptr<const Obstacle> ConstPtr;
 
+    inline Obstacle();
     inline Obstacle(Point::Ptr location, double radius);
     virtual ~Obstacle() {}
 
@@ -84,7 +85,9 @@ namespace path {
 
 // ---------------------------- Implementation ------------------------------ //
 
-  // Default base constructor.
+  // Default base constructors.
+  Obstacle::Obstacle()
+    : location_(nullptr), radius_(-1.0) {}
   Obstacle::Obstacle(Point::Ptr location, double radius)
     : radius_(radius), location_(location) {}
 

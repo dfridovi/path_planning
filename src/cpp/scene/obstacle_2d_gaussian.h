@@ -54,10 +54,11 @@ namespace path {
   // Derive from this class when defining a new Obstacle type.
   class Obstacle2DGaussian : public Obstacle {
   public:
-    // Factory method.
+    // Factory method. Note that radius_zscore is the number of standard deviations
+    // along the principal axis that correspond to the desired feasibility threshold.
     static Obstacle::Ptr Create(double x, double y,
                                 double sigma_xx, double sigma_yy,
-                                double sigma_xy, double radius = 0.9);
+                                double sigma_xy, double radius_zscore = 3.0);
 
     // Define these methods in a derived class.
     bool IsFeasible(Point::Ptr point) const;

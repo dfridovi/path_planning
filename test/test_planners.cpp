@@ -119,10 +119,9 @@ namespace path {
       double sigma_xx = 0.005 * rng.DoubleUniform(0.25, 0.75);
       double sigma_yy = 0.005 * rng.DoubleUniform(0.25, 0.75);
       double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
-      double radius = rng.DoubleUniform(0.01, 0.02);
 
       Obstacle::Ptr obstacle =
-        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, radius);
+        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 3.0);
       obstacles.push_back(obstacle);
      }
 
@@ -163,7 +162,7 @@ namespace path {
 
     // Optimize path.
     Trajectory::Ptr optimized_path =
-      scene.OptimizeTrajectory(route, 1e-6, 1e-4, 1000);
+      scene.OptimizeTrajectory(route, 1e-6, 1e-3, 5e-4, 1000);
 
     // If visualize flag is set, query a grid and show the cost map.
     if (FLAGS_visualize_planner) {

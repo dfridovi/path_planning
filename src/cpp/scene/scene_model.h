@@ -78,8 +78,9 @@ namespace path {
     virtual Point::Ptr Derivative(Point::Ptr point) const = 0;
     virtual Point::Ptr GetRandomPoint() const = 0;
     virtual Trajectory::Ptr OptimizeTrajectory(Trajectory::Ptr path,
-                                               double gradient_weight = 0.1,
-                                               double min_avg_displacement = 0.01,
+                                               double gradient_weight = 1e-6,
+                                               double max_point_displacement = 0.01,
+                                               double min_avg_displacement = 1e-4,
                                                size_t max_iters = 1000) const = 0;
   protected:
     std::vector<Obstacle::Ptr> obstacles_;
