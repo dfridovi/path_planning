@@ -36,48 +36,62 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines a 2D occupancy grid.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
+#define PATH_PLANNING_OCCUPANCY_GRID_2D_H
 
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include "occupancy_grid.h"
+#include <scene/scene_2d_continuous.h>
+#include <Eigen/Dense>
+
+using Eigen::MatrixXi;
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  // Derive from this class when defining a specific occupancy grid.
+  class OccupancyGrid2D : public OccupancyGrid {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    OccupancyGrid2D(double xmin, double xmax, double ymin, double ymax,
+                    double block_size);
+    ~OccupancyGrid2D() {}
+
+    // Getters.
+    Scene2DContinuous& GetScene() { return scene_; }
+    double GetBlockSize() const { return block_size_; }
+    double GetXMin() const { return xmin_; }
+    double GetXMax() const { return xmax_; }
+    double GetYMin() const { return ymin_; }
+    double GetYMax() const { return ymax_; }
+    int GetNRows() const { return nrows_ ; }
+    int GetNCols() const { return ncols_ ; }
 
     // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    void Insert(Point::Ptr point);
+    int GetCountAt(Point::Ptr point) const;
+    Point::Ptr GetBinCenter(Point::Ptr point) const;
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // Visualize this occupancy grid.
+    void Visualize(const std::string& title = std::string()) const;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    // Check if a point is valid.
+    bool IsValidPoint(Point::Ptr point) const;
+
+    MatrixXi grid_;
+    Scene2DContinuous scene_;
+    double block_size_;
+    const double xmin_;
+    const double xmax_;
+    const double ymin_;
+    const double ymax_;
+    int nrows_;
+    int ncols_;
   };
-
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
 
 } // \namespace path
 

@@ -36,48 +36,28 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines a simple circular robot in two dimensions.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_ROBOT_2D_CIRCULAR_H
+#define PATH_PLANNING_ROBOT_2D_CIRCULAR_H
 
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include "robot_model.h"
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  // Simple 2D circular robot.
+  class Robot2DCircular : public RobotModel {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    Robot2DCircular(SceneModel& scene, double radius)
+      : RobotModel(scene, radius) {}
+    ~Robot2DCircular() {}
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
-
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
-
-  private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    // Test if a particular point is feasible.
+    bool IsFeasible(Point::Ptr point);
+    bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const;
   };
-
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
 
 } // \namespace path
 

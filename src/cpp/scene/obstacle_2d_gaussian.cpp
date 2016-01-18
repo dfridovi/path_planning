@@ -43,27 +43,37 @@
 #include "obstacle_2d_gaussian.h"
 #include <geometry/point.h>
 #include <geometry/point_2d.h>
+
 #include <memory>
 #include <cmath>
+#include <iostream>
+#include <Eigen/SVD>
+
+using Eigen::Vector2d;
 
 namespace path {
 
   // Factory method.
   Obstacle::Ptr Obstacle2DGaussian::Create(double x, double y,
                                            double sigma_xx, double sigma_yy,
-                                           double sigma_xy) {
+                                           double sigma_xy, double radius_zscore) {
     Obstacle::Ptr obstacle(new Obstacle2DGaussian(x, y,
                                                   sigma_xx, sigma_yy,
-                                                  sigma_xy));
+                                                  sigma_xy, radius_zscore));
     return obstacle;
   }
 
   // Is this point feasible?
   bool Obstacle2DGaussian::IsFeasible(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
-    Point2D *ptr = std::static_pointer_cast<Point2D>(point).get();
+    if (point->DistanceTo(location_) < radius_)
+      return false;
+    return true;
+  }
 
-    if (ptr->GetVector().isApprox(mean_))
+  // Is this point feasible?
+  bool Obstacle2DGaussian::IsFeasible(const VectorXd& point) const {
+    if ((point - mean_).norm() < radius_)
       return false;
     return true;
   }
@@ -71,20 +81,48 @@ namespace path {
   // What is the cost of occupying this point?
   double Obstacle2DGaussian::Cost(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
-    Point2D *ptr = std::static_pointer_cast<Point2D>(point).get();
-    Vector2d p = ptr->GetVector();
 
-    return std::exp(-0.5 * (p - mean_).transpose() * inv_ * (p - mean_)) /
-      std::sqrt(2.0 * M_PI * det_);
+    // Check point type.
+    if (!point->IsType(Point::PointType::POINT_2D)) {
+      VLOG(1) << "Point types do not match. Returning a cost of infinity.";
+      return std::numeric_limits<double>::infinity();
+    }
+
+    Point2D *ptr = std::static_pointer_cast<Point2D>(point).get();
+    const VectorXd& p = ptr->GetVector();
+
+    return Cost(p);
+  }
+
+  // What is the cost of occupying this point?
+  double Obstacle2DGaussian::Cost(const VectorXd& point) const {
+    return std::exp(-0.5 * (point - mean_).transpose() * inv_ * (point - mean_)) /
+      std::sqrt((2.0 * M_PI) * (2.0 * M_PI) * det_);
+  }
+
+  // Derivative of the cost function by position. This is used for
+  // trajectory optimization.
+  Point::Ptr Obstacle2DGaussian::Derivative(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+
+    // Check point type.
+    if (!point->IsType(Point::PointType::POINT_2D)) {
+      VLOG(1) << "Point types do not match. Returning zero derivative..";
+      return Point2D::Create(0.0, 0.0);
+    }
+
+    Vector2d vector_derivative = -Cost(point) * inv_ * (point->GetVector() - mean_);
+    return Point2D::Create(vector_derivative(0), vector_derivative(1));
   }
 
   // Default constructor.
   Obstacle2DGaussian::Obstacle2DGaussian(double x, double y,
-                                         double sigma_xx,
-                                         double sigma_yy,
-                                         double sigma_xy) {
+                                         double sigma_xx, double sigma_yy,
+                                         double sigma_xy, double radius_zscore) {
+    // Set mean and covariance.
     mean_(0) = x;
     mean_(1) = y;
+    location_ = Point2D::Create(x, y);
 
     cov_(0, 0) = sigma_xx;
     cov_(0, 1) = sigma_xy;
@@ -94,6 +132,11 @@ namespace path {
     // Precalculate determinant and inverse.
     det_ = cov_.determinant();
     inv_ = cov_.inverse();
+
+    // Determine radius from zscore. Note that the largest eigenvalue of the
+    // covariance matrix is the variance along the principle axis.
+    Eigen::JacobiSVD<Matrix2d> svd(cov_, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    radius_ = radius_zscore * svd.singularValues()(0);
   }
 
 } //\ namespace path

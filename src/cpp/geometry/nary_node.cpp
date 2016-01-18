@@ -36,49 +36,27 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines a Node in an N-ary tree of Points.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
-
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include "nary_node.h"
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
-  public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+  // Factory method.
+  Node::Ptr Node::Create(Point::Ptr data) {
+    Node::Ptr node(new Node(data));
+    return node;
+  }
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+  // Getters and setters.
+  void Node::SetParent(Node::Ptr parent) { parent_ = parent; }
+  Node::Ptr Node::GetParent() { return parent_; }
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+  void Node::AddChild(Node::Ptr child) { children_.push_back(child); }
+  std::vector<Node::Ptr>& Node::GetChildren() { return children_; }
 
-  private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
-  };
+  Point::Ptr Node::GetData() { return data_; }
 
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
-
-} // \namespace path
-
-#endif
+} //\ namespace path

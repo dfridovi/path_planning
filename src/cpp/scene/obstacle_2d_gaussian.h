@@ -54,14 +54,18 @@ namespace path {
   // Derive from this class when defining a new Obstacle type.
   class Obstacle2DGaussian : public Obstacle {
   public:
-    // Factory method.
+    // Factory method. Note that radius_zscore is the number of standard deviations
+    // along the principal axis that correspond to the desired feasibility threshold.
     static Obstacle::Ptr Create(double x, double y,
                                 double sigma_xx, double sigma_yy,
-                                double sigma_xy);
+                                double sigma_xy, double radius_zscore = 3.0);
 
     // Define these methods in a derived class.
     bool IsFeasible(Point::Ptr point) const;
+    bool IsFeasible(const VectorXd& point) const;
     double Cost(Point::Ptr point) const;
+    double Cost(const VectorXd& point) const;
+    Point::Ptr Derivative(Point::Ptr point) const;
 
   private:
     Vector2d mean_;
@@ -71,10 +75,11 @@ namespace path {
     Matrix2d inv_;
     double det_;
 
-    // Default constructor.
+    // Default constructor. Radius is the minimum distance to the obstacle
+    // below which a point is considered infeasible.
     Obstacle2DGaussian(double x, double y,
                        double sigma_xx, double sigma_yy,
-                       double sigma_xy);
+                       double sigma_xy, double radius = 0.05);
   };
 
 } //\ namespace path

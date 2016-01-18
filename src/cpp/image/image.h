@@ -41,8 +41,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef BSFM_IMAGE_IMAGE_H
-#define BSFM_IMAGE_IMAGE_H
+#ifndef PATH_IMAGE_IMAGE_H
+#define PATH_IMAGE_IMAGE_H
 
 #include <memory>
 #include <string>
@@ -78,6 +78,9 @@ class Image {
 
   // Construct from OpenCV mat.
   explicit Image(const cv::Mat& other);
+
+  // Construct from Eigen matrix.
+  explicit Image(const MatrixXf& other);
 
   // Access the pixel at (u, v), at a specific channel.
   template <typename T>
@@ -119,6 +122,16 @@ class Image {
   // Convert between grayscale and 3-channel color.
   void ConvertToGrayscale();
   void ConvertToRGB();
+
+  // Add a colored circle at the specified location. 'heat' is on a red-blue colormap.
+  void Circle(unsigned int u, unsigned int v, unsigned int radius,
+              unsigned int line_thickness, double heat = 0.5);
+
+  // Add a colored line at the specified location. 'heat' is on a red-blue colormap.
+  void Line(unsigned int u1, unsigned int v1,
+            unsigned int u2, unsigned int v2,
+            unsigned int line_thickness, double heat = 0.5);
+
 
   // Open a window to display the image.
   void ImShow(const std::string& window_name = std::string(),
@@ -181,4 +194,5 @@ void EigenMatToOpenCV(
 }
 
 } //\namespace path
+
 #endif

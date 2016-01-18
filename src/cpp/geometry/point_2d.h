@@ -49,8 +49,6 @@
 #include <cmath>
 #include <Eigen/Dense>
 
-using Eigen::Vector2d;
-
 namespace path {
 
   // Derive from this class when defining a new Point type.
@@ -59,21 +57,16 @@ namespace path {
     // Factory method.
     static Point::Ptr Create(double x, double y);
 
-    // Setters.
-    void SetX(double x);
-    void SetY(double y);
-
     // Getters.
     double GetX() const;
     double GetY() const;
-    Vector2d& GetVector();
 
-    // Compute the distance to another 2D point.
+    // Must be implemented in this derived class.
     double DistanceTo(Point::Ptr point) const;
+    Point::Ptr StepToward(Point::Ptr point, double step_size) const;
+    Point::Ptr Add(Point::Ptr point, double scale) const;
 
   private:
-    Vector2d pt_;
-
     // Default constructor.
     Point2D(double x, double y);
   };

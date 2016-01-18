@@ -1,7 +1,8 @@
-# Data, build, binary directories
+# Data, build, binary, resources, theory directories
 data
 build
 bin
+resources
 
 # Swap files
 *.swp
@@ -32,3 +33,8 @@ bin
 
 # CSV files
 *.csv
+
+# pdflatex files
+theory/*.aux
+theory/*.log
+theory/*.out

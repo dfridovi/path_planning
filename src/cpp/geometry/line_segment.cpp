@@ -36,49 +36,68 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This is a helper class to model line segments, intended for use with motion
+// planners for tasks like intersection-checking.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
-
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include "line_segment.h"
+#include <math/random_generator.h>
+#include <glog/logging.h>
+#include <cmath>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
-  public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+  // A LineSegment is just a pair of points.
+  LineSegment::LineSegment(Point::Ptr point1, Point::Ptr point2) {
+    CHECK_NOTNULL(point1.get());
+    CHECK_NOTNULL(point2.get());
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    point1_ = point1;
+    point2_ = point2;
+    point_type_ = point1_->GetType();
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    if (!point1->IsSameTypeAs(point2)) {
+      VLOG(1) << "Point types do not match. setting the second point equal "
+        "to the first point.";
+      point2_ = point1;
+    }
+  }
 
-  private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
-  };
+  // Segment length.
+  double LineSegment::GetLength() const {
+    return point1_->DistanceTo(point2_);
+  }
 
-// ---------------------------- Implementation ------------------------------ //
+  // Midpoint.
+  Point::Ptr LineSegment::MidPoint() const {
+    return point1_->StepToward(point2_, 0.5 * GetLength());
+  }
 
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
+  // Distance between a point and this line segment.
+  double LineSegment::DistanceTo(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+    if (point->GetType() != point_type_) {
+      VLOG(1) << "Point is of the wrong type. Returning infinity.";
+      return std::numeric_limits<double>::infinity();
+    }
 
-} // \namespace path
+    // Get vectors from point1_ to point2_ and from point1_ to point.
+    VectorXd direction = point2_->GetVector() - point1_->GetVector();
+    VectorXd vector = point->GetVector() - point1_->GetVector();
+    direction /= direction.norm();
 
-#endif
+    // Test if point projects onto line segment.
+    double dot_product = direction.dot(vector);
+    if (dot_product <= GetLength() && dot_product >= 0.0) {
+      // Projects onto line segment.
+      return std::sqrt(vector.squaredNorm() - dot_product * dot_product);
+    } else {
+      // Doesn't project onto the line segment.
+      double dist1 = point1_->DistanceTo(point);
+      double dist2 = point2_->DistanceTo(point);
+      return std::min(dist1, dist2);
+    }
+  }
+
+} //\ namespace path

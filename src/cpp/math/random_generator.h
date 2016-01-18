@@ -51,49 +51,50 @@ namespace math {
 
 class RandomGenerator {
  public:
-  // Construct with "RandomGenerator(RandomGenerator::Seed())".
-  explicit RandomGenerator(unsigned long seed);
+  // Constructors.
+  RandomGenerator(unsigned long seed);
+  RandomGenerator();
 
   // Creates a damn good seed.
   static unsigned long Seed();
 
   // Generates a random integer in [0, RAND_MAX).
-  int Integer();
+  int Integer() const;
 
   // Generates a random integer in [0, 'max').
-  int IntegerUniform(int max);
+  int IntegerUniform(int max) const;
 
   // Generates a random integer in ['min', 'max').
-  int IntegerUniform(int min, int max);
+  int IntegerUniform(int min, int max) const;
 
   // Generates 'count' random integers in [0, RAND_MAX).
-  void Integers(size_t count, std::vector<int> *integers);
+  void Integers(size_t count, std::vector<int> *integers) const;
 
   // Generates 'count' random integers between ['min', 'max').
   void IntegersUniform(size_t count, int min, int max,
-                       std::vector<int> *integers);
+                       std::vector<int> *integers) const;
 
   // Generates a random double in [0, 1).
-  double Double();
+  double Double() const;
 
   // Generates a random double in ['min' and 'max').
-  double DoubleUniform(double min, double max);
+  double DoubleUniform(double min, double max) const;
 
   // Samples a double from a Gaussian distribution with parameters 'mean'
   // and 'stddev'.
-  double DoubleGaussian(double mean, double stddev);
+  double DoubleGaussian(double mean, double stddev) const;
 
   // Generates 'count' random doubles in [0, 1).
-  void Doubles(size_t count, std::vector<double>* doubles);
+  void Doubles(size_t count, std::vector<double>* doubles) const;
 
   // Generates 'count' random doubles between ['min', 'max').
   void DoublesUniform(size_t count, double min, double max,
-                      std::vector<double>* doubles);
+                      std::vector<double>* doubles) const;
 
   // Samples 'count' doubles from a Gaussian distribution with parameters
   // 'mean' and 'stddev'.
   void DoublesGaussian(size_t count, double mean, double stddev,
-                       std::vector<double>* doubles);
+                       std::vector<double>* doubles) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RandomGenerator)

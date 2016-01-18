@@ -44,6 +44,10 @@ RandomGenerator::RandomGenerator(unsigned long seed) {
   srand(seed);
 }
 
+RandomGenerator::RandomGenerator() {
+  srand(Seed());
+}
+
 unsigned long RandomGenerator::Seed() {
   // Hash from: http://burtleburtle.net/bob/hash/doobs.html
   // TODO(eanelson): Update this to read a seed from /dev/urandom instead.
@@ -57,13 +61,13 @@ unsigned long RandomGenerator::Seed() {
 }
 
 
-int RandomGenerator::Integer() {
+int RandomGenerator::Integer() const {
   // TODO(eanelson: Use a threadsafe rng.
   return rand();
 }
 
 // Generates a random integer in [0, 'max').
-int RandomGenerator::IntegerUniform(int max) {
+int RandomGenerator::IntegerUniform(int max) const {
   if (max <= 0) {
     LOG(WARNING) << "max <= 0. Returning 0.";
     // Eat a random number anyways and return 0.
@@ -74,7 +78,7 @@ int RandomGenerator::IntegerUniform(int max) {
   return Integer() % static_cast<int>(max + 1);
 }
 
-int RandomGenerator::IntegerUniform(int min, int max) {
+int RandomGenerator::IntegerUniform(int min, int max) const {
   if (min >= max) {
     LOG(WARNING) << "min >= max. Returning min.";
     // Eat a random number anyways and return min.
@@ -85,7 +89,7 @@ int RandomGenerator::IntegerUniform(int min, int max) {
   return min + (Integer() % static_cast<int>(max - min + 1));
 }
 
-void RandomGenerator::Integers(size_t count, std::vector<int> *integers) {
+void RandomGenerator::Integers(size_t count, std::vector<int> *integers) const {
   if (integers == nullptr) {
     return;
   }
@@ -96,7 +100,7 @@ void RandomGenerator::Integers(size_t count, std::vector<int> *integers) {
 }
 
 void RandomGenerator::IntegersUniform(size_t count, int min, int max,
-                                      std::vector<int>* integers) {
+                                      std::vector<int>* integers) const {
   if (integers == nullptr) {
     return;
   }
@@ -106,11 +110,11 @@ void RandomGenerator::IntegersUniform(size_t count, int min, int max,
   }
 }
 
-double RandomGenerator::Double() {
+double RandomGenerator::Double() const {
   return static_cast<double>(Integer()) / static_cast<double>(RAND_MAX);
 }
 
-double RandomGenerator::DoubleUniform(double min, double max) {
+double RandomGenerator::DoubleUniform(double min, double max) const {
     if (min >= max) {
       LOG(WARNING) << "min >= max. Returning min.";
       // Eat a random number anyways and return min.
@@ -122,7 +126,7 @@ double RandomGenerator::DoubleUniform(double min, double max) {
     return min + static_cast<double>(Integer()) * coefficient;
 }
 
-double RandomGenerator::DoubleGaussian(double mean, double stddev) {
+double RandomGenerator::DoubleGaussian(double mean, double stddev) const {
   // Use the box-muller transform to approximate a normal distribution:
   // https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
   // u must be \in (0, 1], and v must be \in [0, 1).
@@ -133,7 +137,7 @@ double RandomGenerator::DoubleGaussian(double mean, double stddev) {
   return mean + stddev * z;
 }
 
-void RandomGenerator::Doubles(size_t count, std::vector<double>* doubles) {
+void RandomGenerator::Doubles(size_t count, std::vector<double>* doubles) const {
   if (doubles == nullptr) {
     return;
   }
@@ -144,7 +148,7 @@ void RandomGenerator::Doubles(size_t count, std::vector<double>* doubles) {
 }
 
 void RandomGenerator::DoublesUniform(size_t count, double min, double max,
-                                     std::vector<double>* doubles) {
+                                     std::vector<double>* doubles) const {
   if (doubles == nullptr) {
     return;
   }
@@ -155,7 +159,7 @@ void RandomGenerator::DoublesUniform(size_t count, double min, double max,
 }
 
 void RandomGenerator::DoublesGaussian(size_t count, double mean, double stddev,
-                                      std::vector<double>* doubles) {
+                                      std::vector<double>* doubles) const {
   if (doubles == nullptr) {
     return;
   }

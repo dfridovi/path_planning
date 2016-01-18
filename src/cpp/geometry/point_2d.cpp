@@ -41,14 +41,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "point_2d.h"
+#include <glog/logging.h>
 
 namespace path {
 
   // Default constructor.
-  Point2D::Point2D(double x, double y) {
-    pt_(0) = x;
-    pt_(1) = y;
-  }
+  Point2D::Point2D(double x, double y)
+    : Point((VectorXd(2) << x, y).finished(), Point::PointType::POINT_2D) {}
 
   // Factory method.
   Point::Ptr Point2D::Create(double x, double y) {
@@ -56,24 +55,68 @@ namespace path {
     return point;
   }
 
-  // Setters.
-  void Point2D::SetX(double x) { pt_(0) = x; }
-  void Point2D::SetY(double y) { pt_(1) = y; }
-
   // Getters.
-  double Point2D::GetX() const { return pt_(0); }
-  double Point2D::GetY() const { return pt_(1); }
-  Vector2d& Point2D::GetVector() { return pt_; };
+  double Point2D::GetX() const { return coordinates_(0); }
+  double Point2D::GetY() const { return coordinates_(1); }
 
   // Compute the distance to another 2D point.
   double Point2D::DistanceTo(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
+
+    // Type check.
+    if (!point->IsType(Point::PointType::POINT_2D)) {
+      VLOG(1) << "Point types do not match. Returning a distance of -1.0.";
+      return -1.0;
+    }
+
     Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
 
-    double dx = pt_(0) - point2d->pt_(0);
-    double dy = pt_(1) - point2d->pt_(1);
+    double dx = coordinates_(0) - point2d->coordinates_(0);
+    double dy = coordinates_(1) - point2d->coordinates_(1);
 
     return std::sqrt(dx*dx + dy*dy);
+  }
+
+  // Take a step of the given length toward the specified point.
+  Point::Ptr Point2D::StepToward(Point::Ptr point, double step_size) const {
+    // Ensure that types match.
+    if (!IsSameTypeAs(point)) {
+      VLOG(1) << "Point types do not match. Returning a null pointer.";
+      Point::Ptr dummy(nullptr);
+      return dummy;
+    }
+
+    // Take a step.
+    double length = DistanceTo(point);
+    if (length <= step_size) return point;
+
+    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
+    double dx = point2d->coordinates_(0) - coordinates_(0);
+    double dy = point2d->coordinates_(1) - coordinates_(1);
+
+    double step_x = coordinates_(0) + step_size * (dx / length);
+    double step_y = coordinates_(1) + step_size * (dy / length); 
+
+    Point::Ptr step = Create(step_x, step_y);
+    return step;
+  }
+
+  // Add a scaled point to the given point and return the sum.
+  Point::Ptr Point2D::Add(Point::Ptr point, double scale) const {
+    // Ensure that types match.
+    if (!IsSameTypeAs(point)) {
+      VLOG(1) << "Point types do not match. Returning a null pointer.";
+      Point::Ptr dummy(nullptr);
+      return dummy;
+    }
+
+    // Arithmetic.
+    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
+    double sum_x = coordinates_(0) + scale * point2d->coordinates_(0);
+    double sum_y = coordinates_(1) + scale * point2d->coordinates_(1);
+
+    Point::Ptr sum = Create(sum_x, sum_y);
+    return sum;
   }
 
 } //\ namespace path

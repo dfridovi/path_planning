@@ -44,18 +44,28 @@
 #define PATH_PLANNING_SCENE_2D_CONTINUOUS_H
 
 #include "scene_model.h"
-#include <geometry/point.h>
 #include "obstacle.h"
+#include <geometry/point.h>
+#include <geometry/trajectory.h>
+#include <image/image.h>
+
 #include <vector>
+#include <string>
 
 namespace path {
 
   // Derived class to model 2D continuous scenes.
   class Scene2DContinuous : public SceneModel {
   public:
+    Scene2DContinuous();
+    Scene2DContinuous(double xmin, double xmax,
+                      double ymin, double ymax);
     Scene2DContinuous(double xmin, double xmax,
                       double ymin, double ymax,
                       std::vector<Obstacle::Ptr>& obstacles);
+
+    // Setter.
+    void SetBounds(double xmin, double xmax, double ymin, double ymax);
 
     // Is this point feasible?
     bool IsFeasible(Point::Ptr point) const;
@@ -63,8 +73,32 @@ namespace path {
     // What is the cost of occupying this point?
     double Cost(Point::Ptr point) const;
 
+    // Compute the derivative of cost by position. This is used for
+    // trajectory optimization.
+    Point::Ptr CostDerivative(Point::Ptr point) const;
+
+    // Get a random point in the scene.
+    Point::Ptr GetRandomPoint() const;
+
+    // Optimize the given trajectory to minimize cost.
+    Trajectory::Ptr OptimizeTrajectory(Trajectory::Ptr path,
+                                       double gradient_weight,
+                                       double curvature_penalty,
+                                       double max_point_displacement,
+                                       double min_avg_displacement,
+                                       size_t max_iters) const;
+
+    // Visualize this scene. Optionally pass in the number of pixels
+    // in the x-direction.
+    void Visualize(const std::string& title,
+                   int xsize = 500) const;
+
+    // Visualize a Trajectory in this scene. Optionally pass in the
+    // number of pixels in the x-direction.
+    void Visualize(const std::string& title,
+                   Trajectory::Ptr path, int xsize = 500) const;
+
   private:
-    std::vector<Obstacle::Ptr> obstacles_;
     double xmin_;
     double xmax_;
     double ymin_;
@@ -72,6 +106,5 @@ namespace path {
   };
 
 } // \namespace path
-
 
 #endif

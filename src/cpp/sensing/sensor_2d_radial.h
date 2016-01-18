@@ -36,48 +36,37 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines the simplest type of sensor model -- a 2D radially
+// symmetric sensor.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_SENSOR_MODEL_2D_RADIAL_H
+#define PATH_PLANNING_SENSOR_MODEL_2D_RADIAL_H
 
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include "sensor_model.h"
+#include <occupancy/occupancy_grid_2d.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  // Derive from this class when defining a specific type of sensor model.
+  class Sensor2DRadial : public SensorModel {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    Sensor2DRadial(OccupancyGrid2D& grid, double radius)
+      : grid_(grid), radius_(radius) {}
+    ~Sensor2DRadial() {}
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    // How many known obstacles are visible to the robot?
+    int GetObstacleCount(Point::Ptr pose) const;
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // Visualize which voxels are visible to this robot.
+    void Visualize(Point::Ptr pose,
+                   const std::string& title = std::string()) const;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    OccupancyGrid2D& grid_;
+    const double radius_;
   };
-
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
 
 } // \namespace path
 

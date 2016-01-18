@@ -36,48 +36,42 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines the base class for all occupancy grid implementations.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_OCCUPANCY_GRID_H
+#define PATH_PLANNING_OCCUPANCY_GRID_H
 
-#include <geometry/trajectory.h>
 #include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
+#include <scene/obstacle.h>
 #include <util/disallow_copy_and_assign.h>
+#include <math/random_generator.h>
+
+#include <vector>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  // Derive from this class when defining a specific occupancy grid.
+  class OccupancyGrid {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    OccupancyGrid() : count_(0) {}
+    virtual ~OccupancyGrid() {}
+
+    // Get total number of points inserted in the grid.
+    virtual int GetTotalCount() const { return count_; }
 
     // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    virtual void Insert(Point::Ptr point) = 0;
+    virtual int GetCountAt(Point::Ptr point) const = 0;
+    virtual Point::Ptr GetBinCenter(Point::Ptr point) const = 0;
 
   protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    int count_;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    DISALLOW_COPY_AND_ASSIGN(OccupancyGrid);
   };
-
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
 
 } // \namespace path
 

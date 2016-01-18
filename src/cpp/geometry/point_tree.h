@@ -36,49 +36,56 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines an N-ary tree of Points.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_POINT_TREE_H
+#define PATH_PLANNING_POINT_TREE_H
 
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
+#include "point.h"
+#include "trajectory.h"
+#include "nary_node.h"
+#include <flann/flann_point_kdtree.h>
 #include <util/disallow_copy_and_assign.h>
+
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include <glog/logging.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  // N-ary tree of Points.
+  class PointTree {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    PointTree() {}
+    ~PointTree() {}
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    // Insert a point. Returns true if successful.
+    bool Insert(Point::Ptr point);
+    bool Insert(Point::Ptr point, Point::Ptr parent);
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // Does the tree contain this point?
+    bool Contains(Point::Ptr point) const;
+
+    // Tree size.
+    int Size() const;
+
+    // Get nearest point in the tree.
+    Point::Ptr GetNearest(Point::Ptr point);
+
+    // Get the path from the head to a particular goal point.
+    Trajectory::Ptr GetTrajectory(Point::Ptr goal);
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    Node::Ptr head_;
+    std::unordered_map<Point::Ptr, Node::Ptr> registry_;
+    FlannPointKDTree kd_tree_;
+
+    DISALLOW_COPY_AND_ASSIGN(PointTree);
   };
 
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
-
-} // \namespace path
+} //\ namespace path
 
 #endif

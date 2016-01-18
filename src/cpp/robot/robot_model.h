@@ -42,37 +42,47 @@
 // The idea here is to provide a way to specify constraints on a robot's
 // configuration. For example, a RobotModel can test whether or not it is
 // occupying free space in a SceneModel.
+//
+// For simplicity, we assume that all robots are bounded by a sphere.
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef PATH_PLANNING_ROBOT_MODEL_H
 #define PATH_PLANNING_ROBOT_MODEL_H
 
+#include <scene/scene_model.h>
+#include <geometry/point.h>
+#include <flann/flann_obstacle_kdtree.h>
+#include <util/disallow_copy_and_assign.h>
+
 namespace path {
 
   // Derive from this class when defining a specific robot model.
-  template<typename SceneModelType> class RobotModel {
+  class RobotModel {
   public:
-    RobotModel() {}
+    inline RobotModel(SceneModel& scene, double radius);
     virtual ~RobotModel() {}
 
-    // Set scene model.
-    virtual inline void SetSceneModel(SceneModelType& scene) {}
+    // Get radius.
+    virtual inline double GetRadius() const;
 
     // Define these methods in a derived class.
-    virtual bool IsFeasible() const = 0;
-    virtual double Cost(IndexType) const = 0;
+    virtual bool IsFeasible(Point::Ptr location) = 0;
+    virtual bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const = 0;
+
+  protected:
+    SceneModel& scene_;
+    double radius_;
 
   private:
-    SceneModelType scene_;
-  }
-
+    DISALLOW_COPY_AND_ASSIGN(RobotModel);
+  };
 
 // ---------------------------- Implementation ------------------------------ //
 
-  template<typename SceneModelType>
-    void RobotModel<SceneModelType>::SetSceneModel(SceneModelType& scene) {
-    scene_ = scene;
-  }
+  RobotModel::RobotModel(SceneModel& scene, double radius)
+    : scene_(scene), radius_(radius) {}
+  double RobotModel::GetRadius() const { return radius_; }
 
 } // \namespace path
 

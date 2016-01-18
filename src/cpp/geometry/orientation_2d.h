@@ -36,49 +36,43 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines a 2D orientation, which is a child class of Point.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_ORIENTATION_2D_H
+#define PATH_PLANNING_ORIENTATION_2D_H
 
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include "point.h"
+#include <glog/logging.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  // Derive from this class when defining a new Point type.
+  class Orientation2D : public Point {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    // Factory method.
+    static Point::Ptr Create(double x, double y, double theta);
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    // Compute the distance/angle to a 2D point.
+    double DistanceTo(Point::Ptr point) const;
+    double AngleTo(Point::Ptr point) const;
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // Getters.
+    Point::Ptr GetPoint() const;
+    double GetTheta() const;
+
+    // Step toward the given 2D point.
+    Point::Ptr StepToward(Point::Ptr point, double step_size) const;
+
+    // Translate by the given 2D point.
+    Point::Ptr Add(Point::Ptr point, double scale) const;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    // Default constructor.
+    Orientation2D(double x, double y, double theta);
   };
 
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
-
-} // \namespace path
+} //\ namespace path
 
 #endif

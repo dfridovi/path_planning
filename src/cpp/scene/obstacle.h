@@ -45,8 +45,12 @@
 #define PATH_PLANNING_OBSTACLE_H
 
 #include <geometry/point.h>
+#include <geometry/line_segment.h>
 #include <util/disallow_copy_and_assign.h>
 #include <memory>
+#include <Eigen/Dense>
+
+using Eigen::VectorXd;
 
 namespace path {
 
@@ -56,16 +60,40 @@ namespace path {
     typedef std::shared_ptr<Obstacle> Ptr;
     typedef std::shared_ptr<const Obstacle> ConstPtr;
 
-    Obstacle() {}
+    inline Obstacle();
+    inline Obstacle(Point::Ptr location, double radius);
     virtual ~Obstacle() {}
+
+    // Get radius.
+    virtual inline double GetRadius() const;
+    virtual inline Point::Ptr GetLocation() const;
 
     // Define these methods in a derived class.
     virtual bool IsFeasible(Point::Ptr point) const = 0;
+    virtual bool IsFeasible(const VectorXd& point) const = 0;
     virtual double Cost(Point::Ptr point) const = 0;
+    virtual double Cost(const VectorXd& point) const = 0;
+    virtual Point::Ptr Derivative(Point::Ptr point) const = 0;
+
+  protected:
+    Point::Ptr location_;
+    double radius_;
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Obstacle);
   };
+
+// ---------------------------- Implementation ------------------------------ //
+
+  // Default base constructors.
+  Obstacle::Obstacle()
+    : location_(nullptr), radius_(-1.0) {}
+  Obstacle::Obstacle(Point::Ptr location, double radius)
+    : radius_(radius), location_(location) {}
+
+  // Getters.
+  double Obstacle::GetRadius() const { return radius_; }
+  Point::Ptr Obstacle::GetLocation() const { return location_; }
 
 } //\ namespace path
 

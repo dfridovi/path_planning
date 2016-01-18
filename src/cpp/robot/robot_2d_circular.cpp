@@ -36,49 +36,53 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines a simple circular robot in two dimensions.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
-
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include "robot_2d_circular.h"
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
-  public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+  // Test if a particular robot location is feasible.
+  bool Robot2DCircular::IsFeasible(Point::Ptr location) {
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    // Find nearest obstacle.
+    Obstacle::Ptr nearest;
+    double nn_distance = -1.0;
+    if (!scene_.GetObstacleTree().NearestNeighbor(location, nearest,
+                                                  nn_distance))
+      return false;
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // Check that it is outside the bounding sphere.
+    return nn_distance > radius_ + nearest->GetRadius();;
+  }
 
-  private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
-  };
+  // Check if there is a valid linear trajectory between these two points.
+  bool Robot2DCircular::LineOfSight(Point::Ptr point1,
+                                    Point::Ptr point2) const {
+    LineSegment line(point1, point2);
 
-// ---------------------------- Implementation ------------------------------ //
+    // Check if line segment intersects any nearby obstacle.
+    Point::Ptr midpoint = line.MidPoint();
+    double max_distance =
+      radius_ + scene_.GetLargestObstacleRadius() + 0.5 * line.GetLength();
 
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
+    FlannObstacleKDTree& obstacle_tree = scene_.GetObstacleTree();
+    std::vector<Obstacle::Ptr> obstacles;
+    if (!obstacle_tree.RadiusSearch(midpoint, obstacles, max_distance)) {
+      VLOG(1) << "Radius search failed during LineOfSight() test. "
+              << "Returning false.";
+      return false;
+    }
+
+    for (const auto& obstacle : obstacles) {
+      if (line.DistanceTo(obstacle->GetLocation()) <
+          obstacle->GetRadius() + radius_)
+        return false;
+    }
+
+    return true;
+  }
 
 } // \namespace path
-
-#endif

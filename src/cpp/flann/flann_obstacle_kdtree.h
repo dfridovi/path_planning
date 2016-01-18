@@ -31,54 +31,57 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class is a wrapper around the FlannPointKDTree class. The idea is to
+// facilitate quick nearest neighbor searching for the nearest obstacle in a
+// scene.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_FLANN_OBSTACLE_KDTREE_H
+#define PATH_PLANNING_FLANN_OBSTACLE_KDTREE_H
 
-#include <geometry/trajectory.h>
 #include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include <scene/obstacle.h>
+#include "flann_point_kdtree.h"
+#include "../util/disallow_copy_and_assign.h"
+
+#include <flann/flann.h>
+#include <unordered_map>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  class FlannObstacleKDTree {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    FlannObstacleKDTree() {}
+    ~FlannObstacleKDTree() {}
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    // Add obstacles to the index.
+    void AddObstacle(Obstacle::Ptr obstacle);
+    void AddObstacles(std::vector<Obstacle::Ptr>& obstacles);
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
+    // not a nearest neighbor was found, and if it was found, the nearest neighbor
+    // and distance to the nearest neighbor.
+    bool NearestNeighbor(Point::Ptr query, Obstacle::Ptr& nearest,
+                         double& nn_distance) const;
+
+    // Queries the kd tree for all neighbors of 'query' within the specified radius.
+    // Returns whether or not the search exited successfully.
+    bool RadiusSearch(Point::Ptr query, std::vector<Obstacle::Ptr>& neighbors,
+                      double radius) const;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
-  };
+    FlannPointKDTree kd_tree_;
+    std::unordered_map<Point::Ptr, Obstacle::Ptr> registry_; // to retrieve obstacles
 
-// ---------------------------- Implementation ------------------------------ //
+    DISALLOW_COPY_AND_ASSIGN(FlannObstacleKDTree);
+  };  //\class FlannObstacleKDTree
 
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
-
-} // \namespace path
+}  //\namespace path
 
 #endif

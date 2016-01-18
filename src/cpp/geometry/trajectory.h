@@ -47,33 +47,56 @@
 
 #include "point.h"
 #include <vector>
+#include <list>
 
 namespace path {
 
   // A Trajectory is just an ordered list of points.
   class Trajectory {
   public:
-    typedef std::shared_ptr<Point> Ptr;
-    typedef std::shared_ptr<const Point> ConstPtr;
+    typedef std::shared_ptr<Trajectory> Ptr;
+    typedef std::shared_ptr<const Trajectory> ConstPtr;
 
     ~Trajectory() {}
 
-    // Constructors.
-    Trajectory();
-    Trajectory(std::vector<Ptr>& points);
+    // Factory methods.
+    static Ptr Create();
+    static Ptr Create(std::vector<Point::Ptr>& points);
+    static Ptr Create(std::list<Point::Ptr>& points);
+
+    // Recompute length.
+    void RecomputeLength();
 
     // Add a point to the path.
-    void AddPoint(Ptr point);
+    void AddPoint(Point::Ptr point);
 
-    // Get path length.
+    // Upsample by adding k points linearly between each pair of points
+    // in this Trajectory.
+    void Upsample(unsigned int k);
+
+    // Compute the (time) derivative of the path, assuming uniform (time) sampling.
+    // Calculate at the endpoints by (implicit) padding.
+    Trajectory::Ptr TimeDerivative();
+
+    // Getters.
     double GetLength() const;
+    Point::PointType GetType() const;
+    std::vector<Point::Ptr>& GetPoints();
+    Point::Ptr GetAt(size_t index);
+
+    // Setter.
+    void SetAt(Point::Ptr point, size_t index);
 
   private:
-    std::vector<Ptr> points_;
+    std::vector<Point::Ptr> points_;
+    Point::PointType point_type_;
     double length_;
 
+    // Private constructors. Use factory methods instead.
+    Trajectory();
+    Trajectory(std::vector<Point::Ptr>& points);
+    Trajectory(std::list<Point::Ptr>& points);
   };
-
 } //\ namespace path
 
 #endif

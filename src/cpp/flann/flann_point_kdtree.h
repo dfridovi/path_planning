@@ -31,54 +31,60 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ *          Erik Nelson            ( eanelson@eecs.berkeley.edu )
  */
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// Wrapper around the FLANN library for approximate nearest neighbor searches.
+// This is useful for finding the nearest Point in a collection -- e.g. for
+// insertion into a RRT.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_FLANN_POINT_KDTREE_H
+#define PATH_PLANNING_FLANN_POINT_KDTREE_H
 
-#include <geometry/trajectory.h>
+#include <flann/flann.h>
+
 #include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include "../util/disallow_copy_and_assign.h"
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  class FlannPointKDTree {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    FlannPointKDTree();
+    ~FlannPointKDTree();
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    // Number of points in the tree.
+    int Size() const;
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // Add points to the index.
+    void AddPoint(Point::Ptr point);
+    void AddPoints(std::vector<Point::Ptr>& points);
+
+    // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
+    // not a nearest neighbor was found, and if it was found, the nearest neighbor
+    // and distance to the nearest neighbor. 
+    bool NearestNeighbor(Point::Ptr query, Point::Ptr& nearest,
+                         double& nn_distance) const;
+
+    // Queries the kd tree for all neighbors of 'query' within the specified radius.
+    // Returns whether or not the search exited successfully.
+    bool RadiusSearch(Point::Ptr query, std::vector<Point::Ptr>& neighbors,
+                      double radius) const;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
-  };
+    std::shared_ptr< flann::Index< flann::L2<double> > > index_;
+    std::vector<Point::Ptr> registry_; // to retrieve original points
+    Point::PointType point_type_;
 
-// ---------------------------- Implementation ------------------------------ //
+    DISALLOW_COPY_AND_ASSIGN(FlannPointKDTree);
 
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
+  };  //\class FlannPointKDTree
 
-} // \namespace path
+}  //\namespace bsfm
 
 #endif

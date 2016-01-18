@@ -32,55 +32,72 @@
  *
  * Please contact the author(s) of this library if you have any questions.
  * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ *          Erik Nelson            ( eanelson@eecs.berkeley.edu )
  */
 
-#include <geometry/trajectory.h>
+#include <flann/flann_point_kdtree.h>
+#include <geometry/point.h>
 #include <geometry/point_2d.h>
 #include <math/random_generator.h>
 
-#include <vector>
-#include <cmath>
+#include <limits>
+#include <memory>
+#include <gflags/gflags.h>
 #include <gtest/gtest.h>
-#include <glog/logging.h>
-#include <iostream>
 
 namespace path {
 
-  // Test that we can construct and destroy a Trajectory.
-  TEST(Trajectory, TestTrajectory) {
+  TEST(FlannPointKDTree, TestFlannPointKDTree) {
     math::RandomGenerator rng(0);
 
-    // Empty Trajectory.
-    Trajectory::Ptr path1 = Trajectory::Create();
+    // Make a FLANN kd-tree.
+    FlannPointKDTree point_kdtree;
 
-    // Vector of Points.
+    // Make a bunch of points and incrementally insert them into the kd tree.
     std::vector<Point::Ptr> points;
-    Point::Ptr last_point;
-    double length = 0.0;
-
-    // Make a bunch of points.
-    for (size_t ii = 0; ii < 1000; ++ii) {
+    for (int ii = 0; ii < 100; ++ii) {
       double x = rng.Double();
       double y = rng.Double();
       Point::Ptr point = Point2D::Create(x, y);
-      CHECK_NOTNULL(point.get());
 
-      // Keep track of length for comparison.
-      if (ii != 0)
-        length += last_point->DistanceTo(point);
-
-      // Add to path and vector.
-      path1->AddPoint(point);
       points.push_back(point);
-      last_point = point;
+      point_kdtree.AddPoint(point);
+      EXPECT_EQ(point_kdtree.Size(), points.size());
     }
 
-    // Make second Trajectory from vector.
-    Trajectory::Ptr path2 = Trajectory::Create(points);
+    // Add a batch of points at once.
+    std::vector<Point::Ptr> points2;
+    for (int ii = 0; ii < 100; ++ii) {
+      double x = rng.Double();
+      double y = rng.Double();
+      Point::Ptr point = Point2D::Create(x, y);
+      points2.push_back(point);
+    }
+    point_kdtree.AddPoints(points2);
+    EXPECT_EQ(point_kdtree.Size(), points.size() + points2.size());
 
-    // Checks lengths.
-    EXPECT_NEAR(path1->GetLength(), path2->GetLength(), 1e-16);
-    EXPECT_NEAR(path1->GetLength(), length, 1e-16);
+    // Query the kd tree for nearest neighbor.
+    Point::Ptr query = Point2D::Create(rng.Double(), rng.Double());
+    Point::Ptr nearest;
+    double nn_distance = -1.0;
+    EXPECT_TRUE(point_kdtree.NearestNeighbor(query, nearest, nn_distance));
+    EXPECT_NE(nearest, nullptr);
+
+    // Manually compute distance between all points and the query.
+    points.insert(points.end(), points2.begin(), points2.end());
+
+    double min_distance = std::numeric_limits<double>::max();
+    size_t min_distance_index = 0;
+    for (size_t ii = 0; ii < points.size(); ++ii) {
+      double distance = points[ii]->DistanceTo(query);
+      if (distance < min_distance) {
+        min_distance = distance;
+        min_distance_index = ii;
+      }
+    }
+
+    EXPECT_NEAR(points[min_distance_index]->DistanceTo(nearest), 0, 1e-8);
+    EXPECT_NEAR(min_distance, nn_distance, 1e-8);
   }
 
-} //\ namespace path
+}  //\namespace bsfm

@@ -36,48 +36,33 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class is the base class for all sensor models. The general idea is that
+// OccupancyGrid + SensorModel gives a way to generate expected landmark
+// observations, e.g. for plugging into an objective function.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_SENSOR_MODEL_H
+#define PATH_PLANNING_SENSOR_MODEL_H
 
-#include <geometry/trajectory.h>
 #include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
+#include <occupancy/occupancy_grid.h>
 #include <util/disallow_copy_and_assign.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  // Derive from this class when defining a specific type of sensor model.
+  class SensorModel {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    SensorModel() {}
+    virtual ~SensorModel() {}
 
     // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
-
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    virtual int GetObstacleCount(Point::Ptr pose) const = 0;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    DISALLOW_COPY_AND_ASSIGN(SensorModel);
   };
-
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
 
 } // \namespace path
 

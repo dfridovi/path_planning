@@ -36,49 +36,57 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class defines a Node in an N-ary tree of Points.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_NARY_NODE_H
+#define PATH_PLANNING_NARY_NODE_H
 
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
 #include <util/disallow_copy_and_assign.h>
+#include "point.h"
+#include <memory>
+#include <vector>
+#include <glog/logging.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  // Helper class for use with a tree class.
+  class Node {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    typedef std::shared_ptr<Node> Ptr;
+    typedef std::shared_ptr<const Node> ConstPtr;
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    ~Node() {}
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // Factory method.
+    static Node::Ptr Create(const Point::Ptr data);
+
+    // Add a child.
+    void AddChild(Node::Ptr child);
+
+    // Set parent.
+    void SetParent(Node::Ptr parent);
+
+    // Get children.
+    std::vector<Node::Ptr>& GetChildren();
+
+    // Get parent.
+    Node::Ptr GetParent();
+
+    // Get data.
+    Point::Ptr GetData();
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    // Private constructor. Use the factory method instead.
+    Node(const Point::Ptr data)
+      : data_(data) {}
+
+    Point::Ptr data_;
+    Node::Ptr parent_;
+    std::vector<Node::Ptr> children_;
   };
 
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
-
-} // \namespace path
+} //\ namespace path
 
 #endif

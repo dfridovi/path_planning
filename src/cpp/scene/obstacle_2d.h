@@ -36,49 +36,40 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This class models 2D point obstacles.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_OBSTACLE_2D_H
+#define PATH_PLANNING_OBSTACLE_2D_H
 
-#include <geometry/trajectory.h>
-#include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include "obstacle.h"
+#include <Eigen/Dense>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  // 2D obstacle with circular symmetry.
+  class Obstacle2D : public Obstacle {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    // Factory methods.
+    static Obstacle::Ptr Create(double x, double y, double radius);
+    static Obstacle::Ptr Create(Point::Ptr point, double radius);
 
     // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
+    bool IsFeasible(Point::Ptr point) const;
+    bool IsFeasible(const VectorXd& point) const;
+    double Cost(Point::Ptr point) const;
+    double Cost(const VectorXd& point) const;
+    Point::Ptr Derivative(Point::Ptr point) const;
 
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    // Default constructors. Radius is the minimum distance to the obstacle
+    // below which a point is considered infeasible.
+    Obstacle2D(double x, double y, double radius);
+    Obstacle2D(Point::Ptr point, double radius);
   };
 
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
-
-} // \namespace path
+} //\ namespace path
 
 #endif

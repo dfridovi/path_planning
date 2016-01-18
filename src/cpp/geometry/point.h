@@ -44,27 +44,82 @@
 #ifndef PATH_PLANNING_POINT_H
 #define PATH_PLANNING_POINT_H
 
+#include <Eigen/Dense>
 #include <memory>
 #include <util/disallow_copy_and_assign.h>
+#include <glog/logging.h>
+
+using Eigen::VectorXd;
 
 namespace path {
 
   // Derive from this class when defining a new Point type.
   class Point {
   public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     typedef std::shared_ptr<Point> Ptr;
     typedef std::shared_ptr<const Point> ConstPtr;
 
-    Point() {}
+    // Each Point can only be of a single type.
+    enum PointType {POINT_2D, ORIENTATION_2D, OTHER};
+
+    // Derived classes must write their own constructors.
+    inline Point(const VectorXd& point, PointType type);
     virtual ~Point() {}
+
+    // Set point type. This should be called in the derived class' constructor.
+    virtual inline void SetType(const PointType type);
+
+    // Check point type.
+    virtual inline PointType GetType() const;
+    virtual inline bool IsType(PointType type) const;
+    virtual inline bool IsSameTypeAs(Point::Ptr point) const;
+
+    // Get vector.
+    virtual inline const VectorXd& GetVector() const;
 
     // Define these methods in a derived class.
     virtual double DistanceTo(Point::Ptr point) const = 0;
+    virtual Point::Ptr StepToward(Point::Ptr point, double step_size) const = 0;
+    virtual Point::Ptr Add(Point::Ptr point, double scale) const = 0;
+
+  protected:
+    const VectorXd coordinates_;
 
   private:
+    PointType type_;
     DISALLOW_COPY_AND_ASSIGN(Point);
   };
+
+// -------------------------- IMPLEMENTATION ---------------------------- //
+
+  // Default base constructor.
+  Point::Point(const VectorXd& point, PointType type)
+    : coordinates_(point), type_(type) {}
+
+  Point::PointType Point::GetType() const { return type_; }
+  void Point::SetType(const Point::PointType type) { type_ = type; }
+
+  bool Point::IsType(Point::PointType type) const {
+    if (type_ == type)
+      return true;
+    return false;
+  }
+
+  bool Point::IsSameTypeAs(Point::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+
+    if (type_ == point->type_)
+      return true;
+    return false;
+  }
+
+  const VectorXd& Point::GetVector() const {
+    return coordinates_;
+  }
 
 } //\ namespace path
 
 #endif
+

@@ -36,49 +36,41 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This file defines the base class for all motion planners. For example,
-// an RRT implementation could be derived from this class.
+// This file defines the RRT (rapidly-exploring random tree) class, which is
+// a derived class based on the Planner class. It is implemented according to
+// the following descriptions:
+// + https://www.cs.cmu.edu/~motionplanning/lecture/lec20.pdf
+// + http://msl.cs.uiuc.edu/rrt/about.html
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_PLANNER_H
-#define PATH_PLANNING_PLANNER_H
+#ifndef PATH_PLANNING_RRT_PLANNER_H
+#define PATH_PLANNING_RRT_PLANNER_H
 
+#include "planner.h"
 #include <geometry/trajectory.h>
 #include <geometry/point.h>
-#include <robot/robot_model.h>
-#include <scene/scene_model.h>
-#include <util/disallow_copy_and_assign.h>
+#include <geometry/point_tree.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific path planner.
-  class Planner {
+  // Derived from base class Planner.
+  class RRTPlanner : public Planner {
   public:
-    inline Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal);
-    virtual ~Planner() {}
+    RRTPlanner(RobotModel& robot, SceneModel& scene,
+               Point::Ptr origin, Point::Ptr goal, double step_size = 0.1)
+      : Planner(robot, scene, origin, goal),
+        step_size_(step_size) {}
+    ~RRTPlanner() {}
 
-    // Define these methods in a derived class.
-    virtual Trajectory::Ptr PlanTrajectory() = 0;
-
-  protected:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point::Ptr origin_;
-    Point::Ptr goal_;
+    // The algorithm. See header for references.
+    Trajectory::Ptr PlanTrajectory();
 
   private:
-    DISALLOW_COPY_AND_ASSIGN(Planner);
+    PointTree tree_;
+    const double step_size_;
   };
 
-// ---------------------------- Implementation ------------------------------ //
-
-  Planner::Planner(RobotModel& robot, SceneModel& scene,
-                   Point::Ptr origin, Point::Ptr goal)
-    : robot_(robot), scene_(scene),
-      origin_(origin), goal_(goal) {}
-
-} // \namespace path
+} //\ namespace path
 
 #endif
