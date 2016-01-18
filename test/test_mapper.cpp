@@ -52,47 +52,58 @@ namespace path
 	using Eigen::Matrix3d;
 	using Eigen::Vector3d;
 
-	namespace
-	{
-		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene.png" );
-		const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud.csv" );
-	}
-	
-	bool bUseTestImg = true;
-
-	// Test that we can construct and destroy a bunch of 2D points.
+	// Check if various constructors work
 	TEST( Mapper, TestMapperConstruction )
 	{
 		CHECK_NOTNULL( new Mapper() );
-		
-		cv::Mat M;
-		if( bUseTestImg )
-		{
-			M = cv::imread(depth_map_file.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
-			EXPECT_TRUE(M.data);
-		}
-		else
-		{
-			M = cv::Mat( 10, 10, CV_8UC1 );
 
-			int rows = M.rows;
-			int cols = M.cols * M.channels();
-			for( int x = 0; x < rows; ++x )
+		cv::Mat M = cv::Mat( 10, 10, CV_8UC1 );
+		DepthMap dm(M);
+		Camera c = dm.GetCameraFromDepthMap(0, 0, 0, 0, 0, 0);
+		CHECK_NOTNULL( new Mapper(c) );
+	}
+
+	// Generate a depth map and verify that it reprojects to the correct point
+	TEST( Mapper, TestMapperGenerated )
+	{
+		cv::Mat M = cv::Mat( 10, 10, CV_8UC1 );
+
+		int rows = M.rows;
+		int cols = M.cols * M.channels();
+		for( int x = 0; x < rows; ++x )
+		{
+			uchar* row = M.ptr<uchar>(x);
+			for( int y = 0; y < cols; ++y )
 			{
-				uchar* row = M.ptr<uchar>(x);
-				for( int y = 0; y < cols; ++y )
-				{
-					row[y] = (int)((y / (cols - 1.0f)) * 255);
-				}
+				row[y] = (int)((y / (cols - 1.0f)) * 255);
 			}
 		}
 	
 		DepthMap dm(M);
 		dm.SetInverted( true );
+		Camera c = dm.GetCameraFromDepthMap( 0, -100, 10, 0, 0, 0 );
+    	Mapper m( c );
 
-    	Mapper m( dm.GetCameraFromDepthMap( 0, -100, 10, 0, 0, 0 ) );
     	PointList pl = m.ProjectDepthMap( dm );
-		
+		// TODO Check projection against source
+	}
+
+	// Load a depth map and generate a pointcloud file to verify correctness
+	// TODO: Automatically verify correctness (save the a correct point cloud file and compare them)
+	TEST( Mapper, TestMapperLoaded )
+	{
+		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene.png" );
+		const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud.csv" );
+
+		cv::Mat M = cv::imread(depth_map_file.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+		EXPECT_TRUE(M.data);
+
+		DepthMap dm(M);
+		dm.SetInverted( true );
+    	Camera c = dm.GetCameraFromDepthMap( 0, -100, 10, 0, 0, 0 );
+    	Mapper m( c );
+    	PointList pl = m.ProjectDepthMap( dm );
+
 		std::remove(point_cloud_file.c_str());
 		
 		file::CsvWriter csv_writer(point_cloud_file);

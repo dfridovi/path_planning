@@ -42,7 +42,6 @@
 #include <geometry/trajectory.h>
 #include <mapper/depthmap.h>
 #include <Eigen/Core>
-#include <geometry/rotation.h>
 #include <pose/pose.h>
 #include <opencv2/core/core.hpp>
 

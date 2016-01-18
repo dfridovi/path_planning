@@ -35,6 +35,7 @@
  */
 
 #include <mapper/depthmap.h>
+#include <geometry/rotation.h>
 
 namespace path
 {
