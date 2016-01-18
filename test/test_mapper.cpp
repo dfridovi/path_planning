@@ -39,6 +39,7 @@
 
 #include <mapper/mapper.h>
 #include <math/random_generator.h>
+#include <geometry/rotation.h>
 
 #include <iostream>
 
@@ -108,7 +109,7 @@ namespace path
 	// TODO: Automatically verify correctness (save the a correct point cloud file and compare them)
 	TEST( Mapper, TestMapperLoaded )
 	{
-		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene.png" );
+		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene2.png" );
 		const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud_loaded.csv" );
 
 		cv::Mat M = cv::imread(depth_map_file.c_str(), CV_LOAD_IMAGE_GRAYSCALE);

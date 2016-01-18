@@ -76,7 +76,7 @@ Camera DepthMap::GetCameraFromDepthMap( const Eigen::Vector3d& position, const E
     CameraExtrinsics extrinsics( cameraPose );
 
     // JDS: Not sure how to properly calculate focal length of a point camera
-    float focal_length = 120 * 0.35/0.36;
+    float focal_length = Width() * 0.35/0.36;
     Matrix3d A;
     A << focal_length, 0, Width()/2, 0, focal_length, Height()/2, 0, 0, 1;
 
@@ -89,6 +89,7 @@ Camera DepthMap::GetCameraFromDepthMap( const Eigen::Vector3d& position, const E
 
 Camera DepthMap::GetCameraFromDepthMap( const double X, const double Y, const double Z, const double Phi, const double Theta, const double Psi )
 {
+    // phi, theta, psi = yaw, pitch, roll?
     Eigen::Vector3d position( X, Y, Z );
     Matrix3d rotation = EulerAnglesToMatrix( Phi, Theta, Psi );
     return GetCameraFromDepthMap( position, rotation );
