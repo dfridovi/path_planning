@@ -189,21 +189,25 @@ namespace path {
       total_displacement = 0.0;
 
       // Compute second time derivative of the trajectory.
+      std::cout << "hi" << std::endl;
       Trajectory::Ptr time_derivative1 = optimized->TimeDerivative();
+      std::cout << "bye" << std::endl;
       Trajectory::Ptr time_derivative2 = time_derivative1->TimeDerivative();
 
       for (size_t ii = 1; ii < points.size() - 1; ii++) {
-        Point::Ptr cost_derivative = CostDerivative(points[ii]);
+        Point::Ptr point = optimized->GetAt(ii);
+        Point::Ptr cost_derivative = CostDerivative(point);
         Point::Ptr derivative = cost_derivative->Add(time_derivative2->GetAt(ii),
                                                      -curvature_penalty);
-        const VectorXd& step_vector = points[ii]->GetVector() -
+        const VectorXd& step_vector = point->GetVector() -
           gradient_weight * derivative->GetVector();
 
         Point::Ptr initial_step = Point2D::Create(step_vector(0), step_vector(1));
         Point::Ptr truncated_step =
-          points[ii]->StepToward(initial_step, max_point_displacement);
-        total_displacement += points[ii]->DistanceTo(truncated_step);
-        points[ii] = truncated_step;
+          point->StepToward(initial_step, max_point_displacement);
+        total_displacement += point->DistanceTo(truncated_step);
+
+        optimized->SetAt(truncated_step, ii);
       }
 
       num_iters++;
