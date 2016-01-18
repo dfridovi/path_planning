@@ -35,8 +35,8 @@
  *          Erik Nelson            ( eanelson@eecs.berkeley.edu )
  */
 
-#ifndef BSFM_POSE_POSE_H
-#define BSFM_POSE_POSE_H
+#ifndef PATH_POSE_POSE_H
+#define PATH_POSE_POSE_H
 
 #include <Eigen/Dense>
 #include <glog/logging.h>

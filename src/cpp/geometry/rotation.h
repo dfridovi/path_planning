@@ -42,8 +42,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef BSFM_GEOMETRY_ROTATION_H
-#define BSFM_GEOMETRY_ROTATION_H
+#ifndef PATH_GEOMETRY_ROTATION_H
+#define PATH_GEOMETRY_ROTATION_H
 
 #include <Eigen/Core>
 

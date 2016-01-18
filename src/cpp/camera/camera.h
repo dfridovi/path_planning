@@ -46,8 +46,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef BSFM_CAMERA_CAMERA_H
-#define BSFM_CAMERA_CAMERA_H
+#ifndef PATH_CAMERA_CAMERA_H
+#define PATH_CAMERA_CAMERA_H
 
 //#include <matching/feature_match.h>
 
