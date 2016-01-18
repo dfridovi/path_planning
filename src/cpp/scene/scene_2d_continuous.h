@@ -75,7 +75,7 @@ namespace path {
 
     // Compute the derivative of cost by position. This is used for
     // trajectory optimization.
-    Point::Ptr Derivative(Point::Ptr point) const;
+    Point::Ptr CostDerivative(Point::Ptr point) const;
 
     // Get a random point in the scene.
     Point::Ptr GetRandomPoint() const;
@@ -83,6 +83,7 @@ namespace path {
     // Optimize the given trajectory to minimize cost.
     Trajectory::Ptr OptimizeTrajectory(Trajectory::Ptr path,
                                        double gradient_weight,
+                                       double curvature_penalty,
                                        double max_point_displacement,
                                        double min_avg_displacement,
                                        size_t max_iters) const;

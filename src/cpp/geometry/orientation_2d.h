@@ -62,8 +62,11 @@ namespace path {
     Point::Ptr GetPoint() const;
     double GetTheta() const;
 
-    // Step toward the given orientation. Returns a null pointer.
+    // Step toward the given 2D point.
     Point::Ptr StepToward(Point::Ptr point, double step_size) const;
+
+    // Translate by the given 2D point.
+    Point::Ptr Add(Point::Ptr point, double scale) const;
 
   private:
     // Default constructor.

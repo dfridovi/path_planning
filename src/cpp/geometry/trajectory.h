@@ -64,6 +64,9 @@ namespace path {
     static Ptr Create(std::vector<Point::Ptr>& points);
     static Ptr Create(std::list<Point::Ptr>& points);
 
+    // Recompute length.
+    void RecomputeLength();
+
     // Add a point to the path.
     void AddPoint(Point::Ptr point);
 
@@ -71,10 +74,18 @@ namespace path {
     // in this Trajectory.
     void Upsample(unsigned int k);
 
+    // Compute the (time) derivative of the path, assuming uniform (time) sampling.
+    // Calculate at the endpoints by (implicit) padding.
+    Trajectory::Ptr TimeDerivative();
+
     // Getters.
     double GetLength() const;
     Point::PointType GetType() const;
     std::vector<Point::Ptr>& GetPoints();
+    Point::Ptr GetAt(size_t index);
+
+    // Setter.
+    void SetAt(Point::Ptr point, size_t index);
 
   private:
     std::vector<Point::Ptr> points_;

@@ -75,13 +75,14 @@ namespace path {
     // Define these methods in a derived class.
     virtual bool IsFeasible(Point::Ptr point) const = 0;
     virtual double Cost(Point::Ptr point) const = 0;
-    virtual Point::Ptr Derivative(Point::Ptr point) const = 0;
+    virtual Point::Ptr CostDerivative(Point::Ptr point) const = 0;
     virtual Point::Ptr GetRandomPoint() const = 0;
     virtual Trajectory::Ptr OptimizeTrajectory(Trajectory::Ptr path,
                                                double gradient_weight = 1e-6,
+                                               double curvature_penalty = 1e-5,
                                                double max_point_displacement = 0.01,
                                                double min_avg_displacement = 1e-4,
-                                               size_t max_iters = 1000) const = 0;
+                                               size_t max_iters = 100) const = 0;
   protected:
     std::vector<Obstacle::Ptr> obstacles_;
     FlannObstacleKDTree obstacle_tree_;

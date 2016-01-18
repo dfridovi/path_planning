@@ -97,10 +97,39 @@ namespace path {
     return coordinates_(2) - std::atan2(dy, dx);
   }
 
-  // Step toward the given orientation. Returns a null pointer.
+  // Step toward the given 2D point.
   Point::Ptr Orientation2D::StepToward(Point::Ptr point,
                                        double step_size) const {
-    return Point::Ptr(nullptr);
+    CHECK_NOTNULL(point.get());
+
+    // Type check.
+    if (!point->IsType(Point::PointType::POINT_2D)) {
+      VLOG(1) << "Point types do not match. Returning a nullptr.";
+      return nullptr;
+    }
+
+    Point::Ptr position = GetPoint();
+    Point::Ptr step = position->StepToward(point, step_size);
+    const VectorXd& step_vector = step->GetVector();
+
+    return Create(step_vector(0), step_vector(1), coordinates_(2)); 
+  }
+
+  // Translate by the given 2D point.
+  Point::Ptr Orientation2D::Add(Point::Ptr point, double scale) const {
+    CHECK_NOTNULL(point.get());
+
+    // Type check.
+    if (!point->IsType(Point::PointType::POINT_2D)) {
+      VLOG(1) << "Point types do not match. Returning a nullptr.";
+      return nullptr;
+    }
+
+    Point::Ptr position = GetPoint();
+    Point::Ptr sum = position->Add(point, scale);
+    const VectorXd& sum_vector = sum->GetVector();
+
+    return Create(sum_vector(0), sum_vector(1), coordinates_(2));
   }
 
   // Default constructor.

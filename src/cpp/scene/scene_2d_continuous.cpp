@@ -131,7 +131,7 @@ namespace path {
 
   // Compute the derivative of cost by position. This is used for
   // trajectory optimization.
-  Point::Ptr Scene2DContinuous::Derivative(Point::Ptr point) const {
+  Point::Ptr Scene2DContinuous::CostDerivative(Point::Ptr point) const {
     CHECK_NOTNULL(point.get());
 
     // Get a list of all obstacles in range.
@@ -165,6 +165,7 @@ namespace path {
   // Optimize the given trajectory to minimize cost.
   Trajectory::Ptr Scene2DContinuous::OptimizeTrajectory(Trajectory::Ptr path,
                                                         double gradient_weight,
+                                                        double curvature_penalty,
                                                         double max_point_displacement,
                                                         double min_avg_displacement,
                                                         size_t max_iters) const {
@@ -173,6 +174,9 @@ namespace path {
     // Extract points from the given trajectory.
     std::vector<Point::Ptr> points(path->GetPoints());
     double num_points = static_cast<double>(points.size());
+
+    // Create a new trajectory from these soon-to-be-optimized points.
+    Trajectory::Ptr optimized = Trajectory::Create(points);
 
     // While the average displacement of all points is large and the total
     // number of iterations does not exceed the threshold, iterate over
@@ -184,8 +188,14 @@ namespace path {
            num_iters < max_iters) {
       total_displacement = 0.0;
 
+      // Compute second time derivative of the trajectory.
+      Trajectory::Ptr time_derivative1 = optimized->TimeDerivative();
+      Trajectory::Ptr time_derivative2 = time_derivative1->TimeDerivative();
+
       for (size_t ii = 1; ii < points.size() - 1; ii++) {
-        Point::Ptr derivative = Derivative(points[ii]);
+        Point::Ptr cost_derivative = CostDerivative(points[ii]);
+        Point::Ptr derivative = cost_derivative->Add(time_derivative2->GetAt(ii),
+                                                     -curvature_penalty);
         const VectorXd& step_vector = points[ii]->GetVector() -
           gradient_weight * derivative->GetVector();
 
@@ -199,8 +209,6 @@ namespace path {
       num_iters++;
     }
 
-    // Create a new trajectory from these optimized points.
-    Trajectory::Ptr optimized = Trajectory::Create(points);
     return optimized;
   }
 

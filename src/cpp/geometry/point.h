@@ -82,6 +82,7 @@ namespace path {
     // Define these methods in a derived class.
     virtual double DistanceTo(Point::Ptr point) const = 0;
     virtual Point::Ptr StepToward(Point::Ptr point, double step_size) const = 0;
+    virtual Point::Ptr Add(Point::Ptr point, double scale) const = 0;
 
   protected:
     const VectorXd coordinates_;

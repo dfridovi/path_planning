@@ -61,9 +61,10 @@ namespace path {
     double GetX() const;
     double GetY() const;
 
-    // Compute the distance to another 2D point.
+    // Must be implemented in this derived class.
     double DistanceTo(Point::Ptr point) const;
     Point::Ptr StepToward(Point::Ptr point, double step_size) const;
+    Point::Ptr Add(Point::Ptr point, double scale) const;
 
   private:
     // Default constructor.

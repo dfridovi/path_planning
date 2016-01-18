@@ -77,6 +77,7 @@ namespace path {
     return std::sqrt(dx*dx + dy*dy);
   }
 
+  // Take a step of the given length toward the specified point.
   Point::Ptr Point2D::StepToward(Point::Ptr point, double step_size) const {
     // Ensure that types match.
     if (!IsSameTypeAs(point)) {
@@ -100,6 +101,22 @@ namespace path {
     return step;
   }
 
+  // Add a scaled point to the given point and return the sum.
+  Point::Ptr Point2D::Add(Point::Ptr point, double scale) const {
+    // Ensure that types match.
+    if (!IsSameTypeAs(point)) {
+      VLOG(1) << "Point types do not match. Returning a null pointer.";
+      Point::Ptr dummy(nullptr);
+      return dummy;
+    }
 
+    // Arithmetic.
+    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
+    double sum_x = coordinates_(0) + scale * point2d->coordinates_(0);
+    double sum_y = coordinates_(1) + scale * point2d->coordinates_(1);
+
+    Point::Ptr sum = Create(sum_x, sum_y);
+    return sum;
+  }
 
 } //\ namespace path

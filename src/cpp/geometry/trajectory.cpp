@@ -117,6 +117,14 @@ namespace path {
     }
   }
 
+  // Recompute length.
+  void Trajectory::RecomputeLength() {
+    length_ = 0.0;
+
+    for (size_t ii = 0; ii < points_.size() - 1; ii++)
+      length_ += points_[ii]->DistanceTo(points_[ii + 1]);
+  }
+
   // Add a point to the path.
   void Trajectory::AddPoint(Point::Ptr point) {
     CHECK_NOTNULL(point.get());
@@ -163,8 +171,90 @@ namespace path {
     }
   }
 
+  // Compute the first derivative of the path in time using a 1D symmetric
+  // difference filter, assuming uniform (time) sampling. Calculate at the
+  // endpoints with forward/backward differences.
+  Trajectory::Ptr Trajectory::TimeDerivative() {
+    Trajectory::Ptr derivative;
+
+    // Handle corner cases: size 0/1.
+    if (points_.size() == 0) {
+      VLOG(1) << "Caution! Tried to evaluate the derivative "
+              << "of an empty Trajectory.";
+      return derivative;
+    }
+
+    Point::Ptr zero = points_[0]->Add(points_[0], -1.0);
+    if (points_.size() == 1) {
+      VLOG(1) << "Caution! Tried to evaluate the derivative "
+              << "of a Trajectory with only a single element.";
+      derivative->AddPoint(zero);
+    }
+
+    // Handle the first point.
+    Point::Ptr diff = points_[1]->Add(points_[0], -1.0);
+    derivative->AddPoint(diff);
+
+    // Handle middle points. Remember to divide by two for symmetric differences.
+    for (size_t ii = 1; ii < points_.size() - 1; ii++) {
+      diff = points_[ii + 1]->Add(points_[ii - 1], -1.0);
+      derivative->AddPoint(zero->Add(diff, 0.5));
+    }
+
+    // Handle the last point.
+    diff = points_[points_.size() - 1]->Add(points_[points_.size() - 2], -1.0);
+    derivative->AddPoint(diff);
+
+    return derivative;
+  }
+
   // Getters.
   Point::PointType Trajectory::GetType() const { return point_type_; }
   double Trajectory::GetLength() const { return length_; }
   std::vector<Point::Ptr>& Trajectory::GetPoints() { return points_; }
+  Point::Ptr Trajectory::GetAt(size_t index) {
+    // Check index.
+    if (index >= points_.size()) {
+      VLOG(1) << "Index is out of bounds. Returning a nullptr.";
+      return nullptr;
+    }
+
+    return points_[index];
+  }
+
+  // Setter.
+  void Trajectory::SetAt(Point::Ptr point, size_t index) {
+    CHECK_NOTNULL(point.get());
+
+    // Check point type.
+    if (point->GetType() != point_type_) {
+      VLOG(1) << "Point is of the wrong type. Did not replace.";
+      return;
+    }
+
+    // Check index.
+    if (index >= points_.size()) {
+      VLOG(1) << "Index is out of bounds. Did not replace.";
+      return;
+    }
+
+    // Replace and adjust length_ case-by-case.
+    if (index == 0 && points_.size() == 1)
+      points_[0] = point;
+    else if (index == 0 && points_.size() >= 2) {
+      length_ -= points_[0]->DistanceTo(points_[1]);
+      length_ += point->DistanceTo(points_[1]);
+      points_[0] = point;
+    } else if (index == points_.size() - 1) {
+      length_ -= points_[index]->DistanceTo(points_[index - 1]);
+      length_ += point->DistanceTo(points_[index - 1]);
+      points_[index] = point;
+    } else {
+      length_ -= points_[index]->DistanceTo(points_[index - 1]);
+      length_ -= points_[index]->DistanceTo(points_[index + 1]);
+      length_ += point->DistanceTo(points_[index - 1]);
+      length_ += point->DistanceTo(points_[index + 1]);
+      points_[index] = point;
+    }
+  }
 }

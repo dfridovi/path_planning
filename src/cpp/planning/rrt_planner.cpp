@@ -80,10 +80,25 @@ namespace path {
         last_point = step;
       }
 
-      // Insert the goal if it is visible.
+      // Insert the goal (stepwise) if it is visible.
       if (robot_.LineOfSight(step, goal_)) {
+        double distance_to_goal = step->DistanceTo(goal_);
+        int num_steps =
+          static_cast<int>(std::ceil(distance_to_goal / step_size_));
+
+        for (int ii = 1; ii <= num_steps - 1; ii++) {
+          Point::Ptr next =
+            step->StepToward(goal_, step_size_);
+
+          if (!tree_.Insert(next, step))
+            VLOG(1) << "Error. Could not insert a point.";
+
+          step = next;
+        }
+
+        // Insert the goal point at the end.
         if (!tree_.Insert(goal_, step))
-          VLOG(1) << "Could not insert the goal point.";
+          VLOG(1) << "Error. Could not insert the goal point.";
 
         last_point = goal_;
       }
