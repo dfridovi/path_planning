@@ -162,7 +162,7 @@ namespace path {
 
     // Optimize path.
     Trajectory::Ptr optimized_path =
-      scene.OptimizeTrajectory(route, 1e-6, 1e-4, 1e-3, 5e-4, 1000);
+      scene.OptimizeTrajectory(route, 1e-6, 1e3, 1e-3, 5e-4, 1000);
 
     // If visualize flag is set, query a grid and show the cost map.
     if (FLAGS_visualize_planner) {
