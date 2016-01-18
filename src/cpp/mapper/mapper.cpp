@@ -41,11 +41,12 @@ namespace path
 {
 
 Mapper::Mapper()
+	: cullSaturated_(true)
 {
 }
 
-Mapper::Mapper( Camera& c )
-	: camera( c )
+Mapper::Mapper( Camera& c, bool cullSaturated )
+	: camera( c ), cullSaturated_(cullSaturated)
 {
 }
 
@@ -65,14 +66,13 @@ PointList Mapper::ProjectDepthMap( const DepthMap& map )
 	{
 		for( size_t v = 0; v < map.Width(); ++v )
 		{
-			if( map.GetValue( u, v * 3 ) > 0 && map.GetValue( u, v * 3 ) < 255 )
+			if( !cullSaturated_ || (map.GetValue( u, v * 3 ) > 0 && map.GetValue( u, v * 3 ) < 255) )
 			{
 				camera.ImageToDirection( u, v, &cameraX, &cameraY );
 				cameraZ = map.GetValue( u, v * 3 );
 				camera.CameraToWorld( cameraX, cameraY, cameraZ, &worldX, &worldY, &worldZ );
 
-				Eigen::Vector3d dir;
-				dir << worldX, worldY, worldZ;
+				Eigen::Vector3d dir(worldX, worldY, worldZ);
 			
 				pl.push_back(dir);
 			}

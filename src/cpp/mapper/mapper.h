@@ -55,7 +55,7 @@ class Mapper
 {
 public:
 	Mapper();
-	Mapper( Camera& c );
+	Mapper( Camera& c, bool cullSaturated );
 
 	PointList ProjectDepthMap( const DepthMap& map );
 
@@ -67,6 +67,7 @@ public:
 
 private:
 	Camera camera;
+	bool cullSaturated_;
 };
 
 }

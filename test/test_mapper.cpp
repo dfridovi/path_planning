@@ -60,32 +60,48 @@ namespace path
 		cv::Mat M = cv::Mat( 10, 10, CV_8UC1 );
 		DepthMap dm(M);
 		Camera c = dm.GetCameraFromDepthMap(0, 0, 0, 0, 0, 0);
-		CHECK_NOTNULL( new Mapper(c) );
+		CHECK_NOTNULL( new Mapper(c, true) );
 	}
 
 	// Generate a depth map and verify that it reprojects to the correct point
 	TEST( Mapper, TestMapperGenerated )
 	{
-		cv::Mat M = cv::Mat( 10, 10, CV_8UC1 );
+		// TODO JDS in the future add an option to export generated point clouds
+		//const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud_gen.csv" );
+		math::RandomGenerator rng(0);
 
-		int rows = M.rows;
-		int cols = M.cols * M.channels();
-		for( int x = 0; x < rows; ++x )
+		for( size_t ii = 0; ii < 1000; ++ii )
 		{
-			uchar* row = M.ptr<uchar>(x);
-			for( int y = 0; y < cols; ++y )
+			int rows = rng.IntegerUniform(1, 20);
+			int cols = rng.IntegerUniform(1, 20);
+
+			cv::Mat M = cv::Mat( rows, cols, CV_8UC1 );
+			Eigen::MatrixXd data( rows, cols );
+
+			for( int x = 0; x < rows; ++x )
 			{
-				row[y] = (int)((y / (cols - 1.0f)) * 255);
+				uchar* row = M.ptr<uchar>(x);
+				for( int y = 0; y < cols; ++y )
+				{
+					data(x, y) = rng.IntegerUniform(0, 255);
+					row[y] = (uchar)(data(x, y));
+				}
+			}
+
+			DepthMap dm(M);
+			Camera c = dm.GetCameraFromDepthMap( 0, 0, 0, 0, 0, 0 );
+			Mapper m( c, false );
+
+			PointList pl = m.ProjectDepthMap( dm );
+			EXPECT_EQ(pl.size(), data.size());
+
+			for( size_t i = 0; i < pl.size(); ++i )
+			{
+				double originalZ = data(i / cols, i % cols);
+				double projectedZ = pl.at(i)(2);
+				EXPECT_EQ(originalZ, projectedZ);
 			}
 		}
-	
-		DepthMap dm(M);
-		dm.SetInverted( true );
-		Camera c = dm.GetCameraFromDepthMap( 0, -100, 10, 0, 0, 0 );
-    	Mapper m( c );
-
-    	PointList pl = m.ProjectDepthMap( dm );
-		// TODO Check projection against source
 	}
 
 	// Load a depth map and generate a pointcloud file to verify correctness
@@ -93,16 +109,16 @@ namespace path
 	TEST( Mapper, TestMapperLoaded )
 	{
 		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene.png" );
-		const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud.csv" );
+		const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud_loaded.csv" );
 
 		cv::Mat M = cv::imread(depth_map_file.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 		EXPECT_TRUE(M.data);
 
 		DepthMap dm(M);
 		dm.SetInverted( true );
-    	Camera c = dm.GetCameraFromDepthMap( 0, -100, 10, 0, 0, 0 );
-    	Mapper m( c );
-    	PointList pl = m.ProjectDepthMap( dm );
+		Camera c = dm.GetCameraFromDepthMap( 0, -100, 10, 0, 0, 0 );
+		Mapper m( c, true );
+		PointList pl = m.ProjectDepthMap( dm );
 
 		std::remove(point_cloud_file.c_str());
 		
