@@ -38,6 +38,7 @@
 #define PATH_DEPTHMAP_H
 
 #include <image/image.h>
+#include <camera/camera.h>
 
 namespace path
 {
@@ -54,6 +55,9 @@ public:
 	bool IsInverted() const;
 
 	uchar GetValue( size_t u, size_t v ) const;
+
+	Camera GetCameraFromDepthMap( const Eigen::Vector3d& position, const Eigen::Matrix3d& rotation ) const;
+	Camera GetCameraFromDepthMap( const double X, const double Y, const double Z, const double Phi, const double Theta, const double Psi );
 private:
 	bool inverted_;
 };

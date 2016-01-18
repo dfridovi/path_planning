@@ -90,23 +90,8 @@ namespace path
 		DepthMap dm(M);
 		dm.SetInverted( true );
 
-		Vector3d position;
-		position << 0, -100, 10;
-		// phi, theta, psi
-		Matrix3d rotation = EulerAnglesToMatrix(0,0,0);
-		Pose cameraPose( rotation, position );
-		CameraExtrinsics extrinsics( cameraPose );
-
-		Matrix3d A;
-		float focal_length = 120 * 0.35/0.36;
-		A << focal_length, 0, dm.Width()/2, 0, focal_length, dm.Height()/2, 0, 0, 1;
-
-		CameraIntrinsics intrinsics( A, dm.Width(), dm.Height() );
-
-		Camera c( extrinsics, intrinsics );
-
-		Mapper m( c );
-		PointList pl = m.ProjectDepthMap( dm );
+    	Mapper m( dm.GetCameraFromDepthMap( 0, -100, 10, 0, 0, 0 ) );
+    	PointList pl = m.ProjectDepthMap( dm );
 		
 		std::remove(point_cloud_file.c_str());
 		
