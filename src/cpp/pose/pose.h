@@ -44,7 +44,7 @@
 
 #include "../util/types.h"
 
-namespace bsfm {
+namespace path {
 
 using Eigen::Matrix3d;
 using Eigen::Matrix4d;
@@ -155,6 +155,6 @@ class Pose {
   Matrix4d Rt_;  // 4x4 homogeneous Pose matrix
 };  //\class Pose
 
-};  // namespace bsfm
+};  // namespace path
 
 #endif

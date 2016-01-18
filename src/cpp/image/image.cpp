@@ -37,7 +37,7 @@
 
 #include "image.h"
 
-namespace bsfm {
+namespace path {
 
 // Deep copy ctor.
 Image::Image(const Image& other) : grayscale_(false) {
@@ -205,4 +205,4 @@ void Image::ImShow(const std::string& window_name, unsigned int wait_time) {
   cv::waitKey(wait_time);
 }
 
-} //\namespace bsfm
+} //\namespace path

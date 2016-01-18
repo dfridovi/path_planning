@@ -54,11 +54,11 @@ namespace path
 
 	namespace
 	{
-		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "street.png" );
+		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene.png" );
 		const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud.csv" );
 	}
 	
-	bool bUseTestImg = false;
+	bool bUseTestImg = true;
 
 	// Test that we can construct and destroy a bunch of 2D points.
 	TEST( Mapper, TestMapperConstruction )
@@ -88,19 +88,23 @@ namespace path
 		}
 	
 		DepthMap dm(M);
+		dm.SetInverted( true );
 
 		Vector3d position;
-		position << 0, 0, 0;
-		Matrix3d rotation = bsfm::EulerAnglesToMatrix( 0.0, 0.0, 0.0 );
-		bsfm::Pose cameraPose( rotation, position );
-		bsfm::CameraExtrinsics extrinsics( cameraPose );
+		position << 0, -100, 10;
+		// phi, theta, psi
+		Matrix3d rotation = EulerAnglesToMatrix(0,0,0);
+		Pose cameraPose( rotation, position );
+		CameraExtrinsics extrinsics( cameraPose );
 
 		Matrix3d A;
-		A << 500, 0, dm.Width()/2, 0, 500, dm.Height()/2, 0, 0, 1;
+		float focal_length = 120 * 0.35/0.36;
+		A << focal_length, 0, dm.Width()/2, 0, focal_length, dm.Height()/2, 0, 0, 1;
 
-		bsfm::CameraIntrinsics intrinsics( A, dm.Width(), dm.Height() );
+		CameraIntrinsics intrinsics( A, dm.Width(), dm.Height() );
 
 		Camera c( extrinsics, intrinsics );
+
 		Mapper m( c );
 		PointList pl = m.ProjectDepthMap( dm );
 		

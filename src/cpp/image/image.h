@@ -54,7 +54,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-namespace bsfm {
+namespace path {
 
 using Eigen::MatrixXd;
 using Eigen::MatrixXf;
@@ -180,5 +180,5 @@ void EigenMatToOpenCV(
   cv::eigen2cv(eigen_mat, cv_mat);
 }
 
-} //\namespace bsfm
+} //\namespace path
 #endif

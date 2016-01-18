@@ -47,7 +47,7 @@
 
 #include <Eigen/Core>
 
-namespace bsfm {
+namespace path {
 
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
@@ -99,6 +99,6 @@ double R2D(double angle);
 // An error metric between two rotation matrices on SO3.
 double SO3Error(const Matrix3d& R1, const Matrix3d& R2);
 
-}  //\namespace bsfm
+}  //\namespace path
 
 #endif

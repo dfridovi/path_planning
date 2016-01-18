@@ -47,7 +47,7 @@
 
 #include <Eigen/Core>
 
-namespace bsfm {
+namespace path {
 
 // Constructor given extrinsics and intrinsics.
 Camera::Camera(CameraExtrinsics extrinsics, CameraIntrinsics intrinsics)
@@ -154,4 +154,4 @@ void Camera::Undistort(double u_distorted, double v_distorted, double *u,
   intrinsics_.Undistort(u_distorted, v_distorted, u, v);
 }
 
-}  // namespace bsfm
+}  // namespace path

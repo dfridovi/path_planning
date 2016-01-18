@@ -47,7 +47,7 @@
 
 #include "../geometry/rotation.h"
 
-namespace bsfm {
+namespace path {
 
 // Constructor. Initialize to identity.
 CameraExtrinsics::CameraExtrinsics() {
@@ -178,4 +178,4 @@ void CameraExtrinsics::CameraToWorld(double cx, double cy, double cz,
   *wz = w_h(2);
 }
 
-} // namespace bsfm
+} // namespace path

@@ -44,4 +44,29 @@ DepthMap::DepthMap()
 {
 }
 
+DepthMap::DepthMap( bool inverted )
+    : inverted_( inverted )
+{
+}
+
+void DepthMap::SetInverted( bool value )
+{
+    inverted_ = value;
+}
+
+bool DepthMap::IsInverted() const
+{
+    return inverted_;
+}
+
+uchar DepthMap::GetValue( size_t u, size_t v ) const
+{
+    uchar value = at<uchar>( u, v );
+    if( IsInverted() )
+    {
+        value = 255 - value;
+    }
+    return value;
+}
+
 }

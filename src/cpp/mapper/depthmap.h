@@ -42,12 +42,18 @@
 namespace path
 {
 
-class DepthMap : public bsfm::Image
+class DepthMap : public Image
 {
 public:
 	using Image::Image;
 
 	DepthMap();
+	DepthMap( bool inverted );
+
+	void SetInverted( bool value );
+	bool IsInverted() const;
+
+	uchar GetValue( size_t u, size_t v ) const;
 private:
 	bool inverted_;
 };

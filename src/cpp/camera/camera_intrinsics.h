@@ -52,7 +52,7 @@
 
 #include <Eigen/Dense>
 
-namespace bsfm {
+namespace path {
 
 using Eigen::Matrix3d;
 using Eigen::Vector3d;
@@ -154,6 +154,6 @@ class CameraIntrinsics {
   double vertical_fov_;
 };  //\class CameraIntrinsics
 
-}  //\namespace bsfm
+}  //\namespace path
 
 #endif

@@ -39,7 +39,7 @@
 
 #include <iostream>
 
-namespace bsfm {
+namespace path {
 
 // Initialize to the identity.
 Pose::Pose() {
@@ -267,4 +267,4 @@ Pose Pose::Delta(const Pose& rhs) const {
   return this->Inverse() * rhs;
 }
 
-} // namespace bsfm
+} // namespace path

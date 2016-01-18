@@ -41,7 +41,7 @@
 #include <Eigen/LU>
 #include <glog/logging.h>
 
-namespace bsfm {
+namespace path {
 
 // Convert from Euler angles to a rotation matrix. Phi, theta, and psi define the
 // angles of the intermediate rotations about x (R_x), y (R_y), and z (R_z)
@@ -169,4 +169,4 @@ double SO3Error(const Matrix3d& R1, const Matrix3d& R2) {
   return (0.5 * R_vee).norm();
 }
 
-}  //\namespace bsfm
+}  //\namespace path

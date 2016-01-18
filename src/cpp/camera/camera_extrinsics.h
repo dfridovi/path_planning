@@ -67,7 +67,7 @@
 #include "../pose/pose.h"
 #include "../util/types.h"
 
-namespace bsfm {
+namespace path {
 
 using Eigen::Matrix3d;
 using Eigen::Matrix4d;
@@ -123,6 +123,6 @@ private:
 
 };  //\class CameraExtrinsics
 
-}  //\namespace bsfm
+}  //\namespace path
 
 #endif

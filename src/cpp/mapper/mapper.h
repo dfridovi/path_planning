@@ -50,7 +50,7 @@ namespace path
 {
 
 typedef std::vector<Eigen::Vector3d> PointList;
-typedef bsfm::Camera Camera;
+typedef path::Camera Camera;
 
 class Mapper
 {

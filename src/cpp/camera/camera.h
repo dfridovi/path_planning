@@ -55,7 +55,7 @@
 #include "camera_intrinsics.h"
 #include "../util/types.h"
 
-namespace bsfm {
+namespace path {
 
 using Eigen::Matrix3d;
 
@@ -140,5 +140,5 @@ private:
   CameraIntrinsics intrinsics_;
 };  //\class Camera
 
-}  //\bsfm
+}  //\path
 #endif

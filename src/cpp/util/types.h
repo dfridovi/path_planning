@@ -48,15 +48,10 @@
 #include <limits>
 #include <vector>
 
-namespace bsfm
-{
-	typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
-}
-
 namespace path {
 
 // -------------------- Custom types -------------------- //
-
+typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
 
 // -------------------- Third-party typedefs -------------------- //
 // Used to represent [R | t] and P, the camera extrinsics and projection

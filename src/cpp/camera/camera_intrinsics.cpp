@@ -51,7 +51,7 @@
 
 #include <glog/logging.h>
 
-namespace bsfm {
+namespace path {
 
 // Initialize to zero.
 CameraIntrinsics::CameraIntrinsics()
@@ -389,4 +389,4 @@ void CameraIntrinsics::Undistort(double u_distorted, double v_distorted,
   *v = v_refine;
 }
 
-}  //\namespace bsfm
+}  //\namespace path
