@@ -175,7 +175,7 @@ namespace path {
   // difference filter, assuming uniform (time) sampling. Calculate at the
   // endpoints with forward/backward differences.
   Trajectory::Ptr Trajectory::TimeDerivative() {
-    Trajectory::Ptr derivative;
+    Trajectory::Ptr derivative = Trajectory::Create();
 
     // Handle corner cases: size 0/1.
     if (points_.size() == 0) {
@@ -189,23 +189,18 @@ namespace path {
       VLOG(1) << "Caution! Tried to evaluate the derivative "
               << "of a Trajectory with only a single element.";
       derivative->AddPoint(zero);
+      return derivative;
     }
-
-    std::cout << "1" << std::endl;
 
     // Handle the first point.
     Point::Ptr diff = points_[1]->Add(points_[0], -1.0);
     derivative->AddPoint(diff);
-
-    std::cout << "2" << std::endl;
 
     // Handle middle points. Remember to divide by two for symmetric differences.
     for (size_t ii = 1; ii < points_.size() - 1; ii++) {
       diff = points_[ii + 1]->Add(points_[ii - 1], -1.0);
       derivative->AddPoint(zero->Add(diff, 0.5));
     }
-
-    std::cout << "3" << std::endl;
 
     // Handle the last point.
     diff = points_[points_.size() - 1]->Add(points_[points_.size() - 2], -1.0);

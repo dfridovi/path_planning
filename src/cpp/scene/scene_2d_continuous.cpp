@@ -189,15 +189,15 @@ namespace path {
       total_displacement = 0.0;
 
       // Compute second time derivative of the trajectory.
-      std::cout << "hi" << std::endl;
       Trajectory::Ptr time_derivative1 = optimized->TimeDerivative();
-      std::cout << "bye" << std::endl;
       Trajectory::Ptr time_derivative2 = time_derivative1->TimeDerivative();
 
       for (size_t ii = 1; ii < points.size() - 1; ii++) {
         Point::Ptr point = optimized->GetAt(ii);
         Point::Ptr cost_derivative = CostDerivative(point);
-        Point::Ptr derivative = cost_derivative->Add(time_derivative2->GetAt(ii),
+        Point::Ptr time_derivative = time_derivative2->GetAt(ii);
+
+        Point::Ptr derivative = cost_derivative->Add(time_derivative,
                                                      -curvature_penalty);
         const VectorXd& step_vector = point->GetVector() -
           gradient_weight * derivative->GetVector();
