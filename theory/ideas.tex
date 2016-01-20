@@ -120,24 +120,21 @@ At the end of the day, though, the occupancy grid is not the fundamental reason 
 
 Thus, we must devise a way to reformulate the information-theoretic approach to exploration in terms of a point cloud, rather than an occupancy grid.
 
-\subsection{Toward a New Objective}
-
-The first order of business is to come up with a new objective function $\mathcal{J}$. Since structure from motion is all about landmarks, it makes sense to begin by introducing a new random variable $N_{\tau}$ to represent the number of new landmarks in the map aquired during time interval $\tau$; i.e. $N_{\tau} = \card(m_{t + \tau}) - \card(m_t)$ where the map $m$ is explicitly time-parameterized.
-
-Naively, we might wish to simply maximize the expected value of $N_{\tau}$, as follows:
-\begin{align}
-  x_{\tau}^* &= \arg \max_{x_{\tau}} \mathbb{E}[N_{\tau} | z_{\tau}(x_{\tau})]
-\end{align}
-
-Unfortunately, this is too simplistic and it will almost certainly fail. Fear not -- the rest of this work is devoted to fixing it!
-
 \subsection{Modeling}
 
-Perhaps the most obvious problem with the aforementioned optimization is taking the expectation. Before, we could do this rather simply because entropy did not depend on \textit{what we observed}, only \textit{that we observed it}. Moreover, and more importantly, we were working with a voxel grid that easily lent itself to a probabilistic model.
+There are two other obvious shortcomings in the information-theoretic approach:
+\begin{enumerate}
+\item Typically, occupancy grids model only whether or not each voxel is occupied.
+\item Occupancy grids discretize (sample) the environment into a set of voxels.
+\end{enumerate}
 
-Here though, we are counting landmarks in a \textit{continuous} environment. That means that we must be able to model the presence of landmarks conditioned on our anticipated field of view. One interesting approach is to model the occurrance of landmarks in the environment as an n-dimensional non-homogeneous Poisson process with rate as a function of the map. For example, one simple approach would be to maintain an occupancy grid (either implicitly or explicitly) and set the rate of the Poisson process to be some function of the current estimated probability of occupancy at each grid location.
+Since we are interested in reconstructing models with \textit{lots of points}, we would like our model to capture something about the number of points in each region of space. In a discrete formulation, this would mean keeping a count of points that fall into each voxel, rather than just an estimate of the probability that the voxel is occupied. Note that this is almost a trivial extension of the traditional occupancy grid formulation. Instead of each voxel being modeled by a Bernoulli random variable, it would be modeled by another random variable that takes non-negative integer values and which models discrete ``arrivals.'' That best choice seems to be a Poisson random variable (see the subsection below for details). Once we have a known probability distribution (even with an unknown parameter -- the ``rate'' in this case, but recall that before the Bernoulli variable had an unknown parameter too) we can go ahead and calculate entropy and KL divergence as before.
 
-With this model, we can very easily estimate the conditional expectation above in closed form.
+More fundamentally, occupancy grids are unsatisfactory because they discretize space. The world is not discrete! Modeling the environment as a \textit{continuous} space would seem to solve this problem; interestingly, it also solves the first problem at the same time. Notice that if landmarks are modeled by points in a continuum, then it is absolutely impossible for more than a single landmark to be at the exact same point. Thus, one possible representation of the environment would be a simple list of the locations of observed landmarks. Of course, a simple list is not likely to be efficient for any sort of geometric computation we may require; nevertheless, it is sufficient to store all the information in the model.
+
+Going to a continuous representation begs the question of how to model the presence of landmarks in a probabilistic sense. In essence, we propose to apply the Poisson model we intuited in the discrete case. Specifically, we will use a \textbf{non-homogeneous, multi-dimensional Poisson process} to model the ``arrival'' of landmarks in the scene. Typically, Poisson process are used to model the arrivals of, say, customers in a queue or photons at a photodetector. In this case, the landmarks are being observed, rather than \textit{arriving}, but the principle is the same.
+
+As described below, Poisson processes have very nice mathematical properties that, among other things, allow us to write down very simple closed-form expressions for quantities of interest such as expectation and variance, and approximate values for entropy.
 
 \subsubsection{Aside: Poisson Processes}
 
@@ -157,9 +154,11 @@ Finally, an n-dimensional Poisson process is one that has multiple ``time'' dime
   X_{(x, y)} &\sim \Pois \left( \int_{\mu}^{x + \mu} \int_{\nu}^{y + \nu} \lambda(s, t) ds dt \right)
 \end{align}
 
-Think of this last version as modeling fish in the ocean. Over any given x-by-y rectangle of ocean, the probability of observing $k$ fish is $\mathbb{P}\{X_{(x, y)} = k\}$ if fish are distributed as a 2D Poisson process with rate function $\lambda(x, y)$. Of course, it is a simple matter to replace fish in the ocean with landmarks in an arbitrary environment, and it is also not a stretch to consider $\lambda(x, y)$ as a stepwise function in $x$ and $y$, as described above.
+Think of this last version as modeling fish in the ocean. Over any given x-by-y rectangle of ocean, the probability of observing $k$ fish is $\mathbb{P}\{X_{(x, y)} = k\}$ if fish are distributed as a 2D Poisson process with rate function $\lambda(x, y)$. Of course, it is a simple matter to replace fish in the ocean with landmarks in an arbitrary environment.
 
 \subsubsection{Formal Model Definition}
+
+TODO!!!\\
 
 Formally then, we can model the distribution of $N_{\tau}$ conditioned on robot configurations $x_{\tau}$ (corresponding to observed map region $\mathcal{O_{\tau}}$) as follows:
 \begin{align}
@@ -176,6 +175,17 @@ One useful property of the Poisson distribution is that its mean is equal to its
   \mathbb{E}[N_{\tau} | x_{\tau}] &= \int_{\theta \in \mathcal{O_{\tau}}} \lambda(\theta) d\theta
 \end{align}
 which is simply a discrete sum in our case because $\lambda(\cdot)$ is voxelized.
+
+\subsection{Toward a New Objective}
+
+The next order of business is to come up with a new objective function $\mathcal{J}$. Since structure from motion is all about landmarks, it makes sense to begin by introducing a new random variable $N_{\tau}$ to represent the number of new landmarks in the map aquired during time interval $\tau$; i.e. $N_{\tau} = \card(m_{t + \tau}) - \card(m_t)$ where the map $m$ is explicitly time-parameterized.
+
+Naively, we might wish to simply maximize the expected value of $N_{\tau}$, as follows:
+\begin{align}
+  x_{\tau}^* &= \arg \max_{x_{\tau}} \mathbb{E}[N_{\tau} | z_{\tau}(x_{\tau})]
+\end{align}
+
+Unfortunately, this is too simplistic and it will almost certainly fail. Fear not -- the rest of this work is devoted to fixing it!
 
 \subsection{Regularization}
 

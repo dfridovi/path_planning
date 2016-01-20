@@ -129,7 +129,7 @@ namespace path {
     // Return empty path if goal is not in the tree.
     if (!Contains(goal)) {
       VLOG(1) << "Tree does not contain the goal point. Returning "
-        "nullptr.";
+              << "nullptr.";
       return Trajectory::Ptr(nullptr);
     }
 
