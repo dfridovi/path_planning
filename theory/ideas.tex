@@ -158,17 +158,19 @@ Think of this last version as modeling fish in the ocean. Over any given x-by-y 
 
 \subsubsection{Formal Model Definition}
 
-TODO!!!\\
+Now that we are somewhat familiar with Poisson processes, it is natural to model the scene as a Poisson process defined over the continuous scene-space $\mathcal{S}$. In other words, the ground-truth locations of landmarks in the environment may be approximated (or predicted) using the assumption that they are Poisson-distributed according to some rate function $\lambda(\cdot)$ defined on $\mathcal{S}$.
 
-Formally then, we can model the distribution of $N_{\tau}$ conditioned on robot configurations $x_{\tau}$ (corresponding to observed map region $\mathcal{O_{\tau}}$) as follows:
+Formally then, we can define the \textbf{random variable} $N_s, s \in \mathcal{S}$ to be the number of landmarks in some region $s$. According to the Poisson model, the distribution of $N_s$ is simply:
 \begin{align}
-  N_{\tau} | x_{\tau} &\sim
-  \Pois \left( \int_{\theta \in \mathcal{O_{\tau}}} \lambda(\theta) d\theta \right)
+  N_s &\sim
+  \Pois \left( \int_{\theta \in s} \lambda(\theta) d\theta \right)
 \end{align}
-for rate function $\lambda(\cdot)$ defined on the map (e.g. $\mathbb{R}^3$). This rate function is in turn estimated from the occupancy grid representation, $p(\theta) = $ estimated probability that each voxel is occupied, for some monotonic function $f$ that scales probabilities to rates (e.g. by multiplying by the number of observed landmarks in each voxel):
-\begin{align}
-  \lambda(\theta) &= f(p(\theta))
-\end{align}
+
+Note that the rate function entirely determines the distributions of all the $\{N_s\}$, so we must choose it carefully in order to make the model at all meaningful. To get some insight as to exactly what this $\lambda(\cdot)$ represents, consider what the map will look like once we have explored everything and observed all landmarks. In this case, $\lambda(\cdot)$ will tell us the expected concentration of landmarks at each point -- in other words, it is almost like a probability density function, except that we do not require it to integrate to one.
+
+Given this intuition, we can make some intelligent modeling assumptions. For instance, it would make sense for $\lambda_0(\cdot) = \rho$ a priori. That is, the \textit{prior} distribution of landmarks ought to be uniform with some constant rate parameter $\rho > 0$. Over time, if our exploration strategy is successful, we should observe $\lambda_t(\cdot) \rightarrow \Lambda(\cdot)$ where we use capital $\Lambda$ to represent the ground-truth.
+
+\\TODO!!!\\
 
 One useful property of the Poisson distribution is that its mean is equal to its argument. This means that
 \begin{align}
