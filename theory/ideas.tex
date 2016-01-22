@@ -156,7 +156,7 @@ Finally, an n-dimensional Poisson process is one that has multiple ``time'' dime
 
 Think of this last version as modeling fish in the ocean. Over any given x-by-y rectangle of ocean, the probability of observing $k$ fish is $\mathbb{P}\{X_{(x, y)} = k\}$ if fish are distributed as a 2D Poisson process with rate function $\lambda(x, y)$. Of course, it is a simple matter to replace fish in the ocean with landmarks in an arbitrary environment.
 
-\subsubsection{Formal Model Definition}
+\subsubsection{Toward a Formal Model Definition}
 
 Now that we are somewhat familiar with Poisson processes, it is natural to model the scene as a Poisson process defined over the continuous scene-space $\mathcal{S}$. In other words, the ground-truth locations of landmarks in the environment may be approximated (or predicted) using the assumption that they are Poisson-distributed according to some rate function $\lambda(\cdot)$ defined on $\mathcal{S}$.
 
@@ -168,15 +168,36 @@ Formally then, we can define the \textbf{random variable} $N_s, s \subseteq \mat
 
 Note that the rate function entirely determines the distributions of all the $\{N_s\}$, so we must choose it carefully in order to make the model at all meaningful. To get some insight as to exactly what this $\lambda(\cdot)$ represents, consider what the map will look like once we have explored everything and observed all landmarks. In this case, $\lambda(\cdot)$ will tell us the expected concentration of landmarks at each point -- in other words, it is almost like a probability density function, except that we do not require it to integrate to one.
 
-Given this intuition, we can make some intelligent modeling assumptions. For instance, it would make sense for $\lambda_0(\cdot) = \rho$ a priori. That is, the \textit{prior} distribution of landmarks ought to be uniform with some constant rate parameter $\rho > 0$. Over time, if our exploration strategy is successful, we should observe $\lambda_t(\cdot) \rightarrow \Lambda(\cdot)$ where we use capital $\Lambda$ to represent the ground-truth. This convergence is exactly what is proposed and explained in the original paper on information-theoretic exploration \cite{bourgault}, except that it has been adapted to an continuous environment representation.
+Given this intuition, we can make some intelligent modeling assumptions. For instance, it would make sense for $\lambda_0(\cdot) = \rho$ a priori. That is, the \textbf{prior} distribution of landmarks ought to be uniform with some constant rate parameter $\rho > 0$. Over time, if our exploration strategy is successful, we should observe $\lambda_t(\cdot) \rightarrow \Lambda(\cdot)$ where we use capital $\Lambda$ to represent the ground-truth. This convergence is exactly what is proposed and explained in the original paper on information-theoretic exploration \cite{bourgault}, except that it has been adapted to a continuous environment representation.
 
-TODO!!!
+The challenge now becomes: \textit{how to do we update the rate function?} That is, how can we merge new observations with existing ones so that over time $\lambda_t(\cdot) \rightarrow \Lambda(\cdot)$. Let us assume that we can identify landmarks with sufficiently accurate and consistent descriptors such that we can tell with a high degree of certainty when we have observed a \textit{new} landmark and when we are simply re-observing one we have already seen before. Under this assumption (which is not too far-fetched, given the mechanisms of typical structure from motion pipelines), one natural approach is to place an \textit{n}-dimensional Gaussian distribution (with some covariance that may be derived from the triangulation process) at each new landmark's coordinates. Over time, the rate function will look like a mixture of Gaussians, for which things like path planning and smoothing are well-studied.
 
-One useful property of the Poisson distribution is that its mean is equal to its argument. This means that
+There is one very big caveat to this rather simplistic model. How do we update regions of $\mathcal{S}$ efficiently? In occupancy grids, it is fairly simple to ray-trace through the grid so that observing a landmark at some location actually also implies that the voxels on the ray to that landmark are all unoccupied. We really need to do something like this in continuous space to make the exploration more efficient.
+
+One way to solve this problem would be to trace out some cylinder from the current robot location to the observed landmark, find all enclosed landmarks, and -- for example -- increase the covariance to reflect increased uncertainty regarding their true location. In general, what we are really interested in is the conditional distribution of $N_{cyl}$, the number of obstacles in the cylinder. To a good approximation, the prior distribution is $N_{cyl} \sim \Pois(n_{obs} + \rho V_{cyl})$ -- that is, the expected number of landmarks is the number of observed landmarks plus the raw free-space density times the cylinder's volume. However, once we observe a landmark at the far end of the cylinder, we must adjust the probability of finding landmarks inside the cylinder. That is, we must find some way of expressing the following probability distribution for the location of a landmark $X$ in the cylinder conditioned on the observation of another landmark $Z$ located at the end of the cylinder:
 \begin{align}
-  \mathbb{E}[N_{\tau} | x_{\tau}] &= \int_{\theta \in \mathcal{O_{\tau}}} \lambda(\theta) d\theta
+  \mathbb{P}\{X \in dx | Z = \mu_z\} &=
+  \frac{\mathbb{P}\{Z \in dz | X = \mu_x\} \mathbb{P}\{X \in dx\}}{\mathbb{P}\{Z \in dz\}}
 \end{align}
-which is simply a discrete sum in our case because $\lambda(\cdot)$ is voxelized.
+
+In general, this corresponds to the following problem in one dimension:
+\begin{align}
+  \mathbb{P}\{Y \in dy | Y > \alpha\} &=
+  \frac{\mathbb{P}\{Y > \alpha | Y = y\} \mathbb{P}\{Y \in dy\}}{\mathbb{P}\{Y > \alpha\}} \\
+  &= \begin{cases}
+    \frac{1 \cdot p(y)}{\int_{\alpha}^{\infty} p(y) dy} & y > \alpha \\
+    0 & \textnormal{otherwise}
+  \end{cases}
+\end{align}
+Here, we are taking variable $Y$ in one dimension and deriving the distribution conditioned on some extrinsic measurement that says $Y > \alpha$. In our case, we might have $X$ outside the cylinder. Regardless, the effect is to zero out part of the distribution of $Y$ and rescale the rest so that it integrates to 1. Unfortunately, this is very, very difficult to represent and calculate efficiently in a computer program, so we must come up with some reasonable approximation.
+
+Before approximating, we should note that it is not completely infeasible to represent these sorts of conditional distributions efficiently. One approach may be to have each landmark store a mean, covariance, constraints of some form, and the corresponding scale factor which can be numerically approximated to make the distribution integrate to unity. Each time a new landmark is observed, the program could query a kd-tree for landmarks with means in some region of space, then apply a new constraint, and calculate a new mean and scale factor (numerically). This is, of course, somewhat involved and inefficient due to its reliance on numerical integration at every update, for (in principle) a large number of obstacles.
+
+One further note: we have not, as yet, accounted for any change in $\rho$, the background (a priori) rate. Ideally, each new observation should reduce $\rho$ in some cylinder between the sensor and the landmark. However, this is again somewhat difficult to represent computationaly, so we will have to come up with a feasible alternative.
+
+\subsubsection{Approximations}
+
+Now that we have established what \textit{ideal} model updates might look like, we must come up with some reasonable, efficient, and realistic approximations.
 
 \subsection{Toward a New Objective}
 
