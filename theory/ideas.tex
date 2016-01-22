@@ -160,7 +160,7 @@ Think of this last version as modeling fish in the ocean. Over any given x-by-y 
 
 Now that we are somewhat familiar with Poisson processes, it is natural to model the scene as a Poisson process defined over the continuous scene-space $\mathcal{S}$. In other words, the ground-truth locations of landmarks in the environment may be approximated (or predicted) using the assumption that they are Poisson-distributed according to some rate function $\lambda(\cdot)$ defined on $\mathcal{S}$.
 
-Formally then, we can define the \textbf{random variable} $N_s, s \in \mathcal{S}$ to be the number of landmarks in some region $s$. According to the Poisson model, the distribution of $N_s$ is simply:
+Formally then, we can define the \textbf{random variable} $N_s, s \subseteq \mathcal{S}$ to be the number of landmarks in some region $s$. According to the Poisson model, the distribution of $N_s$ is simply:
 \begin{align}
   N_s &\sim
   \Pois \left( \int_{\theta \in s} \lambda(\theta) d\theta \right)
@@ -168,9 +168,9 @@ Formally then, we can define the \textbf{random variable} $N_s, s \in \mathcal{S
 
 Note that the rate function entirely determines the distributions of all the $\{N_s\}$, so we must choose it carefully in order to make the model at all meaningful. To get some insight as to exactly what this $\lambda(\cdot)$ represents, consider what the map will look like once we have explored everything and observed all landmarks. In this case, $\lambda(\cdot)$ will tell us the expected concentration of landmarks at each point -- in other words, it is almost like a probability density function, except that we do not require it to integrate to one.
 
-Given this intuition, we can make some intelligent modeling assumptions. For instance, it would make sense for $\lambda_0(\cdot) = \rho$ a priori. That is, the \textit{prior} distribution of landmarks ought to be uniform with some constant rate parameter $\rho > 0$. Over time, if our exploration strategy is successful, we should observe $\lambda_t(\cdot) \rightarrow \Lambda(\cdot)$ where we use capital $\Lambda$ to represent the ground-truth.
+Given this intuition, we can make some intelligent modeling assumptions. For instance, it would make sense for $\lambda_0(\cdot) = \rho$ a priori. That is, the \textit{prior} distribution of landmarks ought to be uniform with some constant rate parameter $\rho > 0$. Over time, if our exploration strategy is successful, we should observe $\lambda_t(\cdot) \rightarrow \Lambda(\cdot)$ where we use capital $\Lambda$ to represent the ground-truth. This convergence is exactly what is proposed and explained in the original paper on information-theoretic exploration \cite{bourgault}, except that it has been adapted to an continuous environment representation.
 
-\\TODO!!!\\
+TODO!!!
 
 One useful property of the Poisson distribution is that its mean is equal to its argument. This means that
 \begin{align}
@@ -215,6 +215,8 @@ The full optimization problem is thus (note that $m_{CM}$ is the current map's c
 \bibitem{erik} Erik Nelson, ``Environment Model Adaptation for Autonomous Exploration,'' \textit{MS Thesis: Carnegie Mellon Robotics Institute}. Pittsburgh, PA: May 2015.
 
 \bibitem{yamauchi} Brian Yamauchi. ``A frontier-based approach for autonomous exploration.'' In \textit{Computational Intelligence in Robotics and Automation, 1997. CIRA '97, Proceedings, 1997 IEEE International Symposium on}, pp. 146-151. IEEE, 1997.
+
+\bibitem{bourgault} Frederic Bourgault, Alexei A. Makarenko, Stefan B. Williams, Ben Grocholsky, and Hugh F. Durrant-Whyte. ``Information Based Adaptive Robotic Exploration.'' In \textit{Intelligent Robots and Systems, 2002 IEEE/RSJ International Conference on}, Vol. 1.
   
 \end{thebibliography}
 
