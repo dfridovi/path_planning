@@ -235,16 +235,22 @@ How do we add directional variance to a covariance? In principle, covariance imp
   \Sigma &\leftarrow \Sigma + \beta v v^T
 \end{align}
 
-\subsection{Toward a New Objective}
+\subsection{A New Objective}
 
-The next order of business is to come up with a new objective function $\mathcal{J}$. Since structure from motion is all about landmarks, it makes sense to begin by introducing a new random variable $N_{\tau}$ to represent the number of new landmarks in the map aquired during time interval $\tau$; i.e. $N_{\tau} = \card(m_{t + \tau}) - \card(m_t)$ where the map $m$ is explicitly time-parameterized.
+The next order of business is to use the model explained and revised above to improve the original objective function $\mathcal{J}$. Since we are explicitly modeling landmark locations as a Poisson process, it makes sense to consider an objective function whose optimization converges on complete knowledge of the process, i.e. so that we know the exact distributions of all the $\{N_s : s \subseteq \mathcal{S}\}$.
+
+Recall that each $N_s \sim \Pois \left( \int_{\theta \in s} \lambda(\theta) d\theta \right)$, which implies that we will have full knowledge of the distributions of the $\{N_s\}$ if we fully know the rate function $\lambda(\cdot)$ -- that is, if $\lambda(\cdot) \rightarrow \Lambda(\cdot)$ (as was suggested earlier).
+
+Following a naive application of the information-theoretic framework from (for example) \cite{bourgault}, we might try to maximize the expected mutual information gain (i.e. the expected difference in entropy after incorporating measurements) for all the random variables $\{N_s\}$. Of course this is absurd, so one may consider simply maximizing the same objective but for $N_{\mathcal{S}}$, the total number of landmarks in the environment.
+
+This seems reasonable at first. However, there is a huge problem with this approach -- as we observe more landmarks and populate the environment model (the desired outcome), the entropy of $N_{\mathcal{S}}$ actually \textit{increases}. This is easy to see, because the variance of the Poisson distribution is equal to its rate (and its expectation); i.e. as we observe more points, the uncertainty in the true number of points actually increases, which means minimizing that uncertainty would force the robot to remain idle.
+
+Let us return to the idea of using $\lambda(\cdot)$ as a proxy for information gain.
 
 Naively, we might wish to simply maximize the expected value of $N_{\tau}$, as follows:
 \begin{align}
   x_{\tau}^* &= \arg \max_{x_{\tau}} \mathbb{E}[N_{\tau} | z_{\tau}(x_{\tau})]
 \end{align}
-
-Unfortunately, this is too simplistic and it will almost certainly fail. Fear not -- the rest of this work is devoted to fixing it!
 
 \subsection{Regularization}
 
