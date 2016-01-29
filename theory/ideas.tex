@@ -245,11 +245,21 @@ Following a naive application of the information-theoretic framework from (for e
 
 This seems reasonable at first. However, there is a huge problem with this approach -- as we observe more landmarks and populate the environment model (the desired outcome), the entropy of $N_{\mathcal{S}}$ actually \textit{increases}. This is easy to see, because the variance of the Poisson distribution is equal to its rate (and its expectation); i.e. as we observe more points, the uncertainty in the true number of points actually increases, which means minimizing that uncertainty would force the robot to remain idle.
 
-Let us return to the idea of using $\lambda(\cdot)$ as a proxy for information gain.
-
-Naively, we might wish to simply maximize the expected value of $N_{\tau}$, as follows:
+Let us return to the idea of using $\lambda(\cdot)$ as a proxy for information gain. For any given (current) estimate $\lambda(\cdot)$, we can compute its distance from the true rate function using some arbitrary function norm:
 \begin{align}
-  x_{\tau}^* &= \arg \max_{x_{\tau}} \mathbb{E}[N_{\tau} | z_{\tau}(x_{\tau})]
+  \epsilon &= \|\lambda(\cdot) - \Lambda(\cdot)\|
+\end{align}
+
+Of course, we will need to specify exactly what this function norm is and how to calculate it efficiently, but the principle is certainly valid. Of course, we do not really know $\Lambda(\cdot)$, so we can't even evaluate the norm in the first place. Regardless, we write the desired optimization problem as follows (where $\mathcal{X} \subset \mathcal{S}$ is some feasible set of nearby points which the robot might wish to visit):
+\begin{align}
+  x^* &= \arg \min_{x \in \mathcal{X} \subset \mathcal{S}}
+  \mathbb{E}[\|\lambda(\cdot | z(x)) - \Lambda(\cdot)\|]
+\end{align}
+This approach is simply a heuristic which chooses the point in some feasible set $\mathcal{X}$ which in expectation moves the global rate estimator $\lambda(\cdot)$ the farthest toward $\Lambda(\cdot)$.
+
+Now we must address the concern noted above: i.e., we do not know $\Lambda(\cdot)$ a priori, and we are already doing our best to estimate it (that's $\lambda(\cdot)$!), so how do we avoid using it in the first place while still achieving the same sort of behavior? One simple approach is to simply use $N_{\mathcal{S}}$, the total number of points, as a proxy for $\Lambda(\cdot)$. This essentially disregards all spatial information, yet it is trivial to calculate and may be a \textbf{sufficient statistic} of sorts (this requires a formal definition and proof of course). Still, the general idea would be to maximize the expected number of points in the map after moving toward the next position $x$. Formally, we write this as:
+\begin{align}
+  x^* &= \arg \max_{x \in \mathcal{X}} \mathbb{E}[N_{\mathcal{S}} | z(x)]
 \end{align}
 
 \subsection{Regularization}
