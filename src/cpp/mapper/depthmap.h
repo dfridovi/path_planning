@@ -39,6 +39,7 @@
 
 #include <image/image.h>
 #include <camera/camera.h>
+#include <pose/pose.h>
 
 namespace path
 {
@@ -51,14 +52,22 @@ public:
 	DepthMap();
 	DepthMap( bool inverted );
 
-	void SetInverted( bool value );
-	bool IsInverted() const;
-
 	uchar GetValue( size_t u, size_t v ) const;
+	Camera CreateCamera( const Eigen::Vector3d& position, const Eigen::Matrix3d& rotation ) const;
+	Camera CreateCamera( const double X, const double Y, const double Z, const double Phi, const double Theta, const double Psi ) const;
+	Eigen::Vector3d Unproject( size_t u, size_t v ) const;
+	bool SaturatedAt( size_t u, size_t v ) const;
 
-	Camera GetCameraFromDepthMap( const Eigen::Vector3d& position, const Eigen::Matrix3d& rotation ) const;
-	Camera GetCameraFromDepthMap( const double X, const double Y, const double Z, const double Phi, const double Theta, const double Psi );
+	// Setters.
+	void SetInverted( bool value );
+	void SetCamera( const Camera& c );
+
+	// Getters.
+	bool IsInverted() const;
+	Camera GetCamera() const;
+
 private:
+	Camera camera;
 	bool inverted_;
 };
 

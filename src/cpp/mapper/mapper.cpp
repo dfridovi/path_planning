@@ -45,12 +45,12 @@ Mapper::Mapper()
 {
 }
 
-Mapper::Mapper( Camera& c, bool cullSaturated )
-	: camera( c ), cullSaturated_(cullSaturated)
+Mapper::Mapper( bool cullSaturated )
+	: cullSaturated_(cullSaturated)
 {
 }
 
-pcl::PointCloud<pcl::PointXYZ> Mapper::ProjectDepthMap( const DepthMap& map )
+pcl::PointCloud<pcl::PointXYZ> Mapper::ProjectDepthMap( const DepthMap& map ) const
 {
 	pcl::PointCloud<pcl::PointXYZ> cloud;
 	cloud.width = map.Width();
@@ -60,43 +60,34 @@ pcl::PointCloud<pcl::PointXYZ> Mapper::ProjectDepthMap( const DepthMap& map )
 
 	cloud.points.resize( cloud.width * cloud.height );
 
-	double cameraX = 0.0;
-	double cameraY = 0.0;
-	double cameraZ = 0.0;
-
-	double worldX = 0.0;
-	double worldY = 0.0;
-	double worldZ = 0.0;
-
-	int ii = 0;
+	int i = 0;
 	for( size_t u = 0; u < map.Height(); ++u )
 	{
 		for( size_t v = 0; v < map.Width(); ++v )
 		{
-			if( !cullSaturated_ || (map.GetValue( u, v * 3 ) > 0 && map.GetValue( u, v * 3 ) < 255) )
+			if( !(cullSaturated_ && map.SaturatedAt( u, v )) )
 			{
-				camera.ImageToDirection( u, v, &cameraX, &cameraY );
-				cameraZ = map.GetValue( u, v * 3 ) / 256.0;
-				camera.CameraToWorld( cameraX, cameraY, cameraZ, &worldX, &worldY, &worldZ );
+				Eigen::Vector3d world = map.Unproject( u, v );
 
-				cloud.points[ii].x = worldX;
-				cloud.points[ii].y = worldY;
-				cloud.points[ii].z = worldZ;
-				ii++;
+				cloud.points[i].x = world(0);
+				cloud.points[i].y = world(1);
+				cloud.points[i].z = world(2);
+				i++;
 			}
 		}
 	}
 	return cloud;
 }
 
-void Mapper::SetCamera( const Camera& c )
+void Mapper::AddDepthMap( const DepthMap& map )
 {
-	camera = c;
+	pcl::PointCloud<pcl::PointXYZ> newCloud = ProjectDepthMap( map );
+	mapCloud = mapCloud + newCloud;
 }
 
-Camera Mapper::GetCamera() const
+pcl::PointCloud<pcl::PointXYZ> Mapper::getMap() const
 {
-	return camera;
+	return mapCloud;
 }
 
 }

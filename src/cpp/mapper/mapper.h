@@ -37,12 +37,10 @@
 #ifndef PATH_MAPPER_H
 #define PATH_MAPPER_H
 
-#include <camera/camera.h>
 #include <vector>
 #include <geometry/trajectory.h>
 #include <mapper/depthmap.h>
 #include <Eigen/Core>
-#include <pose/pose.h>
 #include <opencv2/core/core.hpp>
 
 #include <pcl/io/pcd_io.h>
@@ -55,19 +53,17 @@ class Mapper
 {
 public:
 	Mapper();
-	Mapper( Camera& c, bool cullSaturated );
+	Mapper( bool cullSaturated );
 
-	pcl::PointCloud<pcl::PointXYZ> ProjectDepthMap( const DepthMap& map );
+	pcl::PointCloud<pcl::PointXYZ> ProjectDepthMap( const DepthMap& map ) const;
+	void AddDepthMap( const DepthMap& map );
 
-	// Setters.
-	void SetCamera( const Camera& c );
-
-	// Getters.
-	Camera GetCamera() const;
+	// Getters
+	pcl::PointCloud<pcl::PointXYZ> getMap() const;
 
 private:
-	Camera camera;
 	bool cullSaturated_;
+	pcl::PointCloud<pcl::PointXYZ> mapCloud;
 };
 
 }

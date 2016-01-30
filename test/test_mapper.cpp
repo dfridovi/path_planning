@@ -57,11 +57,7 @@ namespace path
 	TEST( Mapper, TestMapperConstruction )
 	{
 		CHECK_NOTNULL( new Mapper() );
-
-		cv::Mat M = cv::Mat( 10, 10, CV_8UC1 );
-		DepthMap dm(M);
-		Camera c = dm.GetCameraFromDepthMap(0, 0, 0, 0, 0, 0);
-		CHECK_NOTNULL( new Mapper(c, true) );
+		CHECK_NOTNULL( new Mapper(true) );
 	}
 
 	// Generate a depth map and verify that it reprojects to the correct point
@@ -90,8 +86,9 @@ namespace path
 			}
 
 			DepthMap dm(M);
-			Camera c = dm.GetCameraFromDepthMap( 0, 0, 0, 0, 0, 0 );
-			Mapper m( c, false );
+			Camera c = dm.CreateCamera( 0, 0, 0, 0, 0, 0 );
+			dm.SetCamera(c);
+			Mapper m( false );
 
 			pcl::PointCloud<pcl::PointXYZ> cloud = m.ProjectDepthMap( dm );
 			EXPECT_EQ(cloud.width * cloud.height, data.size());
@@ -117,8 +114,9 @@ namespace path
 
 		DepthMap dm(M);
 		dm.SetInverted( true );
-		Camera c = dm.GetCameraFromDepthMap( 0, 0, 0, 0, 0, 0 );
-		Mapper m( c, true );
+		Camera c = dm.CreateCamera( 0, 0, 0, 0, 0, 0 );
+		dm.SetCamera(c);
+		Mapper m( true );
 		pcl::PointCloud<pcl::PointXYZ> cloud = m.ProjectDepthMap( dm );
 
 		std::remove(point_cloud_file.c_str());

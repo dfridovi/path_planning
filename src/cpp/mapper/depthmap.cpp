@@ -70,7 +70,7 @@ uchar DepthMap::GetValue( size_t u, size_t v ) const
     return value;
 }
 
-Camera DepthMap::GetCameraFromDepthMap( const Eigen::Vector3d& position, const Eigen::Matrix3d& rotation ) const
+Camera DepthMap::CreateCamera( const Eigen::Vector3d& position, const Eigen::Matrix3d& rotation ) const
 {
     Pose cameraPose( rotation, position );
     CameraExtrinsics extrinsics( cameraPose );
@@ -87,12 +87,44 @@ Camera DepthMap::GetCameraFromDepthMap( const Eigen::Vector3d& position, const E
     return c;
 }
 
-Camera DepthMap::GetCameraFromDepthMap( const double X, const double Y, const double Z, const double Phi, const double Theta, const double Psi )
+Camera DepthMap::CreateCamera( const double X, const double Y, const double Z, const double Phi, const double Theta, const double Psi ) const
 {
     // phi, theta, psi = yaw, pitch, roll?
     Eigen::Vector3d position( X, Y, Z );
     Matrix3d rotation = EulerAnglesToMatrix( Phi, Theta, Psi );
-    return GetCameraFromDepthMap( position, rotation );
+    return CreateCamera( position, rotation );
+}
+
+void DepthMap::SetCamera( const Camera& c )
+{
+    camera = c;
+}
+
+Camera DepthMap::GetCamera() const
+{
+    return camera;
+}
+
+Eigen::Vector3d DepthMap::Unproject( size_t u, size_t v ) const
+{
+    double cameraX = 0.0;
+    double cameraY = 0.0;
+    double cameraZ = 0.0;
+
+    double worldX = 0.0;
+    double worldY = 0.0;
+    double worldZ = 0.0;
+
+    camera.ImageToDirection( u, v, &cameraX, &cameraY );
+    cameraZ = GetValue( u, v * 3 ) / 256.0;
+    camera.CameraToWorld( cameraX, cameraY, cameraZ, &worldX, &worldY, &worldZ );
+
+    return Eigen::Vector3d( worldX, worldY, worldZ );
+}
+
+bool DepthMap::SaturatedAt( size_t u, size_t v ) const
+{
+    return GetValue( u, v * 3 ) <= 0 || GetValue( u, v * 3 ) >= 255;
 }
 
 }
