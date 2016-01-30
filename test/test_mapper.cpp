@@ -34,6 +34,8 @@
  * Author: James Smith   ( james.smith@berkeley.edu )
  */
 
+#include <iostream>
+
 #include <gtest/gtest.h>
 #include <glog/logging.h>
 
@@ -41,11 +43,8 @@
 #include <math/random_generator.h>
 #include <geometry/rotation.h>
 
-#include <iostream>
-
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <file/csv_writer.h>
 #include <strings/join_filepath.h>
 
 namespace path
@@ -123,4 +122,8 @@ namespace path
 		
 		pcl::io::savePCDFileASCII( point_cloud_file, cloud );
 	}
+
+	// TODO: Add a test for "AddDepthMap functionality"
+
+	// TODO: Add DepthMap specific tests?
 } //\ namespace path

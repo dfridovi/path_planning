@@ -35,7 +35,6 @@
  */
 
 #include <mapper/mapper.h>
-#include <iostream>
 
 namespace path
 {

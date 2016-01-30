@@ -38,11 +38,9 @@
 #define PATH_MAPPER_H
 
 #include <vector>
-#include <geometry/trajectory.h>
-#include <mapper/depthmap.h>
-#include <Eigen/Core>
-#include <opencv2/core/core.hpp>
 
+#include <Eigen/Core>
+#include <mapper/depthmap.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
