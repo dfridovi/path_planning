@@ -45,11 +45,11 @@
 #include <pose/pose.h>
 #include <opencv2/core/core.hpp>
 
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+
 namespace path
 {
-
-typedef std::vector<Eigen::Vector3d> PointList;
-typedef path::Camera Camera;
 
 class Mapper
 {
@@ -57,7 +57,7 @@ public:
 	Mapper();
 	Mapper( Camera& c, bool cullSaturated );
 
-	PointList ProjectDepthMap( const DepthMap& map );
+	pcl::PointCloud<pcl::PointXYZ> ProjectDepthMap( const DepthMap& map );
 
 	// Setters.
 	void SetCamera( const Camera& c );

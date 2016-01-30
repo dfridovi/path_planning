@@ -50,9 +50,15 @@ Mapper::Mapper( Camera& c, bool cullSaturated )
 {
 }
 
-PointList Mapper::ProjectDepthMap( const DepthMap& map )
+pcl::PointCloud<pcl::PointXYZ> Mapper::ProjectDepthMap( const DepthMap& map )
 {
-	PointList pl;
+	pcl::PointCloud<pcl::PointXYZ> cloud;
+	cloud.width = map.Width();
+	cloud.height = map.Height();
+	cloud.is_dense = false;
+	// TODO: Include sensor orientation information?
+
+	cloud.points.resize( cloud.width * cloud.height );
 
 	double cameraX = 0.0;
 	double cameraY = 0.0;
@@ -62,6 +68,7 @@ PointList Mapper::ProjectDepthMap( const DepthMap& map )
 	double worldY = 0.0;
 	double worldZ = 0.0;
 
+	int ii = 0;
 	for( size_t u = 0; u < map.Height(); ++u )
 	{
 		for( size_t v = 0; v < map.Width(); ++v )
@@ -69,16 +76,17 @@ PointList Mapper::ProjectDepthMap( const DepthMap& map )
 			if( !cullSaturated_ || (map.GetValue( u, v * 3 ) > 0 && map.GetValue( u, v * 3 ) < 255) )
 			{
 				camera.ImageToDirection( u, v, &cameraX, &cameraY );
-				cameraZ = map.GetValue( u, v * 3 );
+				cameraZ = map.GetValue( u, v * 3 ) / 256.0;
 				camera.CameraToWorld( cameraX, cameraY, cameraZ, &worldX, &worldY, &worldZ );
 
-				Eigen::Vector3d dir(worldX, worldY, worldZ);
-			
-				pl.push_back(dir);
+				cloud.points[ii].x = worldX;
+				cloud.points[ii].y = worldY;
+				cloud.points[ii].z = worldZ;
+				ii++;
 			}
 		}
 	}
-	return pl;
+	return cloud;
 }
 
 void Mapper::SetCamera( const Camera& c )

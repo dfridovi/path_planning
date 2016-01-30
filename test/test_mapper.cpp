@@ -93,13 +93,13 @@ namespace path
 			Camera c = dm.GetCameraFromDepthMap( 0, 0, 0, 0, 0, 0 );
 			Mapper m( c, false );
 
-			PointList pl = m.ProjectDepthMap( dm );
-			EXPECT_EQ(pl.size(), data.size());
+			pcl::PointCloud<pcl::PointXYZ> cloud = m.ProjectDepthMap( dm );
+			EXPECT_EQ(cloud.width * cloud.height, data.size());
 
-			for( size_t i = 0; i < pl.size(); ++i )
+			for( size_t i = 0; i < cloud.width * cloud.height; ++i )
 			{
-				double originalZ = data(i / cols, i % cols);
-				double projectedZ = pl.at(i)(2);
+				double originalZ = data(i / cols, i % cols) / 256.0;
+				double projectedZ = cloud.points[i].z;
 				EXPECT_EQ(originalZ, projectedZ);
 			}
 		}
@@ -110,27 +110,19 @@ namespace path
 	TEST( Mapper, TestMapperLoaded )
 	{
 		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene2.png" );
-		const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud_loaded.csv" );
+		const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud_loaded.pcd" );
 
 		cv::Mat M = cv::imread(depth_map_file.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 		EXPECT_TRUE(M.data);
 
 		DepthMap dm(M);
 		dm.SetInverted( true );
-		Camera c = dm.GetCameraFromDepthMap( 0, -100, 10, 0, 0, 0 );
+		Camera c = dm.GetCameraFromDepthMap( 0, 0, 0, 0, 0, 0 );
 		Mapper m( c, true );
-		PointList pl = m.ProjectDepthMap( dm );
+		pcl::PointCloud<pcl::PointXYZ> cloud = m.ProjectDepthMap( dm );
 
 		std::remove(point_cloud_file.c_str());
 		
-		file::CsvWriter csv_writer(point_cloud_file);
-		EXPECT_TRUE( csv_writer.IsOpen() );
-		
-		for( size_t i = 0; i < pl.size(); ++i )
-		{
-			Eigen::Vector3d v = pl.at(i);
-			csv_writer.WriteLine(v);
-		}
-		csv_writer.Close();
+		pcl::io::savePCDFileASCII( point_cloud_file, cloud );
 	}
 } //\ namespace path
