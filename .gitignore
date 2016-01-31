@@ -3,7 +3,6 @@ data
 build
 bin
 resources
-test/test_data/generated
 
 # Swap files
 *.swp
