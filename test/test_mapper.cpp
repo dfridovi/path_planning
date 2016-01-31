@@ -63,7 +63,7 @@ namespace path
 	TEST( Mapper, TestMapperGenerated )
 	{
 		// TODO JDS in the future add an option to export generated point clouds
-		//const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud_gen.csv" );
+		//const std::string point_cloud_file = strings::JoinFilepath( GENERATED_TEST_DATA_DIR, "mapper_point_cloud_gen.csv" );
 		math::RandomGenerator rng(0);
 
 		for( size_t ii = 0; ii < 1000; ++ii )
@@ -105,8 +105,8 @@ namespace path
 	// TODO: Automatically verify correctness (save the a correct point cloud file and compare them)
 	TEST( Mapper, TestMapperLoaded )
 	{
-		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene2.png" );
-		const std::string point_cloud_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "mapper_point_cloud_loaded.pcd" );
+		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene.png" );
+		const std::string point_cloud_file = strings::JoinFilepath( GENERATED_TEST_DATA_DIR, "mapper_point_cloud_loaded.pcd" );
 
 		cv::Mat M = cv::imread(depth_map_file.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
 		EXPECT_TRUE(M.data);

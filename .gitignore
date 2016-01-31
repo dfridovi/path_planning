@@ -3,6 +3,7 @@ data
 build
 bin
 resources
+test/test_data/generated
 
 # Swap files
 *.swp
@@ -30,9 +31,6 @@ resources
 
 # Video files
 *.mp4
-
-# CSV files
-*.csv
 
 # pdflatex files
 theory/*.aux

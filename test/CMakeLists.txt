@@ -30,4 +30,8 @@ if (BUILD_TESTS)
 
   # Define a variable storing the path to test data.
   add_definitions(-DPATH_TEST_DATA_DIR="${CMAKE_SOURCE_DIR}/test/test_data")
+
+  # If you want a test to generate temporary files (ie, testing file io) then store 
+  # them in this ignored folder
+  add_definitions(-DGENERATED_TEST_DATA_DIR="${CMAKE_SOURCE_DIR}/test/test_data/generated")
 endif(BUILD_TESTS)
