@@ -3,6 +3,8 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage{algorithmic}
 
 \DeclareMathOperator{\card}{card}
 \DeclareMathOperator{\ssd}{ssd}
@@ -120,24 +122,21 @@ At the end of the day, though, the occupancy grid is not the fundamental reason 
 
 Thus, we must devise a way to reformulate the information-theoretic approach to exploration in terms of a point cloud, rather than an occupancy grid.
 
-\subsection{Toward a New Objective}
-
-The first order of business is to come up with a new objective function $\mathcal{J}$. Since structure from motion is all about landmarks, it makes sense to begin by introducing a new random variable $N_{\tau}$ to represent the number of new landmarks in the map aquired during time interval $\tau$; i.e. $N_{\tau} = \card(m_{t + \tau}) - \card(m_t)$ where the map $m$ is explicitly time-parameterized.
-
-Naively, we might wish to simply maximize the expected value of $N_{\tau}$, as follows:
-\begin{align}
-  x_{\tau}^* &= \arg \max_{x_{\tau}} \mathbb{E}[N_{\tau} | z_{\tau}(x_{\tau})]
-\end{align}
-
-Unfortunately, this is too simplistic and it will almost certainly fail. Fear not -- the rest of this work is devoted to fixing it!
-
 \subsection{Modeling}
 
-Perhaps the most obvious problem with the aforementioned optimization is taking the expectation. Before, we could do this rather simply because entropy did not depend on \textit{what we observed}, only \textit{that we observed it}. Moreover, and more importantly, we were working with a voxel grid that easily lent itself to a probabilistic model.
+There are two other obvious shortcomings in the information-theoretic approach:
+\begin{enumerate}
+\item Typically, occupancy grids model only whether or not each voxel is occupied.
+\item Occupancy grids discretize (sample) the environment into a set of voxels.
+\end{enumerate}
 
-Here though, we are counting landmarks in a \textit{continuous} environment. That means that we must be able to model the presence of landmarks conditioned on our anticipated field of view. One interesting approach is to model the occurrance of landmarks in the environment as an n-dimensional non-homogeneous Poisson process with rate as a function of the map. For example, one simple approach would be to maintain an occupancy grid (either implicitly or explicitly) and set the rate of the Poisson process to be some function of the current estimated probability of occupancy at each grid location.
+Since we are interested in reconstructing models with \textit{lots of points}, we would like our model to capture something about the number of points in each region of space. In a discrete formulation, this would mean keeping a count of points that fall into each voxel, rather than just an estimate of the probability that the voxel is occupied. Note that this is almost a trivial extension of the traditional occupancy grid formulation. Instead of each voxel being modeled by a Bernoulli random variable, it would be modeled by another random variable that takes non-negative integer values and which models discrete ``arrivals.'' That best choice seems to be a Poisson random variable (see the subsection below for details). Once we have a known probability distribution (even with an unknown parameter -- the ``rate'' in this case, but recall that before the Bernoulli variable had an unknown parameter too) we can go ahead and calculate entropy and KL divergence as before.
 
-With this model, we can very easily estimate the conditional expectation above in closed form.
+More fundamentally, occupancy grids are unsatisfactory because they discretize space. The world is not discrete! Modeling the environment as a \textit{continuous} space would seem to solve this problem; interestingly, it also solves the first problem at the same time. Notice that if landmarks are modeled by points in a continuum, then it is absolutely impossible for more than a single landmark to be at the exact same point. Thus, one possible representation of the environment would be a simple list of the locations of observed landmarks. Of course, a simple list is not likely to be efficient for any sort of geometric computation we may require; nevertheless, it is sufficient to store all the information in the model.
+
+Going to a continuous representation begs the question of how to model the presence of landmarks in a probabilistic sense. In essence, we propose to apply the Poisson model we intuited in the discrete case. Specifically, we will use a \textbf{non-homogeneous, multi-dimensional Poisson process} to model the ``arrival'' of landmarks in the scene. Typically, Poisson process are used to model the arrivals of, say, customers in a queue or photons at a photodetector. In this case, the landmarks are being observed, rather than \textit{arriving}, but the principle is the same.
+
+As described below, Poisson processes have very nice mathematical properties that, among other things, allow us to write down very simple closed-form expressions for quantities of interest such as expectation and variance, and approximate values for entropy.
 
 \subsubsection{Aside: Poisson Processes}
 
@@ -157,25 +156,111 @@ Finally, an n-dimensional Poisson process is one that has multiple ``time'' dime
   X_{(x, y)} &\sim \Pois \left( \int_{\mu}^{x + \mu} \int_{\nu}^{y + \nu} \lambda(s, t) ds dt \right)
 \end{align}
 
-Think of this last version as modeling fish in the ocean. Over any given x-by-y rectangle of ocean, the probability of observing $k$ fish is $\mathbb{P}\{X_{(x, y)} = k\}$ if fish are distributed as a 2D Poisson process with rate function $\lambda(x, y)$. Of course, it is a simple matter to replace fish in the ocean with landmarks in an arbitrary environment, and it is also not a stretch to consider $\lambda(x, y)$ as a stepwise function in $x$ and $y$, as described above.
+Think of this last version as modeling fish in the ocean. Over any given x-by-y rectangle of ocean, the probability of observing $k$ fish is $\mathbb{P}\{X_{(x, y)} = k\}$ if fish are distributed as a 2D Poisson process with rate function $\lambda(x, y)$. Of course, it is a simple matter to replace fish in the ocean with landmarks in an arbitrary environment.
 
-\subsubsection{Formal Model Definition}
+\subsubsection{Toward a Formal Model Definition}
 
-Formally then, we can model the distribution of $N_{\tau}$ conditioned on robot configurations $x_{\tau}$ (corresponding to observed map region $\mathcal{O_{\tau}}$) as follows:
+Now that we are somewhat familiar with Poisson processes, it is natural to model the scene as a Poisson process defined over the continuous scene-space $\mathcal{S}$. In other words, the ground-truth locations of landmarks in the environment may be approximated (or predicted) using the assumption that they are Poisson-distributed according to some rate function $\lambda(\cdot)$ defined on $\mathcal{S}$.
+
+Formally then, we can define the \textbf{random variable} $N_s, s \subseteq \mathcal{S}$ to be the number of landmarks in some region $s$. According to the Poisson model, the distribution of $N_s$ is simply:
 \begin{align}
-  N_{\tau} | x_{\tau} &\sim
-  \Pois \left( \int_{\theta \in \mathcal{O_{\tau}}} \lambda(\theta) d\theta \right)
-\end{align}
-for rate function $\lambda(\cdot)$ defined on the map (e.g. $\mathbb{R}^3$). This rate function is in turn estimated from the occupancy grid representation, $p(\theta) = $ estimated probability that each voxel is occupied, for some monotonic function $f$ that scales probabilities to rates (e.g. by multiplying by the number of observed landmarks in each voxel):
-\begin{align}
-  \lambda(\theta) &= f(p(\theta))
+  N_s &\sim
+  \Pois \left( \int_{\theta \in s} \lambda(\theta) d\theta \right)
 \end{align}
 
-One useful property of the Poisson distribution is that its mean is equal to its argument. This means that
+Note that the rate function entirely determines the distributions of all the $\{N_s\}$, so we must choose it carefully in order to make the model at all meaningful. To get some insight as to exactly what this $\lambda(\cdot)$ represents, consider what the map will look like once we have explored everything and observed all landmarks. In this case, $\lambda(\cdot)$ will tell us the expected concentration of landmarks at each point -- in other words, it is almost like a probability density function, except that we do not require it to integrate to one.
+
+Given this intuition, we can make some intelligent modeling assumptions. For instance, it would make sense for $\lambda_0(\cdot) = \rho$ a priori. That is, the \textbf{prior} distribution of landmarks ought to be uniform with some constant rate parameter $\rho > 0$. Over time, if our exploration strategy is successful, we should observe $\lambda_t(\cdot) \rightarrow \Lambda(\cdot)$ where we use capital $\Lambda$ to represent the ground-truth. This convergence is exactly what is proposed and explained in the original paper on information-theoretic exploration \cite{bourgault}, except that it has been adapted to a continuous environment representation.
+
+The challenge now becomes: \textit{how to do we update the rate function?} That is, how can we merge new observations with existing ones so that over time $\lambda_t(\cdot) \rightarrow \Lambda(\cdot)$. Let us assume that we can identify landmarks with sufficiently accurate and consistent descriptors such that we can tell with a high degree of certainty when we have observed a \textit{new} landmark and when we are simply re-observing one we have already seen before. Under this assumption (which is not too far-fetched, given the mechanisms of typical structure from motion pipelines), one natural approach is to place an \textit{n}-dimensional Gaussian distribution (with some covariance that may be derived from the triangulation process) at each new landmark's coordinates. Over time, the rate function will look like a mixture of Gaussians, for which things like path planning and smoothing are well-studied.
+
+\subsubsection{Model Updates}
+
+There is one very big caveat to this rather simplistic model. How do we update regions of $\mathcal{S}$ efficiently? In occupancy grids, it is fairly simple to ray-trace through the grid so that observing a landmark at some location actually also implies that the voxels on the ray to that landmark are all unoccupied. We really need to do something like this in continuous space to make the exploration more efficient.
+
+One way to solve this problem would be to trace out some cylinder from the current robot location to the observed landmark, find all enclosed landmarks, and -- for example -- increase the covariance to reflect increased uncertainty regarding their true location. In general, what we are really interested in is the conditional distribution of $N_{cyl}$, the number of obstacles in the cylinder. To a good approximation, the prior distribution is $N_{cyl} \sim \Pois(n_{obs} + \rho V_{cyl})$ -- that is, the expected number of landmarks is the number of observed landmarks plus the raw free-space density times the cylinder's volume. However, once we observe a landmark at the far end of the cylinder, we must adjust the probability of finding landmarks inside the cylinder. That is, we must find some way of expressing the following probability distribution for the location of a landmark $X$ in the cylinder conditioned on the observation of another landmark $Z$ located at the end of the cylinder:
 \begin{align}
-  \mathbb{E}[N_{\tau} | x_{\tau}] &= \int_{\theta \in \mathcal{O_{\tau}}} \lambda(\theta) d\theta
+  \mathbb{P}\{X \in dx | Z = \mu_z\} &=
+  \frac{\mathbb{P}\{Z \in dz | X = \mu_x\} \mathbb{P}\{X \in dx\}}{\mathbb{P}\{Z \in dz\}}
 \end{align}
-which is simply a discrete sum in our case because $\lambda(\cdot)$ is voxelized.
+
+In general, this corresponds to the following problem in one dimension:
+\begin{align}
+  \mathbb{P}\{Y \in dy | Y > \alpha\} &=
+  \frac{\mathbb{P}\{Y > \alpha | Y = y\} \mathbb{P}\{Y \in dy\}}{\mathbb{P}\{Y > \alpha\}} \\
+  &= \begin{cases}
+    \frac{1 \cdot p(y)}{\int_{\alpha}^{\infty} p(y) dy} & y > \alpha \\
+    0 & \textnormal{otherwise}
+  \end{cases}
+\end{align}
+Here, we are taking variable $Y$ in one dimension and deriving the distribution conditioned on some extrinsic measurement that says $Y > \alpha$. In our case, we might have $X$ outside the cylinder. Regardless, the effect is to zero out part of the distribution of $Y$ and rescale the rest so that it integrates to 1. Unfortunately, this is very, very difficult to represent and calculate efficiently in a computer program, so we must come up with some reasonable approximation.
+
+Before approximating, we should note that it is not completely infeasible to represent these sorts of conditional distributions efficiently. One approach may be to have each landmark store a mean, covariance, constraints of some form, and the corresponding scale factor which can be numerically approximated to make the distribution integrate to unity. Each time a new landmark is observed, the program could query a kd-tree for landmarks with means in some region of space, then apply a new constraint, and calculate a new mean and scale factor (numerically). This is, of course, somewhat involved and inefficient due to its reliance on numerical integration at every update, for (in principle) a large number of obstacles.
+
+One further note: we have not, as yet, accounted for any change in $\rho$, the background (a priori) rate. Ideally, each new observation should reduce $\rho$ in some cylinder between the sensor and the landmark. However, this is again somewhat difficult to represent computationaly, so we will have to come up with a feasible alternative.
+
+\subsubsection{Model Update Approximations}
+
+Now that we have established what \textit{ideal} model updates might look like, we must come up with some reasonable, efficient, and realistic approximations.
+
+At first glance, there are two obvious options:
+\begin{enumerate}
+\item \textit{Simply remove all landmarks that lie sufficiently close to the line of sight to a newly observed landmark.} This has the benefit of simplicity (it is very easy to identify all such landmarks and remove them). However, it will probably not be very robust to errors in position/orientation: if the robot's position and orientation are not sufficiently precise, this approach would end up deleting potentially valid landmarks (and not deleting the offending ones).
+\item \textit{Move all landmarks that lie close to the line of sight to the new landmark, and also adjust their covariance to reflect that change.} In other words, approximate the true Bayesian update in the previous subsection with the best-fit Gaussian.
+\end{enumerate}
+
+I believe that the second option is by far the better one, as it will be more noise-robust and because it is a truer approximation to the Bayesian update.
+
+Now the question becomes -- \textit{what is the best-fit Gaussian?} By best-fit, we really just mean that the mean and covariance should be a good approximation to the truncated Gaussian that was derived earlier. Of course, there are many different metrics we might use, but regardless what seems to be most important is that the mean should move away from the line of sight and that the covariance should increase along the direction of movement. For the moment, we will leave a derivation of precisely the right magnitude adjustments for future work, and outline the general algorithm in Algorithm \ref{model_update_algorithm}, using arbitrary scalar constants $\alpha, \beta$ for the size of these adjustments.
+
+\begin{algorithm}[H]
+  \caption{Model Update Algorithm}
+  \label{model_update_algorithm}
+  \begin{algorithmic}
+    \WHILE{True}
+      \STATE pose $\leftarrow$ GetRobotPose()
+      \STATE obs $\leftarrow$ GetNewLandmark()
+      \STATE cyl $\leftarrow$ GetLineOfSight()
+      \FOR{x in cyl}
+        \STATE dir = GetDirectionToLineOfSight(pose, obs, x)
+        \STATE x.mean = x.mean $-$ $\alpha \cdot \textnormal{dir}$
+        \STATE x.cov.AddDirectionalVariance(dir, $\beta$)
+      \ENDFOR
+    \ENDWHILE
+  \end{algorithmic}
+\end{algorithm}
+
+How do we add directional variance to a covariance? In principle, covariance implies a quadratic form (i.e. an ellipsoid), so all we need to do is compute a new covariance matrix that only models variance along that direction and add it to the existing covariance. This is very simple. Suppose that the new unit direction is $v$, then $v v^T$ is a dyadic covariance matrix with unit variance in the desired direction. The update is thus:
+\begin{align}
+  \Sigma &\leftarrow \Sigma + \beta v v^T
+\end{align}
+
+\subsection{A New Objective}
+
+The next order of business is to use the model explained and revised above to improve the original objective function $\mathcal{J}$. Since we are explicitly modeling landmark locations as a Poisson process, it makes sense to consider an objective function whose optimization converges on complete knowledge of the process, i.e. so that we know the exact distributions of all the $\{N_s : s \subseteq \mathcal{S}\}$.
+
+Recall that each $N_s \sim \Pois \left( \int_{\theta \in s} \lambda(\theta) d\theta \right)$, which implies that we will have full knowledge of the distributions of the $\{N_s\}$ if we fully know the rate function $\lambda(\cdot)$ -- that is, if $\lambda(\cdot) \rightarrow \Lambda(\cdot)$ (as was suggested earlier).
+
+Following a naive application of the information-theoretic framework from (for example) \cite{bourgault}, we might try to maximize the expected mutual information gain (i.e. the expected difference in entropy after incorporating measurements) for all the random variables $\{N_s\}$. Of course this is absurd, so one may consider simply maximizing the same objective but for $N_{\mathcal{S}}$, the total number of landmarks in the environment.
+
+This seems reasonable at first. However, there is a huge problem with this approach -- as we observe more landmarks and populate the environment model (the desired outcome), the entropy of $N_{\mathcal{S}}$ actually \textit{increases}. This is easy to see, because the variance of the Poisson distribution is equal to its rate (and its expectation); i.e. as we observe more points, the uncertainty in the true number of points actually increases, which means minimizing that uncertainty would force the robot to remain idle.
+
+Let us return to the idea of using $\lambda(\cdot)$ as a proxy for information gain. For any given (current) estimate $\lambda(\cdot)$, we can compute its distance from the true rate function using some arbitrary function norm:
+\begin{align}
+  \epsilon &= \|\lambda(\cdot) - \Lambda(\cdot)\|
+\end{align}
+
+Of course, we will need to specify exactly what this function norm is and how to calculate it efficiently, but the principle is certainly valid. Of course, we do not really know $\Lambda(\cdot)$, so we can't even evaluate the norm in the first place. Regardless, we write the desired optimization problem as follows (where $\mathcal{X} \subset \mathcal{S}$ is some feasible set of nearby points which the robot might wish to visit):
+\begin{align}
+  x^* &= \arg \min_{x \in \mathcal{X} \subset \mathcal{S}}
+  \mathbb{E}[\|\lambda(\cdot | z(x)) - \Lambda(\cdot)\|]
+\end{align}
+This approach is simply a heuristic which chooses the point in some feasible set $\mathcal{X}$ which in expectation moves the global rate estimator $\lambda(\cdot)$ the farthest toward $\Lambda(\cdot)$.
+
+Now we must address the concern noted above: i.e., we do not know $\Lambda(\cdot)$ a priori, and we are already doing our best to estimate it (that's $\lambda(\cdot)$!), so how do we avoid using it in the first place while still achieving the same sort of behavior? One simple approach is to simply use $N_{\mathcal{S}}$, the total number of points, as a proxy for $\Lambda(\cdot)$. This essentially disregards all spatial information, yet it is trivial to calculate and may be a \textbf{sufficient statistic} of sorts (this requires a formal definition and proof of course). Still, the general idea would be to maximize the expected number of points in the map after moving toward the next position $x$. Formally, we write this as:
+\begin{align}
+  x^* &= \arg \max_{x \in \mathcal{X}} \mathbb{E}[N_{\mathcal{S}} | z(x)]
+\end{align}
 
 \subsection{Regularization}
 
@@ -203,6 +288,8 @@ The full optimization problem is thus (note that $m_{CM}$ is the current map's c
 \bibitem{erik} Erik Nelson, ``Environment Model Adaptation for Autonomous Exploration,'' \textit{MS Thesis: Carnegie Mellon Robotics Institute}. Pittsburgh, PA: May 2015.
 
 \bibitem{yamauchi} Brian Yamauchi. ``A frontier-based approach for autonomous exploration.'' In \textit{Computational Intelligence in Robotics and Automation, 1997. CIRA '97, Proceedings, 1997 IEEE International Symposium on}, pp. 146-151. IEEE, 1997.
+
+\bibitem{bourgault} Frederic Bourgault, Alexei A. Makarenko, Stefan B. Williams, Ben Grocholsky, and Hugh F. Durrant-Whyte. ``Information Based Adaptive Robotic Exploration.'' In \textit{Intelligent Robots and Systems, 2002 IEEE/RSJ International Conference on}, Vol. 1.
   
 \end{thebibliography}
 
