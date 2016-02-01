@@ -31,33 +31,46 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Authors: Erik Nelson            ( eanelson@eecs.berkeley.edu )
- *          David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Author: James Smith   ( james.smith@berkeley.edu )
  */
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// This file defines typedefs for generic types and primitives used for SfM.
-//
-// ////////////////////////////////////////////////////////////////////////////
+#ifndef PATH_DEPTHMAP_H
+#define PATH_DEPTHMAP_H
 
-#ifndef PATH_UTIL_TYPES_H
-#define PATH_UTIL_TYPES_H
+#include <image/image.h>
+#include <camera/camera.h>
+#include <pose/pose.h>
 
-#include <Eigen/Core>
-#include <limits>
-#include <vector>
+namespace path
+{
 
-namespace path {
+class DepthMap : public Image
+{
+public:
+	using Image::Image;
 
-// -------------------- Custom types -------------------- //
-typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
+	DepthMap();
+	DepthMap( bool inverted );
 
-// -------------------- Third-party typedefs -------------------- //
-// Used to represent [R | t] and P, the camera extrinsics and projection
-// matrices.
-typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
+	uchar GetValue( size_t u, size_t v ) const;
+	Camera CreateCamera( const Eigen::Vector3d& position, const Eigen::Matrix3d& rotation ) const;
+	Camera CreateCamera( const double X, const double Y, const double Z, const double Phi, const double Theta, const double Psi ) const;
+	Eigen::Vector3d Unproject( size_t u, size_t v ) const;
+	bool SaturatedAt( size_t u, size_t v ) const;
 
-}  //\namespace path
+	// Setters.
+	void SetInverted( bool value );
+	void SetCamera( const Camera& c );
+
+	// Getters.
+	bool IsInverted() const;
+	Camera GetCamera() const;
+
+private:
+	Camera camera;
+	bool inverted_;
+};
+
+}
 
 #endif

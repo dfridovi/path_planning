@@ -31,9 +31,6 @@ resources
 # Video files
 *.mp4
 
-# CSV files
-*.csv
-
 # pdflatex files
 theory/*.aux
 theory/*.log

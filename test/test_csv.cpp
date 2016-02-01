@@ -55,7 +55,7 @@ namespace {
 const std::string csv_read_file = strings::JoinFilepath(
     PATH_TEST_DATA_DIR, FLAGS_csv_file.c_str());
 const std::string csv_write_file = strings::JoinFilepath(
-    PATH_TEST_DATA_DIR, "test_write.csv");
+    GENERATED_TEST_DATA_DIR, "test_write.csv");
 }
 
 TEST(CsvReader, TestOpen) {

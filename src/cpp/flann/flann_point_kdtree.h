@@ -85,6 +85,6 @@ namespace path {
 
   };  //\class FlannPointKDTree
 
-}  //\namespace bsfm
+}  //\namespace path
 
 #endif

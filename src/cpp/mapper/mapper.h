@@ -31,33 +31,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Authors: Erik Nelson            ( eanelson@eecs.berkeley.edu )
- *          David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Author: James Smith   ( james.smith@berkeley.edu )
  */
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// This file defines typedefs for generic types and primitives used for SfM.
-//
-// ////////////////////////////////////////////////////////////////////////////
+#ifndef PATH_MAPPER_H
+#define PATH_MAPPER_H
 
-#ifndef PATH_UTIL_TYPES_H
-#define PATH_UTIL_TYPES_H
-
-#include <Eigen/Core>
-#include <limits>
 #include <vector>
 
-namespace path {
+#include <Eigen/Core>
+#include <mapper/depthmap.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
 
-// -------------------- Custom types -------------------- //
-typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
+namespace path
+{
 
-// -------------------- Third-party typedefs -------------------- //
-// Used to represent [R | t] and P, the camera extrinsics and projection
-// matrices.
-typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
+class Mapper
+{
+public:
+	Mapper();
+	Mapper( bool cullSaturated );
 
-}  //\namespace path
+	pcl::PointCloud<pcl::PointXYZ> ProjectDepthMap( const DepthMap& map ) const;
+	void AddDepthMap( const DepthMap& map );
+
+	// Getters
+	pcl::PointCloud<pcl::PointXYZ> getMap() const;
+
+private:
+	bool cullSaturated_;
+	pcl::PointCloud<pcl::PointXYZ> mapCloud;
+};
+
+}
 
 #endif

@@ -1,6 +1,11 @@
 include(ExternalProject)
 set(path_planning_LIBRARIES "")
 
+# Find OpenCV.
+find_package( OpenCV REQUIRED )
+include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS})
+list(APPEND path_planning_LIBRARIES ${OpenCV_LIBS})
+
 # Find Eigen.
 find_package( Eigen3 REQUIRED )
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
@@ -17,7 +22,7 @@ include_directories(SYSTEM ${FLANN_INCLUDE_DIRS})
 list(APPEND path_planning_LIBRARIES ${FLANN_LIBRARIES})
 
 # Find PCL.
-find_package( PCL 1.3 REQUIRED COMPONENTS common )
+find_package( PCL 1.3 REQUIRED COMPONENTS common io )
 include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
 list(APPEND path_planning_LIBRARIES ${PCL_LIBRARIES})
 

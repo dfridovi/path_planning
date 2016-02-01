@@ -100,4 +100,4 @@ namespace path {
     EXPECT_NEAR(min_distance, nn_distance, 1e-8);
   }
 
-}  //\namespace bsfm
+}  //\namespace path
