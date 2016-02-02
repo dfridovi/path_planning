@@ -178,7 +178,7 @@ The challenge now becomes: \textit{how to do we update the rate function?} That 
 
 There is one very big caveat to this rather simplistic model. How do we update regions of $\mathcal{S}$ efficiently? In occupancy grids, it is fairly simple to ray-trace through the grid so that observing a landmark at some location actually also implies that the voxels on the ray to that landmark are all unoccupied. We really need to do something like this in continuous space to make the exploration more efficient.
 
-\subsubsection{A Simple Approach}
+\subsubsection{Bayesian Update}
 
 One way to solve this problem would be to trace out some cylinder from the current robot location to the observed landmark, find all enclosed landmarks, and -- for example -- increase the covariance to reflect increased uncertainty regarding their true location. In general, what we are really interested in is the conditional distribution of $N_{cyl}$, the number of obstacles in the cylinder. To a good approximation, the prior distribution is $N_{cyl} \sim \Pois(n_{obs} + \rho V_{cyl})$ -- that is, the expected number of landmarks is the number of observed landmarks plus the raw free-space density times the cylinder's volume. However, once we observe a landmark at the far end of the cylinder, we must adjust the probability of finding landmarks inside the cylinder. That is, we must find some way of expressing the following probability distribution for the location of a landmark $X$ in the cylinder conditioned on the observation of another landmark $Z$ located at the end of the cylinder:
 \begin{align}
@@ -197,6 +197,8 @@ In general, this corresponds to the following problem in one dimension:
 \end{align}
 Here, we are taking variable $Y$ in one dimension and deriving the distribution conditioned on some extrinsic measurement that says $Y > \alpha$. In our case, we might have $X$ outside the cylinder. Regardless, the effect is to zero out part of the distribution of $Y$ and rescale the rest so that it integrates to 1. Unfortunately, this is very, very difficult to represent and calculate efficiently in a computer program, so we must come up with some reasonable approximation.
 
+\subsubsection{A Simple Approximation}
+
 Before approximating, we should note that it is not completely infeasible to represent these sorts of conditional distributions efficiently. One approach may be to have each landmark store a mean, covariance, constraints of some form, and the corresponding scale factor which can be numerically approximated to make the distribution integrate to unity. Each time a new landmark is observed, the program could query a kd-tree for landmarks with means in some region of space, then apply a new constraint, and calculate a new mean and scale factor (numerically). This is, of course, somewhat involved and inefficient due to its reliance on numerical integration at every update, for (in principle) a large number of obstacles.
 
 One further note: we have not, as yet, accounted for any change in $\rho$, the background (a priori) rate. Ideally, each new observation should reduce $\rho$ in some cylinder between the sensor and the landmark. However, this is again somewhat difficult to represent computationaly, so we will have to come up with a feasible alternative.
@@ -206,14 +208,14 @@ Now that we have established what \textit{ideal} model updates might look like, 
 At first glance, there are two obvious options:
 \begin{enumerate}
 \item \textit{Simply remove all landmarks that lie sufficiently close to the line of sight to a newly observed landmark.} This has the benefit of simplicity (it is very easy to identify all such landmarks and remove them). However, it will probably not be very robust to errors in position/orientation: if the robot's position and orientation are not sufficiently precise, this approach would end up deleting potentially valid landmarks (and not deleting the offending ones).
-\item \textit{Move all landmarks that lie close to the line of sight to the new landmark, and also adjust their covariance to reflect that change.} In other words, approximate the true Bayesian update in the previous subsection with the best-fit Gaussian.
+\item \textit{Move all landmarks that lie close to the line of sight to the new landmark, and also adjust their covariance to reflect that change.} In other words, approximate the true Bayesian update in the previous subsection with a Gaussian.
 \end{enumerate}
 
 I believe that the second option is by far the better one, as it will be more noise-robust and because it is a truer approximation to the Bayesian update.
 
-Now the question becomes -- \textit{what is the best-fit Gaussian?} By best-fit, we really just mean that the mean and covariance should be a good approximation to the truncated Gaussian that was derived earlier. Of course, there are many different metrics we might use, but regardless what seems to be most important is that the mean should move away from the line of sight and that the covariance should increase along the direction of movement. For the moment, we will leave a derivation of precisely the right magnitude adjustments for future work, and outline the general algorithm in Algorithm \ref{model_update_algorithm}, using arbitrary scalar constants $\alpha, \beta$ for the size of these adjustments.
+Now the question becomes -- \textit{what Gaussian should we use in the update?} Our objective is really just that the mean and covariance of the new distribution should be a good approximation to the true distribution was derived earlier. Of course, there are many different metrics we might use, but regardless what seems to be most important is that the mean should move away from the line of sight and that the covariance should increase along the direction of movement. For the moment, we will leave a derivation of precisely the right magnitude adjustments for future work, and outline the general algorithm in Algorithm \ref{simple_model_update_algorithm}, using arbitrary scalar constants $\alpha, \beta$ for the size of these adjustments.
 
-\begin{algorithm}[H]
+\begin{algorithm}
   \caption{Simple Model Update Algorithm}
   \label{simple_model_update_algorithm}
   \begin{algorithmic}
@@ -235,8 +237,56 @@ How do we add directional variance to a covariance? In principle, covariance imp
   \Sigma &\leftarrow \Sigma + \beta v v^T
 \end{align}
 
-\subsubsection{Better Model Update}
+\subsubsection{Reformulation: Linear Filtering}
 
+This approach may work in practice; however, it is not so interesting from a theoretical perspective. A better approach may be to reconsider the cylindrical observation occlusion model. Recall that the Bayesian update from this model was what introduced non-Gaussian effects in the first place.
+
+Suppose instead that we model observational occlusions more probabalistically, by specifying first and second order statistics. Let $X$ and $Y$ be existing landmarks with means $\mu_x, \mu_y$ and covariances $\Sigma_x, Sigma_y$ respectively. Suppose that the robot moves around the environment, and at some point is very nearly collinear with both $X$ and $Y$ (without loss of generality, we assume that $X$ is the landmark closer to the robot). If the robot observes $Y$ to be in some location $y$, we can write down the following about the conditional expectation and variance of $X$:
+\begin{align}
+  \mathbb{E}[X | Y = y] &= \mu_x + \Sigma_{XY} \Sigma_Y^{-1} (y - \mu_y) \\
+  \Sigma_{X | Y = y} &= \Sigma_X - \Sigma_{XY} \Sigma_Y^{-1} \Sigma_{XY}^T
+\end{align}
+
+These formulae describe how to update the first and second order statistics of the random variable $X$ given the new observation of $Y$, which is exactly what we need to do linear filtering (i.e. Kalman filtering). All that remains is to determine a reasonable way of computing cross-covariance matrix $\Sigma_{XY}$ so that it captures the essense of the occlusion problem. One obvious choice is to take cross covariance to be roughly Gaussian in the orthogonal complement to the line connecting the robot (at location $r$) and $y$. We denote this line withe unit direction $\ell$, and we say that the plane is spanned by the orthogonal, unit-length columns of the matrix $Q$. Formally, we write:
+\begin{align}
+  h(\mathbb{E}[X Y^T]) &\equiv e^{-\gamma \|\mu_x - \ell \ell^T \mu_x\|_2^2}
+\end{align}
+
+Of course, $\mathbb{E}[X Y^T]$ is a matrix, so we have written it as the argument to some function $h(\cdot)$ which returns the dominant eigenvalue. Actually, we want to set $\Sigma_{XY}$ equal to this value along each of the columns of $Q$ -- i.e. we want a planar cross-covariance. This is achieved as follows:
+\begin{align}
+  \mathbb{E}[X Y^T] &= e^{-\gamma \|\mu_x - \ell \ell^T \mu_x\|_2^2} (I - \ell \ell^T)
+\end{align}
+
+This approach can be extended to a continuously operating filter, adjusting landmark distributions over time and more and more sensor measurements accumulate and as the robot moves about the environment. Algorithm \ref{linear_update_algorithm} is a sketch of how it might be implemented.
+
+\begin{algorithm}[H]
+  \caption{Linear Filtering Model Update Algorithm}
+  \label{linear_update_algorithm}
+  \begin{algorithmic}
+    \STATE map $\leftarrow$ EmptyMatrix()
+    \WHILE{True}
+      \STATE pose $\leftarrow$ GetRobotPose()
+      \STATE obs $\leftarrow$ SenseLandmarks()
+
+      \FOR{x in obs}
+        \IF{x $\not\in$ map}
+          \STATE map.AddLandmark(x)
+        \ELSE
+          \STATE map.UpdateLandmark(x)
+        \ENDIF
+          
+        \STATE occ $\leftarrow$ map.GetOccluders(pose, x)
+        \IF{occ is not NULL}
+          \STATE submap $\leftarrow$ map.SubMap(occ)
+          \STATE submap.CalculateCrossCovariance(pose, x)
+          \STATE submap.UpdateMean()
+          \STATE submap.UpdateCovariance()
+          \STATE map.ReincorporateSubmap(submap)
+        \ENDIF
+      \ENDFOR
+    \ENDWHILE
+  \end{algorithmic}
+\end{algorithm}
 
 \subsection{A New Objective}
 
@@ -255,12 +305,12 @@ Let us return to the idea of using $\lambda(\cdot)$ as a proxy for information g
 
 Of course, we will need to specify exactly what this function norm is and how to calculate it efficiently, but the principle is certainly valid. Of course, we do not really know $\Lambda(\cdot)$, so we can't even evaluate the norm in the first place. Regardless, we write the desired optimization problem as follows (where $\mathcal{X} \subset \mathcal{S}$ is some feasible set of nearby points which the robot might wish to visit):
 \begin{align}
-  x^* &= \arg \min_{x \in \mathcal{X} \subset \mathcal{S}}
-  \mathbb{E}[\|\lambda(\cdot | z(x)) - \Lambda(\cdot)\|]
+  p^* &= \arg \min_{p \in \mathcal{X} \subset \mathcal{S}}
+  \mathbb{E}[\|\lambda(\cdot | z(p)) - \Lambda(\cdot)\|]
 \end{align}
 This approach is simply a heuristic which chooses the point in some feasible set $\mathcal{X}$ which in expectation moves the global rate estimator $\lambda(\cdot)$ the farthest toward $\Lambda(\cdot)$.
 
-Now we must address the concern noted above: i.e., we do not know $\Lambda(\cdot)$ a priori, and we are already doing our best to estimate it (that's $\lambda(\cdot)$!), so how do we avoid using it in the first place while still achieving the same sort of behavior? One simple approach is to simply use $N_{\mathcal{S}}$, the total number of points, as a proxy for $\Lambda(\cdot)$. This essentially disregards all spatial information, yet it is trivial to calculate and may be a \textbf{sufficient statistic} of sorts (this requires a formal definition and proof of course). Still, the general idea would be to maximize the expected number of points in the map after moving toward the next position $x$. Formally, we write this as:
+Now we must address the concern noted above: i.e., we do not know $\Lambda(\cdot)$ a priori, and we are already doing our best to estimate it (that's $\lambda(\cdot)$!), so how do we avoid using it in the first place while still achieving the same sort of behavior? One simple approach is to simply use $N_{\mathcal{S}}$, the total number of points, as a proxy for $\Lambda(\cdot)$, which makes intuitive sense because, if $N_{\mathcal{S}}$ converges to the true value $N$, then up to spatial error, $\lambda(\cdot) \rightarrow \Lambda(\cdot)$. This essentially disregards all spatial information, yet it is trivial to calculate and may be a \textbf{sufficient statistic} of sorts (this requires a formal definition and proof of course). Still, the general idea would be to maximize the expected number of points in the map after moving toward the next position $x$. Formally, we write this as:
 \begin{align}
   x^* &= \arg \max_{x \in \mathcal{X}} \mathbb{E}[N_{\mathcal{S}} | z(x)]
 \end{align}
@@ -271,18 +321,26 @@ Often, we want the solution to optimization problems to have some particular pro
 
 In path planning, it is quite common to penalize some particular measure of \textit{cost}, like expected energy usage. That is a fine approach for our problem, however we can use regularization more immediately to ensure efficient exploration behavior.
 
-Consider a toy example, in which the entire environment consists of two highly detailed object in space. As is, our objective function will drive the robot to explore one of these obejcts very carefully, but it will almost certainly not do a good job of exploring the space around the object. More importantly, it will almost certainly never even \textit{find} the other object. In order to incentivize the planner to find the other object, we can reward it for finding landmarks that are far apart. One way to do this is to add on a term that is the sum of squared distances between all landmarks $l$ in the map $m$, as follows:
+\subsubsection{Promoting a Uniform Distribution}
+
+Consider a toy example, in which the entire environment consists of two highly detailed object in space. As is, our objective function will drive the robot to explore one of these obejcts very carefully, but it will almost certainly not do a good job of exploring the space around the object. More importantly, it will almost certainly never even \textit{find} the other object. In order to incentivize the planner to find the other object, we can reward it for finding landmarks that are far apart. One way to do this is to add on a term that is the sum of squared distances between all landmarks $x$ in the map $m$, as follows:
 \begin{align}
-  \ssd(m) &= \sum_{i \ne j} \|l_i - l_j\|_2^2
+  \ssd(m) &= \sum_{i \ne j} \|x_i - x_j\|_2^2
+\end{align}
+Note that the distribution of landmarks which minimizes this sum of squares penalty is the uniform distribution, which is of course what we are after.
+
+Unfortunately, there is really no simple way to calculate this expectation of this sum of squares efficiently, particularly as the map grows larger and larger. This leads us to consider an alternative approach.
+
+\subsubsection{Downweighting Old Observations}
+
+Another way to ensure we don't get stuck in such local optima (as described in the toy example above) is to downweight old observations. That is, scale original objective by a regularizer which penalizes the possibility of observing old points. For example, consider the following regularizer $g(t, t_0)$, where $t$ is the current time and $t_0$ is the original time of observation of a particular landmark (below, we reparameterize $g$ as $g(t, x)$ for a landmark $x$ with initial observation time $t_0$):
+\begin{align}
+  g(t, t_0) &= e^{-\zeta (t - t_0)^2}
 \end{align}
 
-From the Poisson model, we can also write down an estimate for the expected locations of new landmarks: since the rate function is voxelized, the expected location of each landmark is at the center of the corresponding voxel and can be weighted according to the rate at that voxel.
-
-The full optimization problem is thus (note that $m_{CM}$ is the current map's center of mass and $\hat l$ is an estimated landmark position):
+Since the expected locations of new landmarks are (in expectation) at the same locations as the existing landmarks, we can write down the full, regularized optimization problem as follows (where $\mathcal{O}$ is the set of expected observations):
 \begin{align}
-  x_{\tau}^*
-  &= \arg \max_{x_{\tau}} \mathbb{E}[N_{\tau} + \ssd(m_{\tau}) | z_{\tau}(x_{\tau})]\\
-  &= \arg \max_{x_{\tau}} \sum_{\hat l \in \mathcal{O_{\tau}}} \lambda(\hat l) + \sum_{\hat l_1, \hat l_2 \in \mathcal{O}_{\tau}} \lambda(\hat l_1) \lambda(\hat l_2) \|\hat l_1 - \hat l_2\|_2^2 + \sum_{\hat l \in \mathcal{O}_{\tau}} \lambda(\hat l) \|\hat l - m_{CM}\|_2^2
+  p^* &= \arg \max_{p \in \mathcal{X}} \sum_{x \in \mathcal{O}} g(t, x)
 \end{align}
 
 
