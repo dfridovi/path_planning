@@ -142,16 +142,27 @@ class Map:
             print "Incorrect number of true positions."
             return
 
+        # Extract estimated coordinates.
         x_coordinates = np.zeros(len(self.state_) / 2)
         x_coordinates[:] = self.state_[0:len(self.state_):2].flatten()
         y_coordinates = np.zeros(len(self.state_) / 2)
         y_coordinates[:] = self.state_[1:len(self.state_):2].flatten()
 
-        # TODO!!
+        # Extract true coordinates.
+        true_x = np.zeros(len(self.state_) / 2)
+        true_y = np.zeros(len(self.state_) / 2)
+        for ii, position in enumerate(true_positions):
+            true_x[ii] = position[0]
+            true_y[ii] = position[1]
 
+        # Plot.
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.scatter(x_coordinates, y_coordinates, color="green")
+        ax.scatter(true_x, true_y, color="red")
+        for ii in range(self.size_):
+            ax.plot([true_x[ii], x_coordinates[ii]],
+                    [true_y[ii], y_coordinates[ii]], 'b-', lw=2)
         return fig
 
     # Getters.

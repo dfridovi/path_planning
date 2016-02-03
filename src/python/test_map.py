@@ -48,7 +48,7 @@ from map import Map
 import matplotlib.pyplot as plt
 
 NUM_POINTS = 10
-NUM_OBS = 10
+NUM_OBS = 10000
 
 # Initialize the map and an empty list to keep track of landmarks.
 m = Map()
@@ -67,11 +67,9 @@ for ii in range(NUM_POINTS):
     landmarks.append(landmark)
     positions.append(position)
 
-# Visualize the map.
-print "Map includes %d points." % m.Size()
-fig1 = m.Visualize2D()
-
 # Generate random noise at each landmark.
+figs = []
+figs.append(m.VisualizeLines2D(positions))
 for landmark, position in zip(landmarks, positions):
     for ii in range(NUM_OBS):
         jittered = position + \
@@ -80,6 +78,7 @@ for landmark, position in zip(landmarks, positions):
         landmark.SetLocation(jittered)
         m.UpdateLandmark(landmark)
 
-# Visualize again.
-fig2 = m.Visualize2D()
+# Visualize.
+figs.append(m.VisualizeLines2D(positions))
+
 plt.show()
