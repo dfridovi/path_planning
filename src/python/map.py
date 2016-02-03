@@ -41,32 +41,106 @@ Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
 ###########################################################################
 
 import numpy as np
+from numpy import matlib
+import matplotlib.pyplot as plt
+
+from landmark import Landmark
 
 class Map:
 
     # Constructor.
-    def __init__():
-        size_ = 0
-        registry_ = {}
-        current_index_ = 0
+    def __init__(self):
+        self.size_ = 0
+        self.registry_ = {}
 
     # Add a landmark.
-    def AddLandmark(x):
-        if x in registry_:
+    def AddLandmark(self, p):
+        if p.GetID() in self.registry_:
             print "This landmark is already in the map. Did not add."
             return
 
         # Add to state vector and assign identiy covariance.
-        if size_ == 0:
-            state_ = x
-            covariance_ = np.eye(len(x))
+        position = p.GetLocation()
+        if self.size_ == 0:
+            self.point_size_ = len(position)
+            self.state_ = position
+            self.covariance_ = np.matlib.eye(self.point_size_)
+        elif len(position) != self.point_size_:
+            print "Point size does not match. Did not add."
+            return
         else:
-            state_ = np.vstack([state_, x])
-            old_covariance = covariance_
-            covariance_ = np.eye(covariance.shape[0] + len(x))
-            covariance_[:-len(x), :-len(x)] = old_covariance
+            self.state_ = np.vstack([self.state_, position])
+            old_covariance = self.covariance_
+            self.covariance_ = np.matlib.eye(old_covariance.shape[0] +
+                                             self.point_size_)
+            self.covariance_[:-self.point_size_,
+                             :-self.point_size_] = old_covariance
 
         # Update the registry.
-        registry_[x] = current_index_
-        current_index_ += 1
+        self.registry_[p.GetID()] = self.size_
+        self.size_ += 1
 
+    # Update a landmark. This is a pure Kalman update.
+    def UpdateLandmark(self, p):
+        if p.GetID() not in self.registry_:
+            print "This landmark is not in the registry. Did not update."
+            return
+
+        # Extract index and position.
+        index = self.registry_[p.GetID()]
+        position = p.GetLocation()
+
+        # Generate observation vector z.
+        z = np.matlib.zeros(self.state_.shape)
+        z[index*self.point_size_:(index + 1)*self.point_size_] = position
+
+        # Generate measurement matrix H.
+        H = np.matlib.zeros(self.covariance_.shape)
+        H[index*self.point_size_:(index + 1)*self.point_size_,
+          index*self.point_size_:(index + 1)*self.point_size_] = \
+                                            np.matlib.eye(self.point_size_)
+
+        # Generate measurement covariance R.
+        R = np.matlib.eye(len(z)) * float("inf")
+        R[index*self.point_size_:(index + 1)*self.point_size_,
+          index*self.point_size_:(index + 1)*self.point_size_] = \
+                                            np.matlib.eye(self.point_size_)
+
+        # Calculate innovation residual y and covariance S.
+        y = z - H * self.state_
+        S = H * self.covariance_ * H.T + R
+
+        # Calculate Kalman gain and posteriors.
+        K = self.covariance_ * H.T * np.linalg.inv(S)
+        self.state_ = self.state_ + K * y
+        self.covariance_ = (np.matlib.eye(len(z)) - K * H) * self.covariance_
+
+    # Visualize as a scatterplot.
+    def Visualize2D(self):
+        if self.point_size_ != 2:
+            print "Points must be in 2D."
+            return
+
+        x_coordinates = np.zeros(len(self.state_) / 2)
+        x_coordinates[:] = self.state_[0:len(self.state_):2].flatten()
+        y_coordinates = np.zeros(len(self.state_) / 2)
+        y_coordinates[:] = self.state_[1:len(self.state_):2].flatten()
+
+        print x_coordinates
+        print y_coordinates
+
+        plt.scatter(x_coordinates, y_coordinates)
+        plt.show()
+
+    # Getters.
+    def Size(self):
+        return self.size_
+
+    def PointSize(self):
+        return self.point_size_
+
+    def State(self):
+        return self.state_
+
+    def Covariance(self):
+        return self.covariance_
