@@ -45,33 +45,41 @@ import numpy as np
 from landmark import Landmark
 from map import Map
 
+import matplotlib.pyplot as plt
+
 NUM_POINTS = 10
 NUM_OBS = 10
 
 # Initialize the map and an empty list to keep track of landmarks.
 m = Map()
 landmarks = []
+positions = []
 
 # Generate random landmarks.
 for ii in range(NUM_POINTS):
     position = np.matrix([np.random.randn(),
                           np.random.randn()]).T
-    landmark = Landmark(position)
+    jittered = position + \
+               2.0 * np.matrix([np.random.randn(),
+                                np.random.randn()]).T
+    landmark = Landmark(jittered)
     m.AddLandmark(landmark)
     landmarks.append(landmark)
+    positions.append(position)
 
 # Visualize the map.
 print "Map includes %d points." % m.Size()
-m.Visualize2D()
+fig1 = m.Visualize2D()
 
 # Generate random noise at each landmark.
-for landmark in landmarks:
+for landmark, position in zip(landmarks, positions):
     for ii in range(NUM_OBS):
-        jittered = landmark.GetLocation() + \
-                   0.1 * np.matrix([np.random.randn(),
+        jittered = position + \
+                   1.0 * np.matrix([np.random.randn(),
                                     np.random.randn()]).T
         landmark.SetLocation(jittered)
         m.UpdateLandmark(landmark)
 
 # Visualize again.
-m.Visualize2D()
+fig2 = m.Visualize2D()
+plt.show()

@@ -101,7 +101,8 @@ class Map:
                                             np.matlib.eye(self.point_size_)
 
         # Generate measurement covariance R.
-        R = np.matlib.eye(len(z)) * float("inf")
+        R = np.matlib.zeros(self.covariance_.shape)
+        np.fill_diagonal(R, float("inf"))
         R[index*self.point_size_:(index + 1)*self.point_size_,
           index*self.point_size_:(index + 1)*self.point_size_] = \
                                             np.matlib.eye(self.point_size_)
@@ -126,11 +127,32 @@ class Map:
         y_coordinates = np.zeros(len(self.state_) / 2)
         y_coordinates[:] = self.state_[1:len(self.state_):2].flatten()
 
-        print x_coordinates
-        print y_coordinates
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.scatter(x_coordinates, y_coordinates, color="green")
+        return fig
 
-        plt.scatter(x_coordinates, y_coordinates)
-        plt.show()
+    # Visualize as a scatterplot.
+    def VisualizeLines2D(self, true_positions):
+        if self.point_size_ != 2:
+            print "Points must be in 2D."
+            return
+
+        if len(true_positions) != self.size_:
+            print "Incorrect number of true positions."
+            return
+
+        x_coordinates = np.zeros(len(self.state_) / 2)
+        x_coordinates[:] = self.state_[0:len(self.state_):2].flatten()
+        y_coordinates = np.zeros(len(self.state_) / 2)
+        y_coordinates[:] = self.state_[1:len(self.state_):2].flatten()
+
+        # TODO!!
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.scatter(x_coordinates, y_coordinates, color="green")
+        return fig
 
     # Getters.
     def Size(self):
