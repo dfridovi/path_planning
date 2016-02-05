@@ -52,11 +52,11 @@ using Eigen::MatrixXf;
 namespace path {
 
   // Constructor.
-  OccupancyGrid2D::OccupancyGrid2D(double xmin, double xmax,
-                                   double ymin, double ymax,
-                                   double block_size)
+  OccupancyGrid2D::OccupancyGrid2D(float xmin, float xmax,
+                                   float ymin, float ymax,
+                                   float block_size)
     : xmin_(xmin), xmax_(xmax),
-      ymin_(ymin), ymax_(ymax) {
+      ymin_(ymin), ymax_(ymax), count_(0) {
 
     // Set scene.
     scene_.SetBounds(xmin, xmax, ymin, ymax);
@@ -65,8 +65,8 @@ namespace path {
     nrows_ = static_cast<int>(std::ceil((ymax_ - ymin_) / block_size));
     ncols_ = static_cast<int>(std::ceil((xmax_ - xmin_) / block_size));
 
-    block_size_ = std::max((xmax_ - xmin_) / static_cast<double>(ncols_),
-                           (ymax_ - ymin_) / static_cast<double>(nrows_));
+    block_size_ = std::max((xmax_ - xmin_) / static_cast<float>(ncols_),
+                           (ymax_ - ymin_) / static_cast<float>(nrows_));
 
     // Create the grid.
     grid_ = MatrixXi::Zero(nrows_, ncols_);
@@ -76,13 +76,12 @@ namespace path {
   }
 
   // Insert a point.
-  void OccupancyGrid2D::Insert(Point::Ptr point) {
+  void OccupancyGrid2D::Insert(Point2D& point) {
     if (!IsValidPoint(point)) return;
-    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
 
     // Find the nearest bin and insert.
-    int jj = static_cast<int>((point2d->GetX() - xmin_) / block_size_);
-    int ii = static_cast<int>((point2d->GetY() - ymin_) / block_size_);
+    int jj = static_cast<int>((point.x - xmin_) / block_size_);
+    int ii = static_cast<int>((point.y - ymin_) / block_size_);
     ii = nrows_ - ii - 1;
     grid_(ii, jj)++;
 
@@ -91,37 +90,35 @@ namespace path {
 
     // Add to scene if bin is empty.
     if (grid_(ii, jj) == 1) {
-      Point::Ptr bin_center = GetBinCenter(point);
-      Obstacle::Ptr obstacle =
-        Obstacle2D::Create(bin_center, 0.5 * block_size_);
+      Point2D bin_center = GetBinCenter(point);
+      Obstacle2D obstacle =
+        Obstacle2D(bin_center.x, bin_center.y, 0.5 * block_size_);
       scene_.AddObstacle(obstacle);
     }
   }
 
   // Get number of points in the bin containing the specified point.
-  int OccupancyGrid2D::GetCountAt(Point::Ptr point) const {
+  int OccupancyGrid2D::GetCountAt(Point2D& point) const {
     if (!IsValidPoint(point)) return -1;
-    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
 
     // Get count.
-    int jj = static_cast<int>((point2d->GetX() - xmin_) / block_size_);
-    int ii = static_cast<int>((point2d->GetY() - ymin_) / block_size_);
+    int jj = static_cast<int>((point.x - xmin_) / block_size_);
+    int ii = static_cast<int>((point.y - ymin_) / block_size_);
     ii = nrows_ - ii - 1;
 
     return grid_(ii, jj);
   }
 
   // Return the center of the bin which includes the given point.
-  Point::Ptr OccupancyGrid2D::GetBinCenter(Point::Ptr point) const {
-    if (!IsValidPoint(point)) return Point::Ptr(nullptr);
-    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
+  Point2D& OccupancyGrid2D::GetBinCenter(Point2D& point) const {
+    if (!IsValidPoint(point)) return nullptr;
 
     // Get rounded coordinates.
-    int jj = static_cast<int>((point2d->GetX() - xmin_) / block_size_);
-    int ii = static_cast<int>((point2d->GetY() - ymin_) / block_size_);
+    int jj = static_cast<int>((point.x - xmin_) / block_size_);
+    int ii = static_cast<int>((point.y - ymin_) / block_size_);
 
-    return Point2D::Create((static_cast<double>(jj) + 0.5) * block_size_,
-                           (static_cast<double>(ii) + 0.5) * block_size_);
+    return Point2DHelpers::Create((static_cast<float>(jj) + 0.5) * block_size_,
+                                  (static_cast<float>(ii) + 0.5) * block_size_);
   }
 
   // Visualize this occupancy grid.
@@ -135,19 +132,10 @@ namespace path {
   }
 
   // Check if a point is valid.
-  bool OccupancyGrid2D::IsValidPoint(Point::Ptr point) const {
-    CHECK_NOTNULL(point.get());
-
-    // Check point type.
-    if (!point->IsType(Point::PointType::POINT_2D)) {
-      VLOG(1) << "Error. Point is not of type POINT_2D.";
-      return false;
-    }
-
+  bool OccupancyGrid2D::IsValidPoint(Point2D& point) const {
     // Check bounds.
-    Point2D *point2d = std::static_pointer_cast<Point2D>(point).get();
-    if (point2d->GetX() < xmin_ || point2d->GetX() > xmax_ ||
-        point2d->GetY() < ymin_ || point2d->GetY() > ymax_) {
+    if (point.x < xmin_ || point.x > xmax_ ||
+        point.y < ymin_ || point.y > ymax_) {
       VLOG(1) << "Error. Point is out of bounds.";
       return false;
     }

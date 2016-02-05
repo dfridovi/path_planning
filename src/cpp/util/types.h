@@ -44,19 +44,22 @@
 #ifndef PATH_UTIL_TYPES_H
 #define PATH_UTIL_TYPES_H
 
+#include <pcl/common>
 #include <Eigen/Core>
 #include <limits>
 #include <vector>
 
 namespace path {
 
-// -------------------- Custom types -------------------- //
-typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
+  // -------------------- Custom types -------------------- //
+  typedef ::pcl::PointXY Point2D
+  typedef ::pcl::PointXYZ Point3D
+  typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
 
-// -------------------- Third-party typedefs -------------------- //
-// Used to represent [R | t] and P, the camera extrinsics and projection
-// matrices.
-typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
+  // -------------------- Third-party typedefs -------------------- //
+  // Used to represent [R | t] and P, the camera extrinsics and projection
+  // matrices.
+  typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
 
 }  //\namespace path
 

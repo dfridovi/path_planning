@@ -42,9 +42,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "sensor_2d_radial.h"
-#include <geometry/point.h>
-#include <geometry/point_2d.h>
-#include <geometry/orientation_2d.h>
 #include <robot/robot_2d_circular.h>
 
 #include <glog/logging.h>
@@ -54,46 +51,35 @@ using Eigen::MatrixXi;
 namespace path {
 
   // How many known obstacles are visible to the robot?
-  int Sensor2DRadial::GetObstacleCount(Point::Ptr pose) const {
-    CHECK_NOTNULL(pose.get());
-
-    // Check pose type.
-    if (!pose->IsType(Point::PointType::ORIENTATION_2D)) {
-      VLOG(1) << "Point (pose) is not of type ORIENTATION_2D. Returning -1.";
-      return -1;
-    }
-
+  int Sensor2DRadial::GetObstacleCount(Orientation2D& pose) const {
     // Create robot and test point.
     Robot2DCircular robot(grid_.GetScene(), 0.0 /* radius */);
-    Orientation2D *orientation =
-      std::static_pointer_cast<Orientation2D>(pose).get();
-    Point::Ptr location = orientation->GetPoint();
+    Point2D location = orientation.GetPoint2D();
 
     // Get bounding box.
-    VectorXd location_vector = location->GetVector();
-    double xmin = std::max(location_vector(0) - radius_, grid_.GetXMin());
-    double xmax = std::min(location_vector(0) + radius_, grid_.GetXMax());
-    double ymin = std::max(location_vector(1) - radius_, grid_.GetYMin());
-    double ymax = std::min(location_vector(1) + radius_, grid_.GetYMax());
-    double step = grid_.GetBlockSize();
+    float xmin = std::max(location.x - radius_, grid_.GetXMin());
+    float xmax = std::min(location.x + radius_, grid_.GetXMax());
+    float ymin = std::max(location.y - radius_, grid_.GetYMin());
+    float ymax = std::min(location.y + radius_, grid_.GetYMax());
+    float step = grid_.GetBlockSize();
 
-    Point::Ptr tl_bin = grid_.GetBinCenter(Point2D::Create(xmin, ymax));
-    Point::Ptr br_bin = grid_.GetBinCenter(Point2D::Create(xmax, ymin));
-    xmin = tl_bin->GetVector()(0);
-    ymax = tl_bin->GetVector()(1);
-    xmax = br_bin->GetVector()(0);
-    ymin = br_bin->GetVector()(1);
+    Point2D tl_bin = grid_.GetBinCenter(Point2DHelpers::Create(xmin, ymax));
+    Point2D br_bin = grid_.GetBinCenter(Point2DHelpers::Create(xmax, ymin));
+    xmin = tl_bin.x;
+    ymax = tl_bin.y;
+    xmax = br_bin.x;
+    ymin = br_bin.y;
 
     // For all visible points, check line of sight.
     int obstacle_count = 0;
-    for (double y = ymax; y >= ymin; y -= step) {
-      for (double x = xmin; x <= xmax; x += step) {
-        Point::Ptr test = Point2D::Create(x, y);
-        Point::Ptr bin = grid_.GetBinCenter(test);
+    for (float y = ymax; y >= ymin; y -= step) {
+      for (float x = xmin; x <= xmax; x += step) {
+        Point2D test = Point2DHelpers::Create(x, y);
+        Point2D bin = grid_.GetBinCenter(test);
         if (!bin) continue;
 
         // Check in range.
-        if (location->DistanceTo(bin) > radius_) {
+        if (Point2DHelpers::DistancePointToPoint(location, bin) > radius_) {
           continue;
         }
 
@@ -104,7 +90,7 @@ namespace path {
         }
 
         // Check line of sight.
-        Point::Ptr close = bin->StepToward(location, step);
+        Point2D close = Point2DHelpers::StepToward(bin, location, step);
         if (robot.LineOfSight(location, close)) {
           obstacle_count += occupancy;
         }
@@ -115,54 +101,43 @@ namespace path {
   }
 
   // Visualize which voxels are visible to this robot.
-  void Sensor2DRadial::Visualize(Point::Ptr pose,
+  void Sensor2DRadial::Visualize(Orientation2D& pose,
                                  const std::string& title) const {
-    CHECK_NOTNULL(pose.get());
-
-    // Check pose type.
-    if (!pose->IsType(Point::PointType::ORIENTATION_2D)) {
-      VLOG(1) << "Point (pose) is not of type ORIENTATION_2D.";
-      return;
-    }
-
     // Create robot and test point.
     Robot2DCircular robot(grid_.GetScene(), 0.0 /* radius */);
-    Orientation2D *orientation =
-      std::static_pointer_cast<Orientation2D>(pose).get();
-    Point::Ptr location = orientation->GetPoint();
+    Point2D location = orientation.GetPoint2D();
 
     // Create sensor view matrix.
     MatrixXf view_matrix = MatrixXf::Zero(grid_.GetNRows(), grid_.GetNCols());
 
     // Get bounding box.
-    VectorXd location_vector = location->GetVector();
-    double xmin = std::max(location_vector(0) - radius_, grid_.GetXMin());
-    double xmax = std::min(location_vector(0) + radius_, grid_.GetXMax());
-    double ymin = std::max(location_vector(1) - radius_, grid_.GetYMin());
-    double ymax = std::min(location_vector(1) + radius_, grid_.GetYMax());
-    double step = grid_.GetBlockSize();
+    float xmin = std::max(location.x - radius_, grid_.GetXMin());
+    float xmax = std::min(location.x + radius_, grid_.GetXMax());
+    float ymin = std::max(location.y - radius_, grid_.GetYMin());
+    float ymax = std::min(location.y + radius_, grid_.GetYMax());
+    float step = grid_.GetBlockSize();
 
-    Point::Ptr tl_bin = grid_.GetBinCenter(Point2D::Create(xmin, ymax));
-    Point::Ptr br_bin = grid_.GetBinCenter(Point2D::Create(xmax, ymin));
-    xmin = tl_bin->GetVector()(0);
-    ymax = tl_bin->GetVector()(1);
-    xmax = br_bin->GetVector()(0);
-    ymin = br_bin->GetVector()(1);
+    Point2D tl_bin = grid_.GetBinCenter(Point2DHelpers::Create(xmin, ymax));
+    Point2D br_bin = grid_.GetBinCenter(Point2DHelpers::Create(xmax, ymin));
+    xmin = tl_bin.x;
+    ymax = tl_bin.y;
+    xmax = br_bin.x;
+    ymin = br_bin.y;
 
     // For all visible points, check line of sight.
-    for (double y = ymax; y >= ymin; y -= step) {
-      for (double x = xmin; x <= xmax; x += step) {
-        Point::Ptr test = Point2D::Create(x, y);
-        Point::Ptr bin = grid_.GetBinCenter(test);
+    for (float y = ymax; y >= ymin; y -= step) {
+      for (float x = xmin; x <= xmax; x += step) {
+        Point2D test = Point2DHelpers::Create(x, y);
+        Point2D bin = grid_.GetBinCenter(test);
         if (!bin) continue;
 
         // Check in range.
-        if (location->DistanceTo(bin) > radius_) {
+        if (Point2DHelpers::DistancePointToPoint(location, bin) > radius_) {
           continue;
         }
 
         // Check line of sight.
-        Point::Ptr close = bin->StepToward(location, step);
+        Point2D close = Point2DHelpers::StepToward(bin, location, step);
         if (robot.LineOfSight(location, close)) {
           int jj = static_cast<int>((x - grid_.GetXMin()) / step);
           int ii = static_cast<int>((y - grid_.GetYMin()) / step);
@@ -180,6 +155,5 @@ namespace path {
     Image view_image(view_matrix);
     view_image.ImShow(title);
   }
-
 
 } // \namespace path

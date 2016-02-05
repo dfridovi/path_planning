@@ -36,41 +36,35 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a 2D orientation, which is a child class of Point.
+// This class defines a 2D orientation.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef PATH_PLANNING_ORIENTATION_2D_H
 #define PATH_PLANNING_ORIENTATION_2D_H
 
-#include "point.h"
+#include "point_2d.h"
 #include <glog/logging.h>
 
 namespace path {
 
-  // Derive from this class when defining a new Point type.
-  class Orientation2D : public Point {
+  class Orientation2D {
   public:
-    // Factory method.
-    static Point::Ptr Create(double x, double y, double theta);
+    // Constructor.
+    Orientation2D(float x, float y, float theta);
 
     // Compute the distance/angle to a 2D point.
-    double DistanceTo(Point::Ptr point) const;
-    double AngleTo(Point::Ptr point) const;
+    float DistanceTo(Point2D& point) const;
+    float AngleTo(Point2D& point) const;
 
     // Getters.
-    Point::Ptr GetPoint() const;
-    double GetTheta() const;
-
-    // Step toward the given 2D point.
-    Point::Ptr StepToward(Point::Ptr point, double step_size) const;
-
-    // Translate by the given 2D point.
-    Point::Ptr Add(Point::Ptr point, double scale) const;
+    Point2D& GetPoint2D() const;
+    float GetTheta() const;
 
   private:
-    // Default constructor.
-    Orientation2D(double x, double y, double theta);
+    float x_;
+    float y_;
+    float theta_;
   };
 
 } //\ namespace path

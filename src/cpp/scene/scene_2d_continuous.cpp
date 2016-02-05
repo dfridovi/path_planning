@@ -58,27 +58,61 @@ namespace path {
 
   // Dummy constructor. MUST call SetBounds after this.
   Scene2DContinuous::Scene2DContinuous()
-    : SceneModel(),
+    : largest_obstacle_radius_(0.0),
       xmin_(0.0), xmax_(0.0),
       ymin_(0.0), ymax_(0.0) {}
 
   // Better to use these constructors if possible.
-  Scene2DContinuous::Scene2DContinuous(double xmin, double xmax,
-                                       double ymin, double ymax)
-    : SceneModel(),
+  Scene2DContinuous::Scene2DContinuous(float xmin, float xmax,
+                                       float ymin, float ymax)
+    : largest_obstacle_radius_(0.0),
       xmin_(xmin), xmax_(xmax),
       ymin_(ymin), ymax_(ymax) {}
 
-  Scene2DContinuous::Scene2DContinuous(double xmin, double xmax,
-                                       double ymin, double ymax,
-                                       std::vector<Obstacle::Ptr>& obstacles)
-    : SceneModel(obstacles),
+  Scene2DContinuous::Scene2DContinuous(float xmin, float xmax,
+                                       float ymin, float ymax,
+                                       std::vector<Obstacle2D>& obstacles)
+    : obstacles_(obstacles),
       xmin_(xmin), xmax_(xmax),
-      ymin_(ymin), ymax_(ymax) {}
+      ymin_(ymin), ymax_(ymax) {
+
+    // Largest obstacle radius.
+    largest_obstacle_radius_ = 0.0;
+    for (const auto& obstacle : obstacles) {
+      if (obstacle.GetRadius() > largest_obstacle_radius_)
+        largest_obstacle_radius_ = obstacle.GetRadius();
+    }
+
+    // Obstacle tree.
+    obstacle_tree_.AddObstacles(obstacles);
+  }
+
+  // Add an obstacle.
+  void Scene2DContinuous::AddObstacle(Obstacle2D& obstacle) {
+    obstacles_.push_back(obstacle);
+    obstacle_tree_.AddObstacle(obstacle);
+  }
+
+  // Get obstacles.
+  std::vector<Obstacle2D>& Scene2DContinuous::GetObstacles() {
+    return obstacles_;
+  }
+
+  FlannObstacle2DTree& Scene2DContinuous::GetObstacleTree() {
+    return obstacle_tree;
+  }
+
+  float Scene2DContinuous::GetLargestObstacleRadius() const {
+    return largest_obstacle_radius_;
+  }
+
+  int Scene2DContinuous::GetObstacleCount() const {
+    return static_cast<int>(obstacles_.size());
+  }
 
   // Setter.
-  void Scene2DContinuous::SetBounds(double xmin, double xmax,
-                                    double ymin, double ymax) {
+  void Scene2DContinuous::SetBounds(float xmin, float xmax,
+                                    float ymin, float ymax) {
     xmin_ = xmin;
     xmax_ = xmax;
     ymin_ = ymin;
@@ -86,11 +120,9 @@ namespace path {
   }
 
   // Is this point feasible?
-  bool Scene2DContinuous::IsFeasible(Point::Ptr point) const {
-    CHECK_NOTNULL(point.get());
-
+  bool Scene2DContinuous::IsFeasible(Point2D& point) const {
     // Get a list of all obstacles in range.
-    std::vector<Obstacle::Ptr> obstacles_in_range;
+    std::vector<Obstacle2D> obstacles_in_range;
     if (!obstacle_tree_.RadiusSearch(point, obstacles_in_range,
                                      largest_obstacle_radius_)) {
       VLOG(1) << "Radius search failed during feasibility test. "
@@ -100,7 +132,7 @@ namespace path {
 
     // Check each obstacle.
     for (const auto& obstacle : obstacles_in_range) {
-      if (!obstacle->IsFeasible(point))
+      if (!obstacle.IsFeasible(point))
         return false;
     }
 
@@ -109,71 +141,67 @@ namespace path {
 
   // What is the cost of occupying this point? For speed, only compute
   // cost from obstacles within a specific radius.
-  double Scene2DContinuous::Cost(Point::Ptr point) const {
-    CHECK_NOTNULL(point.get());
-
+  float Scene2DContinuous::Cost(Point2D& point) const {
     // Get a list of all obstacles in range.
-    std::vector<Obstacle::Ptr> obstacles_in_range;
+    std::vector<Obstacle2D> obstacles_in_range;
     if (!obstacle_tree_.RadiusSearch(point, obstacles_in_range,
                                      10.0 * largest_obstacle_radius_)) {
       VLOG(1) << "Radius search failed during cost evaluation. "
               << "Returning infinite cost.";
-      return std::numeric_limits<double>::infinity();
+      return std::numeric_limits<float>::infinity();
     }
 
     // Iterate over all obstacles in range.
-    double total_cost = 0.0;
+    float total_cost = 0.0;
     for (const auto& obstacle : obstacles_in_range)
-      total_cost += obstacle->Cost(point);
+      total_cost += obstacle.Cost(point);
 
     return total_cost;
   }
 
   // Compute the derivative of cost by position. This is used for
   // trajectory optimization.
-  Point::Ptr Scene2DContinuous::CostDerivative(Point::Ptr point) const {
-    CHECK_NOTNULL(point.get());
-
+  Point2D& Scene2DContinuous::CostDerivative(Point::Ptr point) const {
     // Get a list of all obstacles in range.
-    std::vector<Obstacle::Ptr> obstacles_in_range;
+    std::vector<Obstacle2D> obstacles_in_range;
     if (!obstacle_tree_.RadiusSearch(point, obstacles_in_range,
                                      10.0 * largest_obstacle_radius_)) {
       VLOG(1) << "Radius search failed during derivative evaluation. "
               << "Returning zero derivative.";
-      return Point2D::Create(0.0, 0.0);
+      return Point2DHelpers::Create(0.0, 0.0);
     }
 
     // Iterate over all obstacles in range.
-    Vector2d total_derivative = VectorXd::Zero(2);
+    Vector2d total_derivative = Vector2d::Zero();
     for (const auto& obstacle : obstacles_in_range) {
-      Point::Ptr derivative = obstacle->Derivative(point);
-      total_derivative += derivative->GetVector();
+      Point2D derivative = obstacle.Derivative(point);
+      total_derivative(0) += derivative.x;
+      total_derivative(1) += derivative.y;
     }
 
-    return Point2D::Create(total_derivative(0), total_derivative(1));
+    return Point2DHelpers::Create(total_derivative(0), total_derivative(1));
   }
 
   // Get a random point in the scene.
-  Point::Ptr Scene2DContinuous::GetRandomPoint() const {
-    double x = rng_.DoubleUniform(xmin_, xmax_);
-    double y = rng_.DoubleUniform(ymin_, ymax_);
-    Point::Ptr point = Point2D::Create(x, y);
-
-    return point;
+  Point2D& Scene2DContinuous::GetRandomPoint() const {
+    float x = static_cast<float>(rng_.DoubleUniform(xmin_, xmax_));
+    float y = static_cast<float>(rng_.DoubleUniform(ymin_, ymax_));
+    return Point2DHelpers::Create(x, y);
   }
 
   // Optimize the given trajectory to minimize cost.
-  Trajectory::Ptr Scene2DContinuous::OptimizeTrajectory(Trajectory::Ptr path,
-                                                        double gradient_weight,
-                                                        double curvature_penalty,
-                                                        double max_point_displacement,
-                                                        double min_avg_displacement,
-                                                        size_t max_iters) const {
+  Trajectory2D::Ptr Scene2DContinuous::OptimizeTrajectory(
+                                                 Trajectory2D::Ptr path,
+                                                 float gradient_weight,
+                                                 float curvature_penalty,
+                                                 float max_point_displacement,
+                                                 float min_avg_displacement,
+                                                 size_t max_iters) const {
     CHECK_NOTNULL(path.get());
 
     // Extract points from the given trajectory.
-    std::vector<Point::Ptr> points(path->GetPoints());
-    double num_points = static_cast<double>(points.size());
+    std::vector<Point2D> points(path->GetPoints());
+    float num_points = static_cast<float>(points.size());
 
     // Create a new trajectory from these soon-to-be-optimized points.
     Trajectory::Ptr optimized = Trajectory::Create(points);
@@ -182,30 +210,30 @@ namespace path {
     // number of iterations does not exceed the threshold, iterate over
     // all points and move each point a small distance in the direction
     // of the negative gradient.
-    double total_displacement = std::numeric_limits<double>::infinity();
+    float total_displacement = std::numeric_limits<float>::infinity();
     size_t num_iters = 0;
     while (total_displacement / num_points > min_avg_displacement &&
            num_iters < max_iters) {
       total_displacement = 0.0;
 
       // Compute second time derivative of the trajectory.
-      Trajectory::Ptr time_derivative1 = optimized->TimeDerivative();
-      Trajectory::Ptr time_derivative2 = time_derivative1->TimeDerivative();
+      Trajectory2D::Ptr time_derivative1 = optimized->TimeDerivative();
+      Trajectory2D::Ptr time_derivative2 = time_derivative1->TimeDerivative();
 
       for (size_t ii = 1; ii < points.size() - 1; ii++) {
-        Point::Ptr point = optimized->GetAt(ii);
-        Point::Ptr cost_derivative = CostDerivative(point);
-        Point::Ptr time_derivative = time_derivative2->GetAt(ii);
+        Point2D point = optimized->GetAt(ii);
+        Point2D cost_derivative = CostDerivative(point);
+        Point2D time_derivative = time_derivative2->GetAt(ii);
 
-        Point::Ptr derivative = cost_derivative->Add(time_derivative,
-                                                     -curvature_penalty);
-        const VectorXd& step_vector = point->GetVector() -
-          gradient_weight * derivative->GetVector();
-
-        Point::Ptr initial_step = Point2D::Create(step_vector(0), step_vector(1));
-        Point::Ptr truncated_step =
-          point->StepToward(initial_step, max_point_displacement);
-        total_displacement += point->DistanceTo(truncated_step);
+        Point2D derivative = Point2DHelpers::Add(cost_derivative, time_derivative,
+                                                 -curvature_penalty);
+        float step_x = point.x - gradient_weight * derivative.x;
+        float step_y = point.y - gradient_weight * derivative.y;
+        Point2D initial_step = Point2DHelpers::Create(step_x, step_y);
+        Point2D truncated_step = Point2DHelpers::StepToward(point, initial_step,
+                                                            max_point_displacement);
+        total_displacement += Point2DHelpers::DistancePointToPoint(point,
+                                                                   truncated_step);
 
         optimized->SetAt(truncated_step, ii);
       }
@@ -228,7 +256,7 @@ namespace path {
                                     Trajectory::Ptr path, int xsize) const {
 
     // Initialize a matrix to represent the scene.
-    int ysize = static_cast<int>(static_cast<double>(xsize) *
+    int ysize = static_cast<int>(static_cast<float>(xsize) *
                                  (ymax_ - ymin_) / (xmax_ - xmin_));
     MatrixXf map_matrix(xsize, ysize);
     map_matrix = MatrixXf::Zero(xsize, ysize);
@@ -236,11 +264,11 @@ namespace path {
     // Calculate cost at each pixel.
     for (size_t ii = 0; ii < ysize; ii++) {
       for (size_t jj = 0; jj < xsize; jj++) {
-        double x = xmin_ +
-          (xmax_ - xmin_) * static_cast<double>(jj) / static_cast<double>(xsize);
-        double y = ymin_ +
-          (ymax_ - ymin_) * static_cast<double>(ysize - ii) / static_cast<double>(ysize);
-        Point::Ptr point = Point2D::Create(x, y);
+        float x = xmin_ + (xmax_ - xmin_) *
+          static_cast<float>(jj) / static_cast<float>(xsize);
+        float y = ymin_ + (ymax_ - ymin_) *
+          static_cast<float>(ysize - ii) / static_cast<float>(ysize);
+        Point2D point = Point2DHelpers::Create(x, y);
 
         map_matrix(ii, jj) = Cost(point);
       }
@@ -252,11 +280,11 @@ namespace path {
     // Set infeasible points to 1.0.
     for (size_t ii = 0; ii < ysize; ii++) {
       for (size_t jj = 0; jj < xsize; jj++) {
-        double x = xmin_ +
-          (xmax_ - xmin_) * static_cast<double>(jj) / static_cast<double>(xsize);
-        double y = ymin_ +
-          (ymax_ - ymin_) * static_cast<double>(ysize - ii) / static_cast<double>(ysize);
-        Point::Ptr point = Point2D::Create(x, y);
+        float x = xmin_ + (xmax_ - xmin_) *
+          static_cast<float>(jj) / static_cast<float>(xsize);
+        float y = ymin_ + (ymax_ - ymin_) *
+          static_cast<float>(ysize - ii) / static_cast<float>(ysize);
+        Point2D point = Point2DHelpers::Create(x, y);
 
         if (!IsFeasible(point))
           map_matrix(ii, jj) = 1.0;
@@ -270,35 +298,31 @@ namespace path {
     if (path) {
       CHECK_NOTNULL(path.get());
 
-      // Check path type.
-      if (path->GetType() != Point::PointType::POINT_2D) {
-        VLOG(1) << "Trajectory is of the wrong type. Aborting.";
-        return;
-      }
-
       // Convert to RGB.
       map_image.ConvertToRGB();
 
       // Draw each point, and put line segments between them.
-      Point::Ptr last_point;
+      Point2D last_point;
       size_t cnt = 0;
       for (const auto& next_point : path->GetPoints()) {
-        Point2D* point1 = std::static_pointer_cast<Point2D>(next_point).get();
-        double u1, v1;
-        u1 = static_cast<double>(ysize) * (1.0 - (point1->GetY() - ymin_) / (ymax_ - ymin_));
-        v1 = static_cast<double>(xsize) * (point1->GetX() - xmin_) / (xmax_ - xmin_);
+        float u1, v1;
+        u1 = static_cast<float>(ysize) * (1.0 - (point1.y - ymin_) / (ymax_ - ymin_));
+        v1 = static_cast<float>(xsize) * (point1.x - xmin_) / (xmax_ - xmin_);
 
-        double heat = static_cast<double>(cnt) / static_cast<double>(path->GetPoints().size() - 1);
-        map_image.Circle(static_cast<unsigned int>(v1), static_cast<unsigned int>(u1),
+        float heat = static_cast<float>(cnt) /
+          static_cast<float>(path->GetPoints().size() - 1);
+        map_image.Circle(static_cast<unsigned int>(v1),
+                         static_cast<unsigned int>(u1),
                          4,  // radius
                          2,  // line thickness
                          heat);
 
         if (last_point) {
-          Point2D* point2 = std::static_pointer_cast<Point2D>(last_point).get();
           unsigned int u2, v2;
-          u2 = static_cast<double>(ysize) * (1.0 - (point2->GetY() - ymin_) / (ymax_ - ymin_));
-          v2 = static_cast<double>(xsize) * (point2->GetX() - xmin_) / (xmax_ - xmin_);
+          u2 = static_cast<float>(ysize) *
+            (1.0 - (last_point.y - ymin_) / (ymax_ - ymin_));
+          v2 = static_cast<float>(xsize) *
+            (last_point.x - xmin_) / (xmax_ - xmin_);
 
           map_image.Line(static_cast<unsigned int>(v2), static_cast<unsigned int>(u2),
                          static_cast<unsigned int>(v1), static_cast<unsigned int>(u1),
@@ -314,6 +338,5 @@ namespace path {
     // Display.
     map_image.ImShow(title);
   }
-
 
 } // \namespace path

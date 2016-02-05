@@ -43,10 +43,11 @@
 #ifndef PATH_PLANNING_SCENE_2D_CONTINUOUS_H
 #define PATH_PLANNING_SCENE_2D_CONTINUOUS_H
 
-#include "scene_model.h"
-#include "obstacle.h"
-#include <geometry/point.h>
-#include <geometry/trajectory.h>
+#include "obstacle_2d_continuous.h"
+#include <geometry/point2d_helpers.h>
+#include <geometry/trajectory_2d.h>
+#include <flann/flann_obstacle_2dtree.h>
+#include <util/types.h>
 #include <image/image.h>
 
 #include <vector>
@@ -55,38 +56,47 @@
 namespace path {
 
   // Derived class to model 2D continuous scenes.
-  class Scene2DContinuous : public SceneModel {
+  class Scene2DContinuous {
   public:
     Scene2DContinuous();
-    Scene2DContinuous(double xmin, double xmax,
-                      double ymin, double ymax);
-    Scene2DContinuous(double xmin, double xmax,
-                      double ymin, double ymax,
-                      std::vector<Obstacle::Ptr>& obstacles);
+    Scene2DContinuous(float xmin, float xmax,
+                      float ymin, float ymax);
+    Scene2DContinuous(float xmin, float xmax,
+                      float ymin, float ymax,
+                      std::vector<Obstacle2D>& obstacles);
+
+    // Add an obstacle.
+    void AddObstacle(Obstacle2D& obstacle);
+
+    // Get obstacles.
+    std::vector<Obstacle2D>& GetObstacles();
+    FlannObstacle2DTree& GetObstacleTree();
+    float GetLargestObstacleRadius() const;
+    int GetObstacleCount() const;
 
     // Setter.
-    void SetBounds(double xmin, double xmax, double ymin, double ymax);
+    void SetBounds(float xmin, float xmax, float ymin, float ymax);
 
     // Is this point feasible?
-    bool IsFeasible(Point::Ptr point) const;
+    bool IsFeasible(Point2D& point) const;
 
     // What is the cost of occupying this point?
-    double Cost(Point::Ptr point) const;
+    float Cost(Point2D& point) const;
 
     // Compute the derivative of cost by position. This is used for
     // trajectory optimization.
-    Point::Ptr CostDerivative(Point::Ptr point) const;
+    Point2D& CostDerivative(Point2D& point) const;
 
     // Get a random point in the scene.
-    Point::Ptr GetRandomPoint() const;
+    Point2D& GetRandomPoint() const;
 
     // Optimize the given trajectory to minimize cost.
-    Trajectory::Ptr OptimizeTrajectory(Trajectory::Ptr path,
-                                       double gradient_weight,
-                                       double curvature_penalty,
-                                       double max_point_displacement,
-                                       double min_avg_displacement,
-                                       size_t max_iters) const;
+    Trajectory2D::Ptr OptimizeTrajectory(Trajectory2D::Ptr path,
+                                         float gradient_weight = 1e-6,
+                                         float curvature_penalty = 1e-5,
+                                         float max_point_displacement = 1e-2,
+                                         float min_avg_displacement = 1e-4,
+                                         size_t max_iters = 100) const;
 
     // Visualize this scene. Optionally pass in the number of pixels
     // in the x-direction.
@@ -99,10 +109,17 @@ namespace path {
                    Trajectory::Ptr path, int xsize = 500) const;
 
   private:
-    double xmin_;
-    double xmax_;
-    double ymin_;
-    double ymax_;
+    std::vector<Obstacle2D> obstacles_;
+    FlannObstacle2DTree obstacle_tree_;
+    math::RandomGenerator rng_;
+    float largest_obstacle_radius_;
+
+    float xmin_;
+    float xmax_;
+    float ymin_;
+    float ymax_;
+
+    DISALLOW_COPY_AND_ASSIGN(Scene2DContinuous);
   };
 
 } // \namespace path

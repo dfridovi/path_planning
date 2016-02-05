@@ -41,100 +41,37 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "orientation_2d.h"
-#include "point_2d.h"
-
-using Eigen::VectorXd;
+#include "point2d_helpers.h"
 
 namespace path {
 
-  // Factory method.
-  Point::Ptr Orientation2D::Create(double x, double y, double theta) {
-    Point::Ptr orientation(new Orientation2D(x, y, theta));
-    return orientation;
-  }
+  // Default constructor.
+  Orientation2D::Orientation2D(float x, float y, float theta)
+    : x_(x), y_(y), theta_(theta) {}
 
   // Getters.
-  Point::Ptr Orientation2D::GetPoint() const {
-    Point::Ptr point = Point2D::Create(coordinates_(0), coordinates_(1));
+  Point2D& Orientation2D::GetPoint() const {
+    Point2D& point = Point2DHelpers::Create(x_, y_);
     return point;
   }
 
-  double Orientation2D::GetTheta() const {
-    return coordinates_(2);
+  float Orientation2D::GetTheta() const {
+    return theta_;
   }
 
   // Compute the distance to a 2D point.
-  double Orientation2D::DistanceTo(Point::Ptr point) const {
-    CHECK_NOTNULL(point.get());
-
-    // Type check.
-    if (!point->IsType(Point::PointType::POINT_2D)) {
-      VLOG(1) << "Point types do not match. Returning a distance of -1.0.";
-      return -1.0;
-    }
-
-    VectorXd position = point->GetVector();
-    double dx = coordinates_(0) - position(0);
-    double dy = coordinates_(1) - position(1);
-
+  float Orientation2D::DistanceTo(Point2D& point) const {
+    float dx = point.x - x_;
+    float dy = point.y - y_;
     return std::sqrt(dx*dx + dy*dy);
   }
 
   // Compute the relative angle to a 2D point.
-  double Orientation2D::AngleTo(Point::Ptr point) const {
-    CHECK_NOTNULL(point.get());
+  float Orientation2D::AngleTo(Point2D& point) const {
+    float dx = point.x - x_;
+    float dy = point.y - y_;
 
-    // Type check.
-    if (!point->IsType(Point::PointType::POINT_2D)) {
-      VLOG(1) << "Point types do not match. Returning an angle of 0.0.";
-      return 0.0;
-    }
-
-    VectorXd position = point->GetVector();
-    double dx = coordinates_(0) - position(0);
-    double dy = coordinates_(1) - position(1);
-
-    return coordinates_(2) - std::atan2(dy, dx);
+    return theta_ - std::atan2(dy, dx);
   }
-
-  // Step toward the given 2D point.
-  Point::Ptr Orientation2D::StepToward(Point::Ptr point,
-                                       double step_size) const {
-    CHECK_NOTNULL(point.get());
-
-    // Type check.
-    if (!point->IsType(Point::PointType::POINT_2D)) {
-      VLOG(1) << "Point types do not match. Returning a nullptr.";
-      return nullptr;
-    }
-
-    Point::Ptr position = GetPoint();
-    Point::Ptr step = position->StepToward(point, step_size);
-    const VectorXd& step_vector = step->GetVector();
-
-    return Create(step_vector(0), step_vector(1), coordinates_(2)); 
-  }
-
-  // Translate by the given 2D point.
-  Point::Ptr Orientation2D::Add(Point::Ptr point, double scale) const {
-    CHECK_NOTNULL(point.get());
-
-    // Type check.
-    if (!point->IsType(Point::PointType::POINT_2D)) {
-      VLOG(1) << "Point types do not match. Returning a nullptr.";
-      return nullptr;
-    }
-
-    Point::Ptr position = GetPoint();
-    Point::Ptr sum = position->Add(point, scale);
-    const VectorXd& sum_vector = sum->GetVector();
-
-    return Create(sum_vector(0), sum_vector(1), coordinates_(2));
-  }
-
-  // Default constructor.
-  Orientation2D::Orientation2D(double x, double y, double theta)
-    : Point((VectorXd(3) << x, y, theta).finished(),
-            Point::PointType::ORIENTATION_2D) {}
 
 } //\ namespace path

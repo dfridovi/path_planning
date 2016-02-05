@@ -41,14 +41,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "robot_2d_circular.h"
+#include "../scene/obstacle_2d.h"
 
 namespace path {
 
   // Test if a particular robot location is feasible.
-  bool Robot2DCircular::IsFeasible(Point::Ptr location) {
+  bool Robot2DCircular::IsFeasible(Point2D& location) {
 
     // Find nearest obstacle.
-    Obstacle::Ptr nearest;
+    Obstacle2D* nearest;
     double nn_distance = -1.0;
     if (!scene_.GetObstacleTree().NearestNeighbor(location, nearest,
                                                   nn_distance))
@@ -59,17 +60,16 @@ namespace path {
   }
 
   // Check if there is a valid linear trajectory between these two points.
-  bool Robot2DCircular::LineOfSight(Point::Ptr point1,
-                                    Point::Ptr point2) const {
-    LineSegment line(point1, point2);
-
+  bool Robot2DCircular::LineOfSight(Point2D& point1,
+                                    Point2D& point2) const {
     // Check if line segment intersects any nearby obstacle.
-    Point::Ptr midpoint = line.MidPoint();
-    double max_distance =
-      radius_ + scene_.GetLargestObstacleRadius() + 0.5 * line.GetLength();
+    Point2D midpoint = Point2DHelpers::MidPoint(point1, point2);
+    float max_distance =
+      radius_ + scene_.GetLargestObstacleRadius() +
+      0.5 * Point2DHelpers::DistancePointToPoint(point1, point2);
 
-    FlannObstacleKDTree& obstacle_tree = scene_.GetObstacleTree();
-    std::vector<Obstacle::Ptr> obstacles;
+    FlannObstacle2DTree& obstacle_tree = scene_.GetObstacleTree();
+    std::vector<Obstacle2D> obstacles;
     if (!obstacle_tree.RadiusSearch(midpoint, obstacles, max_distance)) {
       VLOG(1) << "Radius search failed during LineOfSight() test. "
               << "Returning false.";
@@ -77,8 +77,9 @@ namespace path {
     }
 
     for (const auto& obstacle : obstacles) {
-      if (line.DistanceTo(obstacle->GetLocation()) <
-          obstacle->GetRadius() + radius_)
+      if (Point2DHelpers::DistanceLineToPoint(point1, point2,
+                                              obstacle.GetLocation()) <
+          obstacle.GetRadius() + radius_)
         return false;
     }
 

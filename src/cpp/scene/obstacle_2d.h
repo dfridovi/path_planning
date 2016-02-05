@@ -36,38 +36,43 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class models 2D point obstacles.
+// This class models 2D point obstacles with some ellipse of uncertainty.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef PATH_PLANNING_OBSTACLE_2D_H
 #define PATH_PLANNING_OBSTACLE_2D_H
 
-#include "obstacle.h"
+#include "../util/types.h"
+#include "../geometry/point2d_helpers.h"
 #include <Eigen/Dense>
+
+using Eigen::Matrix2f;
+using Eigen::Vector2f;
 
 namespace path {
 
-  // 2D obstacle with circular symmetry.
-  class Obstacle2D : public Obstacle {
+  class Obstacle2D {
   public:
-    // Factory methods.
-    static Obstacle::Ptr Create(double x, double y, double radius);
-    static Obstacle::Ptr Create(Point::Ptr point, double radius);
+    // Default constructors.
+    Obstacle2D(float x, float y,
+               float sigma_xx, float sigma_yy,
+               float sigma_xy, float radius_zscore = 0.05);
+    Obstacle2D(float x, float y, float radius);
 
-    // Define these methods in a derived class.
-    bool IsFeasible(Point::Ptr point) const;
-    bool IsFeasible(const VectorXd& point) const;
-    double Cost(Point::Ptr point) const;
-    double Cost(const VectorXd& point) const;
-    Point::Ptr Derivative(Point::Ptr point) const;
-
+    // Feasibility, cost, and derivative evaluation.
+    bool IsFeasible(Point2D& point) const;
+    float Cost(Point2D& point) const;
+    Point2D& Derivative(Point2D& point) const;
 
   private:
-    // Default constructors. Radius is the minimum distance to the obstacle
-    // below which a point is considered infeasible.
-    Obstacle2D(double x, double y, double radius);
-    Obstacle2D(Point::Ptr point, double radius);
+    Vector2f mean_;
+    Matrix2f cov_;
+    Point2D location_;
+
+    // For speed.
+    Matrix2f inv_;
+    float det_;
   };
 
 } //\ namespace path

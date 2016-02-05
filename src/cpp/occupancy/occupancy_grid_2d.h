@@ -43,7 +43,9 @@
 #ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
 #define PATH_PLANNING_OCCUPANCY_GRID_2D_H
 
-#include "occupancy_grid.h"
+#include <util/disallow_copy_and_assign.h>
+#include <util/types.h>
+#include <geometry/point2d_helpers.h>
 #include <scene/scene_2d_continuous.h>
 #include <Eigen/Dense>
 
@@ -51,46 +53,48 @@ using Eigen::MatrixXi;
 
 namespace path {
 
-  // Derive from this class when defining a specific occupancy grid.
-  class OccupancyGrid2D : public OccupancyGrid {
+  class OccupancyGrid2D {
   public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    OccupancyGrid2D(double xmin, double xmax, double ymin, double ymax,
-                    double block_size);
+    OccupancyGrid2D(float xmin, float xmax, float ymin, float ymax,
+                    float block_size);
     ~OccupancyGrid2D() {}
 
     // Getters.
     Scene2DContinuous& GetScene() { return scene_; }
-    double GetBlockSize() const { return block_size_; }
-    double GetXMin() const { return xmin_; }
-    double GetXMax() const { return xmax_; }
-    double GetYMin() const { return ymin_; }
-    double GetYMax() const { return ymax_; }
+    float GetBlockSize() const { return block_size_; }
+    float GetXMin() const { return xmin_; }
+    float GetXMax() const { return xmax_; }
+    float GetYMin() const { return ymin_; }
+    float GetYMax() const { return ymax_; }
     int GetNRows() const { return nrows_ ; }
     int GetNCols() const { return ncols_ ; }
 
     // Define these methods in a derived class.
-    void Insert(Point::Ptr point);
-    int GetCountAt(Point::Ptr point) const;
-    Point::Ptr GetBinCenter(Point::Ptr point) const;
+    void Insert(Point2D& point);
+    int GetCountAt(Point2D& point) const;
+    Point2D& GetBinCenter(Point2D& point) const;
 
     // Visualize this occupancy grid.
     void Visualize(const std::string& title = std::string()) const;
 
   private:
-    // Check if a point is valid.
-    bool IsValidPoint(Point::Ptr point) const;
-
     MatrixXi grid_;
     Scene2DContinuous scene_;
-    double block_size_;
-    const double xmin_;
-    const double xmax_;
-    const double ymin_;
-    const double ymax_;
+    float block_size_;
+    const float xmin_;
+    const float xmax_;
+    const float ymin_;
+    const float ymax_;
     int nrows_;
     int ncols_;
+    int count_;
+
+    // Check if a point is valid.
+    bool IsValidPoint(Point2D& point) const;
+
+    DISALLOW_COPY_AND_ASSIGN(OccupancyGrid2D);
   };
 
 } // \namespace path

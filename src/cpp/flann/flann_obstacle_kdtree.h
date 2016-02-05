@@ -36,17 +36,17 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class is a wrapper around the FlannPointKDTree class. The idea is to
+// This class is a wrapper around the FlannPoint2DTree class. The idea is to
 // facilitate quick nearest neighbor searching for the nearest obstacle in a
 // scene.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_FLANN_OBSTACLE_KDTREE_H
-#define PATH_PLANNING_FLANN_OBSTACLE_KDTREE_H
+#ifndef PATH_PLANNING_FLANN_OBSTACLE_2DTREE_H
+#define PATH_PLANNING_FLANN_OBSTACLE_2DTREE_H
 
-#include <geometry/point.h>
-#include <scene/obstacle.h>
+#include <geometry/point2d_helpers.h>
+#include <scene/obstacle_2d.h>
 #include "flann_point_kdtree.h"
 #include "../util/disallow_copy_and_assign.h"
 
@@ -55,32 +55,32 @@
 
 namespace path {
 
-  class FlannObstacleKDTree {
+  class FlannObstacle2DTree {
   public:
-    FlannObstacleKDTree() {}
-    ~FlannObstacleKDTree() {}
+    FlannObstacle2DTree() {}
+    ~FlannObstacle2DTree() {}
 
     // Add obstacles to the index.
-    void AddObstacle(Obstacle::Ptr obstacle);
-    void AddObstacles(std::vector<Obstacle::Ptr>& obstacles);
+    void AddObstacle(Obstacle2D& obstacle);
+    void AddObstacles(std::vector<Obstacle2D>& obstacles);
 
     // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
     // not a nearest neighbor was found, and if it was found, the nearest neighbor
     // and distance to the nearest neighbor.
-    bool NearestNeighbor(Point::Ptr query, Obstacle::Ptr& nearest,
+    bool NearestNeighbor(Point2D& query, Obstacle2D& nearest,
                          double& nn_distance) const;
 
     // Queries the kd tree for all neighbors of 'query' within the specified radius.
     // Returns whether or not the search exited successfully.
-    bool RadiusSearch(Point::Ptr query, std::vector<Obstacle::Ptr>& neighbors,
+    bool RadiusSearch(Point2D& query, std::vector<Obstacle2D>& neighbors,
                       double radius) const;
 
   private:
-    FlannPointKDTree kd_tree_;
-    std::unordered_map<Point::Ptr, Obstacle::Ptr> registry_; // to retrieve obstacles
+    FlannPoint2DTree kd_tree_;
+    std::unordered_map<Point2D&, Obstacle2D&> registry_; // to retrieve obstacles
 
-    DISALLOW_COPY_AND_ASSIGN(FlannObstacleKDTree);
-  };  //\class FlannObstacleKDTree
+    DISALLOW_COPY_AND_ASSIGN(FlannObstacle2DTree);
+  };  //\class FlannObstacle2DTree
 
 }  //\namespace path
 

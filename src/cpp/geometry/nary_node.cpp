@@ -36,7 +36,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a Node in an N-ary tree of Points.
+// This class defines a Node in an N-ary tree of arbitrary data.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -45,18 +45,36 @@
 namespace path {
 
   // Factory method.
-  Node::Ptr Node::Create(Point::Ptr data) {
-    Node::Ptr node(new Node(data));
+  template<typename DataType>
+  Node<DataType>::Ptr Node<DataType>::Create(DataType& data) {
+    Node<DataType>::Ptr node(new Node<DataType>(data));
     return node;
   }
 
   // Getters and setters.
-  void Node::SetParent(Node::Ptr parent) { parent_ = parent; }
-  Node::Ptr Node::GetParent() { return parent_; }
+  template<typename DataType>
+  void Node<DataType>::SetParent(Node<DataType>::Ptr parent) {
+    parent_ = parent;
+  }
 
-  void Node::AddChild(Node::Ptr child) { children_.push_back(child); }
-  std::vector<Node::Ptr>& Node::GetChildren() { return children_; }
+  template<typename DataType>
+  Node<DataType>::Ptr Node<DataType>::GetParent() {
+    return parent_;
+  }
 
-  Point::Ptr Node::GetData() { return data_; }
+  template<typename DataType>
+  void Node<DataType>::AddChild(Node<DataType>::Ptr child) {
+    children_.push_back(child);
+  }
+
+  template<typename DataType>
+  std::vector<Node<DataType>::Ptr>& Node<DataType>::GetChildren() {
+    return children_;
+  }
+
+  template<typename DataType>
+  DataType& Node<DataType>::GetData() {
+    return data_;
+  }
 
 } //\ namespace path

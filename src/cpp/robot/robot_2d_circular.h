@@ -43,20 +43,29 @@
 #ifndef PATH_PLANNING_ROBOT_2D_CIRCULAR_H
 #define PATH_PLANNING_ROBOT_2D_CIRCULAR_H
 
-#include "robot_model.h"
+#include "../util/types.h"
+#include "../geometry/point2d_helpers.h"
+#include "../scene/scene_2d_continuous.h"
 
 namespace path {
 
   // Simple 2D circular robot.
-  class Robot2DCircular : public RobotModel {
+  class Robot2DCircular {
   public:
-    Robot2DCircular(SceneModel& scene, double radius)
-      : RobotModel(scene, radius) {}
+    Robot2DCircular(Scene2DContinuous& scene, float radius)
+      : scene_(scene), radius_(radius) {}
     ~Robot2DCircular() {}
 
     // Test if a particular point is feasible.
-    bool IsFeasible(Point::Ptr point);
-    bool LineOfSight(Point::Ptr point1, Point::Ptr point2) const;
+    bool IsFeasible(Point2D& point);
+    bool LineOfSight(Point2D& point1, Point2D& point2) const;
+
+  private:
+    Scene2DContinuous& scene_;
+    float radius_;
+
+    DISALLOW_COPY_AND_ASSIGN(Robot2DCircular);
+
   };
 
 } // \namespace path

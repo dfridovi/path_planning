@@ -44,28 +44,32 @@
 #ifndef PATH_PLANNING_SENSOR_MODEL_2D_RADIAL_H
 #define PATH_PLANNING_SENSOR_MODEL_2D_RADIAL_H
 
-#include "sensor_model.h"
+#include <geometry/point2d_helpers.h>
+#include <geometry/orientation_2d.h>
 #include <occupancy/occupancy_grid_2d.h>
+#include <util/disallow_copy_and_assign.h>
+#include <util/types.h>
 
 namespace path {
 
-  // Derive from this class when defining a specific type of sensor model.
-  class Sensor2DRadial : public SensorModel {
+  class Sensor2DRadial {
   public:
-    Sensor2DRadial(OccupancyGrid2D& grid, double radius)
+    Sensor2DRadial(OccupancyGrid2D& grid, float radius)
       : grid_(grid), radius_(radius) {}
     ~Sensor2DRadial() {}
 
     // How many known obstacles are visible to the robot?
-    int GetObstacleCount(Point::Ptr pose) const;
+    int GetObstacleCount(Orientation2D& pose) const;
 
     // Visualize which voxels are visible to this robot.
-    void Visualize(Point::Ptr pose,
+    void Visualize(Orientation2D& pose,
                    const std::string& title = std::string()) const;
 
   private:
     OccupancyGrid2D& grid_;
-    const double radius_;
+    const float radius_;
+
+    DISALLOW_COPY_AND_ASSIGN(Sensor2DRadial);
   };
 
 } // \namespace path

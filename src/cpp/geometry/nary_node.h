@@ -43,8 +43,8 @@
 #ifndef PATH_PLANNING_NARY_NODE_H
 #define PATH_PLANNING_NARY_NODE_H
 
+#include <util/types.h>
 #include <util/disallow_copy_and_assign.h>
-#include "point.h"
 #include <memory>
 #include <vector>
 #include <glog/logging.h>
@@ -52,6 +52,7 @@
 namespace path {
 
   // Helper class for use with a tree class.
+  typename<typename DataType>
   class Node {
   public:
     typedef std::shared_ptr<Node> Ptr;
@@ -60,7 +61,7 @@ namespace path {
     ~Node() {}
 
     // Factory method.
-    static Node::Ptr Create(const Point::Ptr data);
+    static Node::Ptr Create(const DataType& data);
 
     // Add a child.
     void AddChild(Node::Ptr child);
@@ -75,16 +76,18 @@ namespace path {
     Node::Ptr GetParent();
 
     // Get data.
-    Point::Ptr GetData();
+    DataType& GetData();
 
   private:
     // Private constructor. Use the factory method instead.
-    Node(const Point::Ptr data)
+    Node(const DataType& data)
       : data_(data) {}
 
-    Point::Ptr data_;
+    DataType data_;
     Node::Ptr parent_;
     std::vector<Node::Ptr> children_;
+
+    DISALLOW_COPY_AND_ASSIGN(Node);
   };
 
 } //\ namespace path
