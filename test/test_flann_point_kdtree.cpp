@@ -35,10 +35,10 @@
  *          Erik Nelson            ( eanelson@eecs.berkeley.edu )
  */
 
-#include <flann/flann_point_kdtree.h>
-#include <geometry/point.h>
-#include <geometry/point_2d.h>
+#include <flann/flann_point_2dtree.h>
+#include <geometry/point2d_helpers.h>
 #include <math/random_generator.h>
+#include <util/types.h>
 
 #include <limits>
 #include <memory>
@@ -47,56 +47,60 @@
 
 namespace path {
 
-  TEST(FlannPointKDTree, TestFlannPointKDTree) {
+  TEST(FlannPoint2DTree, TestFlannPoint2DTree) {
     math::RandomGenerator rng(0);
 
     // Make a FLANN kd-tree.
-    FlannPointKDTree point_kdtree;
+    FlannPoint2DTree point_2dtree;
 
     // Make a bunch of points and incrementally insert them into the kd tree.
-    std::vector<Point::Ptr> points;
+    std::vector<Point2D> points;
     for (int ii = 0; ii < 100; ++ii) {
-      double x = rng.Double();
-      double y = rng.Double();
-      Point::Ptr point = Point2D::Create(x, y);
+      float x = static_cast<float(rng.Double());
+      float y = static_cast<float>(rng.Double());
+      Point2D point = Point2DHelpers::Create(x, y);
 
       points.push_back(point);
-      point_kdtree.AddPoint(point);
-      EXPECT_EQ(point_kdtree.Size(), points.size());
+      point_2dtree.AddPoint(point);
+      EXPECT_EQ(point_2dtree.Size(), points.size());
     }
 
     // Add a batch of points at once.
-    std::vector<Point::Ptr> points2;
+    std::vector<Point2D> points2;
     for (int ii = 0; ii < 100; ++ii) {
-      double x = rng.Double();
-      double y = rng.Double();
-      Point::Ptr point = Point2D::Create(x, y);
+      float x = static_cast<float>(rng.Double());
+      float y = static_cast<float>(rng.Double());
+      Point2D point = Point2DHelpers::Create(x, y);
       points2.push_back(point);
     }
-    point_kdtree.AddPoints(points2);
-    EXPECT_EQ(point_kdtree.Size(), points.size() + points2.size());
+    point_2dtree.AddPoints(points2);
+    EXPECT_EQ(point_2dtree.Size(), points.size() + points2.size());
 
     // Query the kd tree for nearest neighbor.
-    Point::Ptr query = Point2D::Create(rng.Double(), rng.Double());
-    Point::Ptr nearest;
-    double nn_distance = -1.0;
-    EXPECT_TRUE(point_kdtree.NearestNeighbor(query, nearest, nn_distance));
+    Point2D query = Point2DHelpers::Create(static_cast<float>(rng.Double()),
+                                           static_cast<float>(rng.Double()));
+    Point2D* nearest;
+    float nn_distance = -1.0;
+    EXPECT_TRUE(point_2dtree.NearestNeighbor(query, nearest, nn_distance));
     EXPECT_NE(nearest, nullptr);
 
     // Manually compute distance between all points and the query.
     points.insert(points.end(), points2.begin(), points2.end());
 
-    double min_distance = std::numeric_limits<double>::max();
+    float min_distance = std::numeric_limits<float>::max();
     size_t min_distance_index = 0;
     for (size_t ii = 0; ii < points.size(); ++ii) {
-      double distance = points[ii]->DistanceTo(query);
+      float distance = Point2DHelpers::DistancePointToPoint(points[ii],
+                                                            query);
       if (distance < min_distance) {
         min_distance = distance;
         min_distance_index = ii;
       }
     }
 
-    EXPECT_NEAR(points[min_distance_index]->DistanceTo(nearest), 0, 1e-8);
+    EXPECT_NEAR(Point2DHelpers::DistancePointToPoint(points[min_distance_index],
+                                                     nearest),
+                0, 1e-8);
     EXPECT_NEAR(min_distance, nn_distance, 1e-8);
   }
 
