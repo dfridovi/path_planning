@@ -46,7 +46,7 @@
 namespace path {
 
   // Factory method.
-  Orientation2D::Create(float x, float y, float theta) {
+  Orientation2D::Ptr Orientation2D::Create(float x, float y, float theta) {
     Orientation2D::Ptr orientation(new Orientation2D(x, y, theta));
     return orientation;
   }
@@ -56,7 +56,7 @@ namespace path {
     : x_(x), y_(y), theta_(theta) {}
 
   // Getters.
-  Point2D::Ptr Orientation2D::GetPoint() const {
+  Point2D::Ptr Orientation2D::GetPoint2D() const {
     Point2D::Ptr point = Point2D::Create(x_, y_);
     return point;
   }

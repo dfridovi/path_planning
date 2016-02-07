@@ -41,8 +41,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "occupancy_grid_2d.h"
-#include <geometry/point_2d.h>
-#include <scene/obstacle_2d.h>
+#include "../geometry/point_2d.h"
+#include "../scene/obstacle_2d.h"
 
 #include <cmath>
 #include <glog/logging.h>
@@ -76,12 +76,12 @@ namespace path {
   }
 
   // Insert a point.
-  void OccupancyGrid2D::Insert(Point2D& point) {
+  void OccupancyGrid2D::Insert(Point2D::Ptr point) {
     if (!IsValidPoint(point)) return;
 
     // Find the nearest bin and insert.
-    int jj = static_cast<int>((point.x - xmin_) / block_size_);
-    int ii = static_cast<int>((point.y - ymin_) / block_size_);
+    int jj = static_cast<int>((point->x - xmin_) / block_size_);
+    int ii = static_cast<int>((point->y - ymin_) / block_size_);
     ii = nrows_ - ii - 1;
     grid_(ii, jj)++;
 
@@ -90,35 +90,35 @@ namespace path {
 
     // Add to scene if bin is empty.
     if (grid_(ii, jj) == 1) {
-      Point2D bin_center = GetBinCenter(point);
-      Obstacle2D obstacle =
-        Obstacle2D(bin_center.x, bin_center.y, 0.5 * block_size_);
+      Point2D::Ptr bin_center = GetBinCenter(point);
+      Obstacle2D::Ptr obstacle =
+        Obstacle2D::Create(bin_center->x, bin_center->y, 0.5 * block_size_);
       scene_.AddObstacle(obstacle);
     }
   }
 
   // Get number of points in the bin containing the specified point.
-  int OccupancyGrid2D::GetCountAt(Point2D& point) const {
+  int OccupancyGrid2D::GetCountAt(Point2D::Ptr point) const {
     if (!IsValidPoint(point)) return -1;
 
     // Get count.
-    int jj = static_cast<int>((point.x - xmin_) / block_size_);
-    int ii = static_cast<int>((point.y - ymin_) / block_size_);
+    int jj = static_cast<int>((point->x - xmin_) / block_size_);
+    int ii = static_cast<int>((point->y - ymin_) / block_size_);
     ii = nrows_ - ii - 1;
 
     return grid_(ii, jj);
   }
 
   // Return the center of the bin which includes the given point.
-  Point2D& OccupancyGrid2D::GetBinCenter(Point2D& point) const {
+  Point2D::Ptr OccupancyGrid2D::GetBinCenter(Point2D::Ptr point) const {
     if (!IsValidPoint(point)) return nullptr;
 
     // Get rounded coordinates.
-    int jj = static_cast<int>((point.x - xmin_) / block_size_);
-    int ii = static_cast<int>((point.y - ymin_) / block_size_);
+    int jj = static_cast<int>((point->x - xmin_) / block_size_);
+    int ii = static_cast<int>((point->y - ymin_) / block_size_);
 
-    return Point2DHelpers::Create((static_cast<float>(jj) + 0.5) * block_size_,
-                                  (static_cast<float>(ii) + 0.5) * block_size_);
+    return Point2D::Create((static_cast<float>(jj) + 0.5) * block_size_,
+                           (static_cast<float>(ii) + 0.5) * block_size_);
   }
 
   // Visualize this occupancy grid.
@@ -132,10 +132,12 @@ namespace path {
   }
 
   // Check if a point is valid.
-  bool OccupancyGrid2D::IsValidPoint(Point2D& point) const {
+  bool OccupancyGrid2D::IsValidPoint(Point2D::Ptr point) const {
+    CHECK_NOTNULL(point.get());
+
     // Check bounds.
-    if (point.x < xmin_ || point.x > xmax_ ||
-        point.y < ymin_ || point.y > ymax_) {
+    if (point->x < xmin_ || point->x > xmax_ ||
+        point->y < ymin_ || point->y > ymax_) {
       VLOG(1) << "Error. Point is out of bounds.";
       return false;
     }

@@ -44,7 +44,7 @@
 #define PATH_PLANNING_ROBOT_2D_CIRCULAR_H
 
 #include "../util/types.h"
-#include "../geometry/point2d_helpers.h"
+#include "../geometry/point_2d.h"
 #include "../scene/scene_2d_continuous.h"
 
 namespace path {
@@ -57,8 +57,8 @@ namespace path {
     ~Robot2DCircular() {}
 
     // Test if a particular point is feasible.
-    bool IsFeasible(Point2D& point);
-    bool LineOfSight(Point2D& point1, Point2D& point2) const;
+    bool IsFeasible(Point2D::Ptr point);
+    bool LineOfSight(Point2D::Ptr point1, Point2D::Ptr point2) const;
 
   private:
     Scene2DContinuous& scene_;

@@ -43,12 +43,13 @@
 #ifndef PATH_PLANNING_SCENE_2D_CONTINUOUS_H
 #define PATH_PLANNING_SCENE_2D_CONTINUOUS_H
 
-#include "obstacle_2d_continuous.h"
-#include <geometry/point2d_helpers.h>
-#include <geometry/trajectory_2d.h>
-#include <flann/flann_obstacle_2dtree.h>
-#include <util/types.h>
-#include <image/image.h>
+#include "obstacle_2d.h"
+#include "../geometry/point_2d.h"
+#include "../geometry/trajectory_2d.h"
+#include "../flann/flann_obstacle_2dtree.h"
+#include "../util/types.h"
+#include "../image/image.h"
+#include "../math/random_generator.h"
 
 #include <vector>
 #include <string>
@@ -63,13 +64,13 @@ namespace path {
                       float ymin, float ymax);
     Scene2DContinuous(float xmin, float xmax,
                       float ymin, float ymax,
-                      std::vector<Obstacle2D>& obstacles);
+                      std::vector<Obstacle2D::Ptr>& obstacles);
 
     // Add an obstacle.
-    void AddObstacle(Obstacle2D& obstacle);
+    void AddObstacle(Obstacle2D::Ptr obstacle);
 
     // Get obstacles.
-    std::vector<Obstacle2D>& GetObstacles();
+    std::vector<Obstacle2D::Ptr>& GetObstacles();
     FlannObstacle2DTree& GetObstacleTree();
     float GetLargestObstacleRadius() const;
     int GetObstacleCount() const;
@@ -78,17 +79,17 @@ namespace path {
     void SetBounds(float xmin, float xmax, float ymin, float ymax);
 
     // Is this point feasible?
-    bool IsFeasible(Point2D& point) const;
+    bool IsFeasible(Point2D::Ptr point) const;
 
     // What is the cost of occupying this point?
-    float Cost(Point2D& point) const;
+    float Cost(Point2D::Ptr point) const;
 
     // Compute the derivative of cost by position. This is used for
     // trajectory optimization.
-    Point2D& CostDerivative(Point2D& point) const;
+    Point2D::Ptr CostDerivative(Point2D::Ptr point) const;
 
     // Get a random point in the scene.
-    Point2D& GetRandomPoint() const;
+    Point2D::Ptr GetRandomPoint() const;
 
     // Optimize the given trajectory to minimize cost.
     Trajectory2D::Ptr OptimizeTrajectory(Trajectory2D::Ptr path,
@@ -106,10 +107,10 @@ namespace path {
     // Visualize a Trajectory in this scene. Optionally pass in the
     // number of pixels in the x-direction.
     void Visualize(const std::string& title,
-                   Trajectory::Ptr path, int xsize = 500) const;
+                   Trajectory2D::Ptr path, int xsize = 500) const;
 
   private:
-    std::vector<Obstacle2D> obstacles_;
+    std::vector<Obstacle2D::Ptr> obstacles_;
     FlannObstacle2DTree obstacle_tree_;
     math::RandomGenerator rng_;
     float largest_obstacle_radius_;

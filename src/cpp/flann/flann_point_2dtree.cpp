@@ -48,8 +48,6 @@
 #include <iostream>
 #include <cmath>
 
-using Eigen::VectorXd;
-
 namespace path {
 
   FlannPoint2DTree::~FlannPoint2DTree() {
@@ -68,15 +66,17 @@ namespace path {
   }
 
   // Add points to the index.
-  void FlannPoint2DTree::AddPoint(Point2D& point) {
+  void FlannPoint2DTree::AddPoint(Point2D::Ptr point) {
+    CHECK_NOTNULL(point.get());
+
     // Add point to registry.
     registry_.push_back(point);
 
     // Copy the input point into FLANN's Matrix type.
     const int kNumColumns = 2;
     flann::Matrix<double> flann_point(new double[kNumColumns], 1, kNumColumns);
-    flann_point[0][0] = point.x;
-    flann_point[0][1] = point.y;
+    flann_point[0][0] = point->x;
+    flann_point[0][1] = point->y;
 
     // If this is the first point in the index, create the index and exit.
     if (index_ == nullptr) {
@@ -95,15 +95,17 @@ namespace path {
   }
 
   // Add points to the index.
-  void FlannPoint2DTree::AddPoints(std::vector<Point2D>& points) {
+  void FlannPoint2DTree::AddPoints(std::vector<Point2D::Ptr>& points) {
     for (auto& point : points) {
       AddPoint(point);
     }
   }
 
   // Queries the kd tree for the nearest neighbor of 'query'.
-  bool FlannPoint2DTree::NearestNeighbor(Point2D& query, Point2D& nearest,
-                                         double& nn_distance) const {
+  bool FlannPoint2DTree::NearestNeighbor(Point2D::Ptr query, Point2D::Ptr& nearest,
+                                         float& nn_distance) const {
+    CHECK_NOTNULL(query.get());
+
     if (index_ == nullptr) {
       VLOG(1) << "Index has not been built. Points must be added before "
               <<  "querying the kd tree";
@@ -113,8 +115,8 @@ namespace path {
     // Convert the input point to the FLANN format.
     const int kNumColumns = 2;
     flann::Matrix<double> flann_query(new double[kNumColumns], 1, kNumColumns);
-    flann_query[0][0] = query.x;
-    flann_query[0][1] = query.y;
+    flann_query[0][0] = query->x;
+    flann_query[0][1] = query->y;
 
     // Search the kd tree for the nearest neighbor to the query.
     std::vector< std::vector<int> > query_match_indices;
@@ -137,9 +139,11 @@ namespace path {
 
   // Queries the kd tree for all neighbors of 'query' within the specified radius.
   // Returns whether or not the search exited successfully.
-  bool FlannPoint2DTree::RadiusSearch(Point2D& query,
-                                      std::vector<Point2D>& neighbors,
-                                      double radius) const {
+  bool FlannPoint2DTree::RadiusSearch(Point2D::Ptr query,
+                                      std::vector<Point2D::Ptr>& neighbors,
+                                      float radius) const {
+    CHECK_NOTNULL(query.get());
+
     if (index_ == nullptr) {
       VLOG(1) << "Index has not been built. Points must be added before "
               << "querying the kd tree";
@@ -149,8 +153,8 @@ namespace path {
     // Convert the input point to the FLANN format.
     const int kNumColumns = 2;
     flann::Matrix<double> flann_query(new double[kNumColumns], 1, kNumColumns);
-    flann_query[0][0] = query.x;
-    flann_query[0][1] = query.y;
+    flann_query[0][0] = query->x;
+    flann_query[0][1] = query->y;
 
     // Search the kd tree for the nearest neighbor to the query.
     std::vector< std::vector<int> > query_match_indices;

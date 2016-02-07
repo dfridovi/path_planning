@@ -52,7 +52,7 @@
 namespace path {
 
   // Helper class for use with a tree class.
-  typename<typename DataType>
+  template<typename DataType>
   class Node {
   public:
     typedef std::shared_ptr<Node> Ptr;

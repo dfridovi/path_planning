@@ -63,30 +63,30 @@ namespace path {
     // Algorithm:
     // 1. Choose a random point.
     // 2. Take a step toward that point if possible.
-    Point2D* last_point;
+    Point2D::Ptr last_point;
     while (!tree_.Contains(goal_) && tree_.Size() < 10000) {
       // Pick a random point in the scene.
-      Point2D random_point = scene_.GetRandomPoint();
+      Point2D::Ptr random_point = scene_.GetRandomPoint();
 
       // Find nearest point in the tree.
-      Point2D nearest = tree_.GetNearest(random_point);
+      Point2D::Ptr nearest = tree_.GetNearest(random_point);
 
       // Take a step toward the random point.
-      Point2D step = Point2DHelpers::StepToward(nearest, random_point, step_size_);
+      Point2D::Ptr step = Point2D::StepToward(nearest, random_point, step_size_);
       if (robot_.LineOfSight(nearest, step)) {
         if (!tree_.Insert(step))
           VLOG(1) << "Could not insert this point. Skipping.";
 
-        *last_point = step;
+        last_point = step;
       }
 
       // Insert the goal (stepwise) if it is visible.
       if (robot_.LineOfSight(step, goal_)) {
-        float distance_to_goal = Point2DHelpers::DistancePointToPoint(step, goal_);
+        float distance_to_goal = Point2D::DistancePointToPoint(step, goal_);
         int num_steps = static_cast<int>(std::ceil(distance_to_goal / step_size_));
 
         for (int ii = 1; ii <= num_steps - 1; ii++) {
-          Point2D next = Point2DHelpers::StepToward(step, goal_, step_size_);
+          Point2D::Ptr next = Point2D::StepToward(step, goal_, step_size_);
 
           if (!tree_.Insert(next, step))
             VLOG(1) << "Error. Could not insert a point.";
@@ -98,7 +98,7 @@ namespace path {
         if (!tree_.Insert(goal_, step))
           VLOG(1) << "Error. Could not insert the goal point.";
 
-        *last_point = goal_;
+        last_point = goal_;
       }
     }
 

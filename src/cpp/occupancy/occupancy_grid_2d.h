@@ -43,10 +43,10 @@
 #ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
 #define PATH_PLANNING_OCCUPANCY_GRID_2D_H
 
-#include <util/disallow_copy_and_assign.h>
-#include <util/types.h>
-#include <geometry/point2d_helpers.h>
-#include <scene/scene_2d_continuous.h>
+#include "../util/disallow_copy_and_assign.h"
+#include "../util/types.h"
+#include "../geometry/point_2d.h"
+#include "../scene/scene_2d_continuous.h"
 #include <Eigen/Dense>
 
 using Eigen::MatrixXi;
@@ -70,11 +70,12 @@ namespace path {
     float GetYMax() const { return ymax_; }
     int GetNRows() const { return nrows_ ; }
     int GetNCols() const { return ncols_ ; }
+    int GetTotalCount() const { return count_; }
 
-    // Define these methods in a derived class.
-    void Insert(Point2D& point);
-    int GetCountAt(Point2D& point) const;
-    Point2D& GetBinCenter(Point2D& point) const;
+    // Operations on the grid.
+    void Insert(Point2D::Ptr point);
+    int GetCountAt(Point2D::Ptr point) const;
+    Point2D::Ptr GetBinCenter(Point2D::Ptr point) const;
 
     // Visualize this occupancy grid.
     void Visualize(const std::string& title = std::string()) const;
@@ -92,7 +93,7 @@ namespace path {
     int count_;
 
     // Check if a point is valid.
-    bool IsValidPoint(Point2D& point) const;
+    bool IsValidPoint(Point2D::Ptr point) const;
 
     DISALLOW_COPY_AND_ASSIGN(OccupancyGrid2D);
   };

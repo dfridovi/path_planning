@@ -45,9 +45,9 @@
 #ifndef PATH_PLANNING_FLANN_OBSTACLE_2DTREE_H
 #define PATH_PLANNING_FLANN_OBSTACLE_2DTREE_H
 
-#include <geometry/point2d_helpers.h>
-#include <scene/obstacle_2d.h>
 #include "flann_point_2dtree.h"
+#include "../geometry/point_2d.h"
+#include "../scene/obstacle_2d.h"
 #include "../util/disallow_copy_and_assign.h"
 
 #include <flann/flann.h>
@@ -61,23 +61,23 @@ namespace path {
     ~FlannObstacle2DTree() {}
 
     // Add obstacles to the index.
-    void AddObstacle(Obstacle2D& obstacle);
-    void AddObstacles(std::vector<Obstacle2D>& obstacles);
+    void AddObstacle(Obstacle2D::Ptr obstacle);
+    void AddObstacles(std::vector<Obstacle2D::Ptr>& obstacles);
 
     // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
     // not a nearest neighbor was found, and if it was found, the nearest neighbor
     // and distance to the nearest neighbor.
-    bool NearestNeighbor(Point2D& query, Obstacle2D& nearest,
-                         double& nn_distance) const;
+    bool NearestNeighbor(Point2D::Ptr query, Obstacle2D::Ptr& nearest,
+                         float& nn_distance) const;
 
     // Queries the kd tree for all neighbors of 'query' within the specified radius.
     // Returns whether or not the search exited successfully.
-    bool RadiusSearch(Point2D& query, std::vector<Obstacle2D>& neighbors,
-                      double radius) const;
+    bool RadiusSearch(Point2D::Ptr query, std::vector<Obstacle2D::Ptr>& neighbors,
+                      float radius) const;
 
   private:
     FlannPoint2DTree kd_tree_;
-    std::unordered_map<Point2D, Obstacle2D> registry_; // to retrieve obstacles
+    std::unordered_map<Point2D::Ptr, Obstacle2D::Ptr> registry_; // to retrieve obstacles
 
     DISALLOW_COPY_AND_ASSIGN(FlannObstacle2DTree);
   };  //\class FlannObstacle2DTree

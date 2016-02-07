@@ -40,18 +40,18 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_POINT_TREE_H
-#define PATH_PLANNING_POINT_TREE_H
+#ifndef PATH_PLANNING_RRT_2D_H
+#define PATH_PLANNING_RRT_2D_H
 
-#include "trajectory.h"
+#include "trajectory_2d.h"
+#include "point_2d.h"
 #include "nary_node.h"
-#include <flann/flann_point_kdtree.h>
+#include <flann/flann_point_2dtree.h>
 #include <util/disallow_copy_and_assign.h>
 
 #include <memory>
 #include <vector>
 #include <unordered_map>
-#include <glog/logging.h>
 
 namespace path {
 
@@ -62,24 +62,24 @@ namespace path {
     ~RRT2D() {}
 
     // Insert a point. Returns true if successful.
-    bool Insert(Point2D& point);
-    bool Insert(Point2D& point, Point2D& parent);
+    bool Insert(Point2D::Ptr point);
+    bool Insert(Point2D::Ptr point, Point2D::Ptr parent);
 
     // Does the tree contain this point?
-    bool Contains(Point2D& point) const;
+    bool Contains(Point2D::Ptr point) const;
 
     // Tree size.
     int Size() const;
 
     // Get nearest point in the tree.
-    Point2D& GetNearest(Point2D& point);
+    Point2D::Ptr GetNearest(Point2D::Ptr point);
 
     // Get the path from the head to a particular goal point.
-    Trajectory::Ptr GetTrajectory(Point2D& goal);
+    Trajectory2D::Ptr GetTrajectory(Point2D::Ptr goal);
 
   private:
-    Node::Ptr head_;
-    std::unordered_map<Point2D&, Node::Ptr> registry_;
+    Node<Point2D::Ptr>::Ptr head_;
+    std::unordered_map<Point2D::Ptr, Node<Point2D::Ptr>::Ptr> registry_;
     FlannPoint2DTree kd_tree_;
 
     DISALLOW_COPY_AND_ASSIGN(RRT2D);

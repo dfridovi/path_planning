@@ -48,13 +48,15 @@
 namespace path {
 
   // Add obstacles to the index.
-  void FlannObstacle2DTree::AddObstacle(Obstacle2D& obstacle) {
-    Point2D location = obstacle.GetLocation();
+  void FlannObstacle2DTree::AddObstacle(Obstacle2D::Ptr obstacle) {
+    CHECK_NOTNULL(obstacle.get());
+
+    Point2D::Ptr location = obstacle->GetLocation();
     kd_tree_.AddPoint(location);
     registry_.emplace(location, obstacle);
   }
 
-  void FlannObstacle2DTree::AddObstacles(std::vector<Obstacle2D>& obstacles) {
+  void FlannObstacle2DTree::AddObstacles(std::vector<Obstacle2D::Ptr>& obstacles) {
     for (auto& obstacle : obstacles)
       AddObstacle(obstacle);
   }
@@ -63,26 +65,30 @@ namespace path {
   // not a nearest neighbor was found, and if it was found, the nearest neighbor
   // and distance to the nearest neighbor. Note that index is based on the 
   // order in which obstacles were added with AddObstacle() and AddObstacles().
-  bool FlannObstacle2DTree::NearestNeighbor(Point2D& query,
-                                            Obstacle2D& nearest,
-                                            double& nn_distance) const {
+  bool FlannObstacle2DTree::NearestNeighbor(Point2D::Ptr query,
+                                            Obstacle2D::Ptr& nearest,
+                                            float& nn_distance) const {
+    CHECK_NOTNULL(query.get());
+
     // Query kd_tree_.
-    Point2D* nearest_point;
+    Point2D::Ptr nearest_point;
     if (!kd_tree_.NearestNeighbor(query, nearest_point, nn_distance))
       return false;
 
     // Map from point back to obstacle.
-    nearest = registry_.at(*nearest_point);
+    nearest = registry_.at(nearest_point);
     return true;
   }
 
   // Queries the kd tree for all neighbors of 'query' within the specified radius.
   // Returns whether or not the search exited successfully.
-  bool FlannObstacle2DTree::RadiusSearch(Point2D& query,
-                                         std::vector<Obstacle2D>& neighbors,
-                                         double radius) const {
+  bool FlannObstacle2DTree::RadiusSearch(Point2D::Ptr query,
+                                         std::vector<Obstacle2D::Ptr>& neighbors,
+                                         float radius) const {
+    CHECK_NOTNULL(query.get());
+
     // Query kd_tree_.
-    std::vector<Point2D> nearest_points;
+    std::vector<Point2D::Ptr> nearest_points;
     if (!kd_tree_.RadiusSearch(query, nearest_points, radius))
       return false;
 

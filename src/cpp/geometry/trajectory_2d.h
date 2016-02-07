@@ -84,7 +84,7 @@ namespace path {
     void SetAt(Point2D::Ptr point, size_t index);
 
   private:
-    std::vector<Point2D> points_;
+    std::vector<Point2D::Ptr> points_;
     double length_;
 
     // Private constructors. Use factory methods instead.

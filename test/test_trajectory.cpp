@@ -35,7 +35,7 @@
  */
 
 #include <geometry/trajectory_2d.h>
-#include <geometry/point2d_helpers.h>
+#include <geometry/point_2d.h>
 #include <util/types.h>
 #include <math/random_generator.h>
 
@@ -55,24 +55,24 @@ namespace path {
     Trajectory2D::Ptr path1 = Trajectory2D::Create();
 
     // Vector of Points.
-    std::vector<Point2D> points;
-    Point2D* last_point;
+    std::vector<Point2D::Ptr> points;
+    Point2D::Ptr last_point;
     double length = 0.0;
 
     // Make a bunch of points.
     for (size_t ii = 0; ii < 1000; ++ii) {
       float x = rng.Double();
       float y = rng.Double();
-      Point2D point = Point2DHelpers::Create(x, y);
+      Point2D::Ptr point = Point2D::Create(x, y);
 
       // Keep track of length for comparison.
       if (ii != 0)
-        length += Point2DHelpers::DistancePointToPoint(last_point, point);
+        length += Point2D::DistancePointToPoint(last_point, point);
 
       // Add to path and vector.
       path1->AddPoint(point);
       points.push_back(point);
-      last_point = &point;
+      last_point = point;
     }
 
     // Make second Trajectory from vector.

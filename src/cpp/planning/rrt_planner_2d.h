@@ -46,11 +46,13 @@
 #ifndef PATH_PLANNING_RRT_PLANNER_2D_H
 #define PATH_PLANNING_RRT_PLANNER_2D_H
 
-#include <geometry/trajectory_2d.h>
-#include <geometry/point2d_helpers.h>
-#include <geometry/rrt_2d.h>
-#include <util/types.h>
-#include <util/disallow_copy_and_assign.h>
+#include "../geometry/trajectory_2d.h"
+#include "../geometry/point_2d.h"
+#include "../geometry/rrt_2d.h"
+#include "../robot/robot_2d_circular.h"
+#include "../scene/scene_2d_continuous.h"
+#include "../util/types.h"
+#include "../util/disallow_copy_and_assign.h"
 
 namespace path {
 
@@ -58,20 +60,20 @@ namespace path {
   class RRTPlanner2D {
   public:
     RRTPlanner2D(Robot2DCircular& robot, Scene2DContinuous& scene,
-                 Point2D& origin, Point2D& goal, float step_size = 0.1)
+                 Point2D::Ptr origin, Point2D::Ptr goal, float step_size = 0.1)
       : robot_(robot), scene_(scene),
         origin_(origin), goal_(goal),
         step_size_(step_size) {}
     ~RRTPlanner2D() {}
 
     // The algorithm. See header for references.
-    Trajectory::Ptr PlanTrajectory();
+    Trajectory2D::Ptr PlanTrajectory();
 
   private:
-    RobotModel& robot_;
-    SceneModel& scene_;
-    Point2D& origin_;
-    Point2D& goal_;
+    Robot2DCircular& robot_;
+    Scene2DContinuous& scene_;
+    Point2D::Ptr origin_;
+    Point2D::Ptr goal_;
 
     RRT2D tree_;
     const float step_size_;

@@ -34,7 +34,7 @@
  * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include <geometry/point2d_helpers.h>
+#include <geometry/point_2d.h>
 #include <geometry/orientation_2d.h>
 #include <math/random_generator.h>
 #include <occupancy/occupancy_grid_2d.h>
@@ -63,7 +63,7 @@ namespace path {
     for (size_t ii = 0; ii < 1000; ii++) {
       float x = static_cast<float>(rng.Double());
       float y = static_cast<float>(rng.Double());
-      Point2D point = Point2DHelpers::Create(x, y);
+      Point2D::Ptr point = Point2D::Create(x, y);
       grid.Insert(point);
     }
 
@@ -78,8 +78,8 @@ namespace path {
 
     // Create a bunch of points in a circle and add to the grid.
     for (float theta = 0.0; theta < 2.0 * M_PI; theta += 0.01) {
-      Point2D point = Point2DHelpers::Create(0.5 + 0.2 * std::cos(theta),
-                                             0.5 + 0.2 * std::sin(theta));
+      Point2D::Ptr point = Point2D::Create(0.5 + 0.2 * std::cos(theta),
+                                           0.5 + 0.2 * std::sin(theta));
       grid.Insert(point);
     }
 
@@ -90,7 +90,7 @@ namespace path {
     Sensor2DRadial sensor(grid, 0.5);
 
     // Ensure sensor can see all points from the center.
-    EXPECT_EQ(sensor.GetObstacleCount(Orientation2D(0.5, 0.5, 0.0)),
+    EXPECT_EQ(sensor.GetObstacleCount(Orientation2D::Create(0.5, 0.5, 0.0)),
               grid.GetTotalCount());
   }
 
@@ -101,8 +101,8 @@ namespace path {
 
     // Create a bunch of points in a circle and add to the grid.
     for (float theta = 0.0; theta < 0.999; theta += 0.1) {
-      Point2D point = Point2DHelpers::Create(0.5 + 0.2*std::cos(2.0*M_PI * theta),
-                                             0.5 + 0.2*std::sin(2.0*M_PI * theta));
+      Point2D::Ptr point = Point2D::Create(0.5 + 0.2*std::cos(2.0*M_PI * theta),
+                                           0.5 + 0.2*std::sin(2.0*M_PI * theta));
       grid.Insert(point);
     }
 
@@ -112,11 +112,11 @@ namespace path {
     if (FLAGS_visualize_occupancy) {
       grid.GetScene().Visualize("Test scene");
       grid.Visualize("Test grid");
-      sensor.Visualize(Orientation2D(0.5, 0.5, 0.0));
+      sensor.Visualize(Orientation2D::Create(0.5, 0.5, 0.0));
     }
 
     // Ensure sensor can see all points from the center.
-    EXPECT_EQ(sensor.GetObstacleCount(Orientation2D(0.5, 0.5, 0.0)),
+    EXPECT_EQ(sensor.GetObstacleCount(Orientation2D::Create(0.5, 0.5, 0.0)),
               grid.GetTotalCount());
   }
 

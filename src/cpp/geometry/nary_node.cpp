@@ -46,7 +46,7 @@ namespace path {
 
   // Factory method.
   template<typename DataType>
-  Node<DataType>::Ptr Node<DataType>::Create(DataType& data) {
+  typename Node<DataType>::Ptr Node<DataType>::Create(const DataType& data) {
     Node<DataType>::Ptr node(new Node<DataType>(data));
     return node;
   }
@@ -58,7 +58,7 @@ namespace path {
   }
 
   template<typename DataType>
-  Node<DataType>::Ptr Node<DataType>::GetParent() {
+  typename Node<DataType>::Ptr Node<DataType>::GetParent() {
     return parent_;
   }
 
@@ -68,7 +68,7 @@ namespace path {
   }
 
   template<typename DataType>
-  std::vector<Node<DataType>::Ptr>& Node<DataType>::GetChildren() {
+  std::vector< typename Node<DataType>::Ptr >& Node<DataType>::GetChildren() {
     return children_;
   }
 

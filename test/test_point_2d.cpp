@@ -34,7 +34,7 @@
  * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include <geometry/point2d_helpers.h>
+#include <geometry/point_2d.h>
 #include <util/types.h>
 #include <math/random_generator.h>
 
@@ -52,13 +52,13 @@ namespace path {
     for (size_t ii = 0; ii < 1000; ++ii) {
       float x1 = rng.Double();
       float y1 = rng.Double();
-      Point2D point1 = Point2DHelpers::Create(x1, y1);
+      Point2D::Ptr point1 = Point2D::Create(x1, y1);
 
       float x2 = x1 + 0.1 * rng.DoubleUniform(-1.0, 1.0);
       float y2 = y1 + 0.1 * rng.DoubleUniform(-1.0, 1.0);
-      Point2D point2 = Point2DHelpers::Create(x2, y2);
+      Point2D::Ptr point2 = Point2D::Create(x2, y2);
 
-      EXPECT_NEAR(Point2DHelpers::DistancePointToPoint(point1, point2),
+      EXPECT_NEAR(Point2D::DistancePointToPoint(point1, point2),
                   0.0, 0.1 * std::sqrt(2.0));
     }
   }

@@ -46,11 +46,11 @@
 #ifndef PATH_PLANNING_FLANN_POINT_2DTREE_H
 #define PATH_PLANNING_FLANN_POINT_2DTREE_H
 
-#include <flann/flann.h>
-
-#include <geometry/point2d_helpers.h>
+#include "../geometry/point_2d.h"
 #include "../util/types.h"
 #include "../util/disallow_copy_and_assign.h"
+
+#include <flann/flann.h>
 
 namespace path {
 
@@ -63,23 +63,23 @@ namespace path {
     int Size() const;
 
     // Add points to the index.
-    void AddPoint(Point2D& point);
-    void AddPoints(std::vector<Point2D>& points);
+    void AddPoint(Point2D::Ptr point);
+    void AddPoints(std::vector<Point2D::Ptr>& points);
 
     // Queries the kd tree for the nearest neighbor of 'query'. Returns whether or
     // not a nearest neighbor was found, and if it was found, the nearest neighbor
-    // and distance to the nearest neighbor. 
-    bool NearestNeighbor(Point2D& query, Point2D& nearest,
-                         double& nn_distance) const;
+    // and distance to the nearest neighbor.
+    bool NearestNeighbor(Point2D::Ptr query, Point2D::Ptr& nearest,
+                         float& nn_distance) const;
 
     // Queries the kd tree for all neighbors of 'query' within the specified radius.
     // Returns whether or not the search exited successfully.
-    bool RadiusSearch(Point2D& query, std::vector<Point2D>& neighbors,
-                      double radius) const;
+    bool RadiusSearch(Point2D::Ptr query, std::vector<Point2D::Ptr>& neighbors,
+                      float radius) const;
 
   private:
     std::shared_ptr< flann::Index< flann::L2<double> > > index_;
-    std::vector<Point2D> registry_; // to retrieve original points
+    std::vector<Point2D::Ptr> registry_; // to retrieve original points
 
     DISALLOW_COPY_AND_ASSIGN(FlannPoint2DTree);
 

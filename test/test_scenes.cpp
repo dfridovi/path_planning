@@ -35,7 +35,7 @@
  */
 
 #include <geometry/trajectory_2d.h>
-#include <geometry/point2d_helpers.h>
+#include <geometry/point_2d.h>
 #include <math/random_generator.h>
 #include <scene/scene_2d_continuous.h>
 #include <scene/obstacle_2d.h>
@@ -60,7 +60,7 @@ namespace path {
     math::RandomGenerator rng(0);
 
     // Create a bunch of obstacles.
-    std::vector<Obstacle2D> obstacles;
+    std::vector<Obstacle2D::Ptr> obstacles;
     for (size_t ii = 0; ii < 10; ii++) {
       float x = rng.Double();
       float y = rng.Double();
@@ -69,8 +69,8 @@ namespace path {
       float sigma_xy = rng.DoubleUniform(-1.0, 1.0) *
         std::sqrt(sigma_xx * sigma_yy);
 
-      Obstacle2D obstacle = Obstacle2D(x, y, sigma_xx, sigma_yy,
-                                       sigma_xy, 0.01);
+      Obstacle2D::Ptr obstacle =
+        Obstacle2D::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.01);
       obstacles.push_back(obstacle);
     }
 
@@ -88,7 +88,7 @@ namespace path {
     math::RandomGenerator rng(0);
 
     // Create a bunch of obstacles.
-    std::vector<Obstacle2D> obstacles;
+    std::vector<Obstacle2D::Ptr> obstacles;
     for (size_t ii = 0; ii < 10; ii++) {
       float x = rng.Double();
       float y = rng.Double();
@@ -97,8 +97,8 @@ namespace path {
       float sigma_xy = rng.DoubleUniform(-1.0, 1.0) *
         std::sqrt(sigma_xx * sigma_yy);
 
-      Obstacle2D obstacle = Obstacle2D(x, y, sigma_xx, sigma_yy,
-                                       sigma_xy, 0.01);
+      Obstacle2D::Ptr obstacle =
+        Obstacle2D::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.01);
       obstacles.push_back(obstacle);
     }
 
@@ -115,7 +115,7 @@ namespace path {
                                       static_cast<double>(ii) / 20.0) +
         rng.DoubleUniform(-0.05, 0.05);
 
-      Point2D point = Point2DHelpers::Create(x, y);
+      Point2D::Ptr point = Point2D::Create(x, y);
       path->AddPoint(point);
     }
 

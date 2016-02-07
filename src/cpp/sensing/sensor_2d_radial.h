@@ -44,11 +44,11 @@
 #ifndef PATH_PLANNING_SENSOR_MODEL_2D_RADIAL_H
 #define PATH_PLANNING_SENSOR_MODEL_2D_RADIAL_H
 
-#include <geometry/point2d_helpers.h>
-#include <geometry/orientation_2d.h>
-#include <occupancy/occupancy_grid_2d.h>
-#include <util/disallow_copy_and_assign.h>
-#include <util/types.h>
+#include "../geometry/point_2d.h"
+#include "../geometry/orientation_2d.h"
+#include "../occupancy/occupancy_grid_2d.h"
+#include "../util/disallow_copy_and_assign.h"
+#include "../util/types.h"
 
 namespace path {
 
@@ -59,10 +59,10 @@ namespace path {
     ~Sensor2DRadial() {}
 
     // How many known obstacles are visible to the robot?
-    int GetObstacleCount(Orientation2D& pose) const;
+    int GetObstacleCount(Orientation2D::Ptr pose) const;
 
     // Visualize which voxels are visible to this robot.
-    void Visualize(Orientation2D& pose,
+    void Visualize(Orientation2D::Ptr pose,
                    const std::string& title = std::string()) const;
 
   private:

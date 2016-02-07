@@ -35,7 +35,7 @@
  */
 
 #include <geometry/trajectory_2d.h>
-#include <geometry/point2d_helpers.h>
+#include <geometry/point_2d.h>
 #include <planning/rrt_planner_2d.h>
 #include <robot/robot_2d_circular.h>
 #include <math/random_generator.h>
@@ -60,13 +60,13 @@ namespace path {
     math::RandomGenerator rng(math::RandomGenerator::Seed());
 
     // Create a bunch of obstacles.
-    std::vector<Obstacle2D> obstacles;
+    std::vector<Obstacle2D::Ptr> obstacles;
     for (size_t ii = 0; ii < 200; ii++) {
       float x = rng.Double();
       float y = rng.Double();
       float radius = static_cast<float>(rng.DoubleUniform(0.01, 0.02));
 
-      Obstacle2D obstacle(x, y, radius);
+      Obstacle2D::Ptr obstacle = Obstacle2D::Create(x, y, radius);
       obstacles.push_back(obstacle);
     }
 
@@ -77,23 +77,23 @@ namespace path {
     Robot2DCircular robot(scene, 0.005);
 
     // Choose origin/goal.
-    Point2D* origin, goal;
+    Point2D::Ptr origin, goal;
     while (!origin) {
       float x = static_cast<float>(rng.Double());
       float y = static_cast<float>(rng.Double());
-      Point2D point = Point2DHelpers::Create(x, y);
+      Point2D::Ptr point = Point2D::Create(x, y);
 
       if (robot.IsFeasible(point))
-        origin = &point;
+        origin = point;
     }
     while (!goal) {
       float x = static_cast<float>(rng.Double());
       float y = static_cast<float>(rng.Double());
-      Point2D point = Point2DHelpers::Create(x, y);
+      Point2D::Ptr point = Point2D::Create(x, y);
 
       if (robot.IsFeasible(point) &&
-          Point2DHelpers::DistancePointToPoint(origin, point) > 0.4)
-        goal = &point;
+          Point2D::DistancePointToPoint(origin, point) > 0.4)
+        goal = point;
     }
 
     // Plan a route.
@@ -111,7 +111,7 @@ namespace path {
     math::RandomGenerator rng(math::RandomGenerator::Seed());
 
     // Create a bunch of obstacles.
-    std::vector<Obstacle::Ptr> obstacles;
+    std::vector<Obstacle2D::Ptr> obstacles;
     for (size_t ii = 0; ii < 100; ii++) {
       float x = rng.Double();
       float y = rng.Double();
@@ -120,8 +120,8 @@ namespace path {
       float sigma_xy = rng.DoubleUniform(-1.0, 1.0) *
         std::sqrt(sigma_xx * sigma_yy);
 
-      Obstacle2D obstacle = Obstacle2D(x, y, sigma_xx, sigma_yy,
-                                       sigma_xy, 3.0);
+      Obstacle2D::Ptr obstacle =
+        Obstacle2D::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 3.0);
       obstacles.push_back(obstacle);
      }
 
@@ -132,23 +132,23 @@ namespace path {
     Robot2DCircular robot(scene, 0.005);
 
     // Choose origin/goal.
-    Point2D* origin, goal;
+    Point2D::Ptr origin, goal;
     while (!origin) {
       float x = static_cast<float>(rng.Double());
       float y = static_cast<float>(rng.Double());
-      Point2D point = Point2DHelpers::Create(x, y);
+      Point2D::Ptr point = Point2D::Create(x, y);
 
       if (robot.IsFeasible(point))
-        origin = &point;
+        origin = point;
     }
     while (!goal) {
       float x = static_cast<float>(rng.Double());
       float y = static_cast<float>(rng.Double());
-      Point2D point = Point2DHelpers::Create(x, y);
+      Point2D::Ptr point = Point2D::Create(x, y);
 
       if (robot.IsFeasible(point) &&
-          Point2DHelpers::DistancePointToPoint(origin, point) > 0.4)
-        goal = &point;
+          Point2D::DistancePointToPoint(origin, point) > 0.4)
+        goal = point;
     }
 
     // Plan a route.

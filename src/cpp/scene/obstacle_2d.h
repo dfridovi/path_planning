@@ -43,9 +43,12 @@
 #ifndef PATH_PLANNING_OBSTACLE_2D_H
 #define PATH_PLANNING_OBSTACLE_2D_H
 
+#include "../geometry/point_2d.h"
 #include "../util/types.h"
-#include "../geometry/point2d_helpers.h"
+#include "../util/disallow_copy_and_assign.h"
+
 #include <Eigen/Dense>
+#include <memory>
 
 using Eigen::Matrix2f;
 using Eigen::Vector2f;
@@ -54,28 +57,40 @@ namespace path {
 
   class Obstacle2D {
   public:
+    typedef std::shared_ptr<Obstacle2D> Ptr;
+
+    // Factory methods.
+    static Obstacle2D::Ptr Create(float x, float y,
+                           float sigma_xx, float sigma_yy,
+                           float sigma_xy, float radius_zscore = 0.05);
+    static Obstacle2D::Ptr Create(float x, float y, float radius);
+
+    // Getters.
+    Point2D::Ptr GetLocation();
+    float GetRadius();
+
+    // Feasibility, cost, and derivative evaluation.
+    bool IsFeasible(Point2D::Ptr point) const;
+    float Cost(Point2D::Ptr point) const;
+    Point2D::Ptr Derivative(Point2D::Ptr point) const;
+
+  private:
+    Vector2f mean_;
+    Matrix2f cov_;
+    float radius_;
+    Point2D::Ptr location_;
+
+    // For speed.
+    Matrix2f inv_;
+    float det_;
+
     // Default constructors.
     Obstacle2D(float x, float y,
                float sigma_xx, float sigma_yy,
                float sigma_xy, float radius_zscore = 0.05);
     Obstacle2D(float x, float y, float radius);
 
-    // Getter.
-    Point2D& GetLocation();
-
-    // Feasibility, cost, and derivative evaluation.
-    bool IsFeasible(Point2D& point) const;
-    float Cost(Point2D& point) const;
-    Point2D& Derivative(Point2D& point) const;
-
-  private:
-    Vector2f mean_;
-    Matrix2f cov_;
-    Point2D location_;
-
-    // For speed.
-    Matrix2f inv_;
-    float det_;
+    DISALLOW_COPY_AND_ASSIGN(Obstacle2D);
   };
 
 } //\ namespace path
