@@ -126,8 +126,8 @@ namespace path {
     if (step_size > length)
       step_size = length;
 
-    float step_x = point1->x + step_size * (point2->x - point1->x);
-    float step_y = point1->y + step_size * (point2->y - point1->y);
+    float step_x = point1->x + step_size * (point2->x - point1->x) / length;
+    float step_y = point1->y + step_size * (point2->y - point1->y) / length;
     return Create(step_x, step_y);
   }
 

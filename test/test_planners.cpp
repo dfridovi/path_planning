@@ -154,7 +154,7 @@ namespace path {
     // Plan a route.
     RRTPlanner2D planner(robot, scene, origin, goal, 0.05);
     Trajectory2D::Ptr route = planner.PlanTrajectory();
-    //    route->Upsample(4);
+    route->Upsample(4);
 
     // If visualize flag is set, query a grid and show the cost map.
     if (FLAGS_visualize_planner) {
