@@ -60,6 +60,9 @@ namespace path {
                float sigma_xy, float radius_zscore = 0.05);
     Obstacle2D(float x, float y, float radius);
 
+    // Getter.
+    Point2D& GetLocation();
+
     // Feasibility, cost, and derivative evaluation.
     bool IsFeasible(Point2D& point) const;
     float Cost(Point2D& point) const;

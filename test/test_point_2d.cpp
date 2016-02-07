@@ -34,8 +34,8 @@
  * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include <geometry/point.h>
-#include <geometry/point_2d.h>
+#include <geometry/point2d_helpers.h>
+#include <util/types.h>
 #include <math/random_generator.h>
 
 #include <vector>
@@ -46,21 +46,20 @@
 namespace path {
 
   // Test that we can construct and destroy a bunch of 2D points.
-  TEST(Point2D, TestPoint2D) {
+  TEST(Point2DHelpers, TestPoint2D) {
     math::RandomGenerator rng(0);
 
     for (size_t ii = 0; ii < 1000; ++ii) {
-      double x1 = rng.Double();
-      double y1 = rng.Double();
-      Point::Ptr point1 = Point2D::Create(x1, y1);
-      CHECK_NOTNULL(point1.get());
+      float x1 = rng.Double();
+      float y1 = rng.Double();
+      Point2D point1 = Point2DHelpers::Create(x1, y1);
 
-      double x2 = x1 + 0.1 * rng.DoubleUniform(-1.0, 1.0);
-      double y2 = y1 + 0.1 * rng.DoubleUniform(-1.0, 1.0);
-      Point::Ptr point2 = Point2D::Create(x2, y2);
-      CHECK_NOTNULL(point2.get());
+      float x2 = x1 + 0.1 * rng.DoubleUniform(-1.0, 1.0);
+      float y2 = y1 + 0.1 * rng.DoubleUniform(-1.0, 1.0);
+      Point2D point2 = Point2DHelpers::Create(x2, y2);
 
-      EXPECT_NEAR(point1->DistanceTo(point2), 0.0, 0.1 * std::sqrt(2.0));
+      EXPECT_NEAR(Point2DHelpers::DistancePointToPoint(point1, point2),
+                  0.0, 0.1 * std::sqrt(2.0));
     }
   }
 

@@ -44,7 +44,7 @@
 #ifndef PATH_UTIL_TYPES_H
 #define PATH_UTIL_TYPES_H
 
-#include <pcl/common>
+#include <pcl/point_types.h>
 #include <Eigen/Core>
 #include <limits>
 #include <vector>
@@ -52,8 +52,8 @@
 namespace path {
 
   // -------------------- Custom types -------------------- //
-  typedef ::pcl::PointXY Point2D
-  typedef ::pcl::PointXYZ Point3D
+  typedef ::pcl::PointXY Point2D;
+  typedef ::pcl::PointXYZ Point3D;
   typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
 
   // -------------------- Third-party typedefs -------------------- //

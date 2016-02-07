@@ -34,11 +34,11 @@
  * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include <geometry/trajectory.h>
-#include <geometry/point_2d.h>
+#include <geometry/trajectory_2d.h>
+#include <geometry/point2d_helpers.h>
 #include <math/random_generator.h>
 #include <scene/scene_2d_continuous.h>
-#include <scene/obstacle_2d_gaussian.h>
+#include <scene/obstacle_2d.h>
 #include <image/image.h>
 
 #include <vector>
@@ -56,20 +56,21 @@ using Eigen::MatrixXf;
 namespace path {
 
   // Test that we can construct and destroy a scene.
-  TEST(SceneModel, TestScene2DContinuous) {
+  TEST(Scene2DContinuous, TestScene2DContinuous) {
     math::RandomGenerator rng(0);
 
     // Create a bunch of obstacles.
-    std::vector<Obstacle::Ptr> obstacles;
+    std::vector<Obstacle2D> obstacles;
     for (size_t ii = 0; ii < 10; ii++) {
-      double x = rng.Double();
-      double y = rng.Double();
-      double sigma_xx = 0.005 * rng.Double();
-      double sigma_yy = 0.005 * rng.Double();
-      double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
+      float x = rng.Double();
+      float y = rng.Double();
+      float sigma_xx = 0.005 * rng.Double();
+      float sigma_yy = 0.005 * rng.Double();
+      float sigma_xy = rng.DoubleUniform(-1.0, 1.0) *
+        std::sqrt(sigma_xx * sigma_yy);
 
-      Obstacle::Ptr obstacle =
-        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.01);
+      Obstacle2D obstacle = Obstacle2D(x, y, sigma_xx, sigma_yy,
+                                       sigma_xy, 0.01);
       obstacles.push_back(obstacle);
     }
 
@@ -83,20 +84,21 @@ namespace path {
   }
 
   // Test that we can create a Trajectory in the Scene.
-  TEST(SceneModel, TestScene2DContinuousTrajectory) {
+  TEST(Scene2DContinuous, TestScene2DContinuousTrajectory) {
     math::RandomGenerator rng(0);
 
     // Create a bunch of obstacles.
-    std::vector<Obstacle::Ptr> obstacles;
+    std::vector<Obstacle2D> obstacles;
     for (size_t ii = 0; ii < 10; ii++) {
-      double x = rng.Double();
-      double y = rng.Double();
-      double sigma_xx = 0.005 * rng.Double();
-      double sigma_yy = 0.005 * rng.Double();
-      double sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
+      float x = rng.Double();
+      float y = rng.Double();
+      float sigma_xx = 0.005 * rng.Double();
+      float sigma_yy = 0.005 * rng.Double();
+      float sigma_xy = rng.DoubleUniform(-1.0, 1.0) *
+        std::sqrt(sigma_xx * sigma_yy);
 
-      Obstacle::Ptr obstacle =
-        Obstacle2DGaussian::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.01);
+      Obstacle2D obstacle = Obstacle2D(x, y, sigma_xx, sigma_yy,
+                                       sigma_xy, 0.01);
       obstacles.push_back(obstacle);
     }
 
@@ -104,14 +106,16 @@ namespace path {
     Scene2DContinuous scene(0.0, 1.0, 0.0, 1.0, obstacles);
 
     // Create a Trajectory.
-    Trajectory::Ptr path = Trajectory::Create();
+    Trajectory2D::Ptr path = Trajectory2D::Create();
     for (size_t ii = 0; ii < 20; ii++) {
-      double x = 0.5 + 0.25 * std::cos(2.0 * M_PI * static_cast<double>(ii) / 20.0) +
+      float x = 0.5 + 0.25 * std::cos(2.0 * M_PI *
+                                      static_cast<double>(ii) / 20.0) +
         rng.DoubleUniform(-0.05, 0.05);
-      double y = 0.5 + 0.25 * std::sin(2.0 * M_PI * static_cast<double>(ii) / 20.0) +
+      float y = 0.5 + 0.25 * std::sin(2.0 * M_PI *
+                                      static_cast<double>(ii) / 20.0) +
         rng.DoubleUniform(-0.05, 0.05);
 
-      Point::Ptr point = Point2D::Create(x, y);
+      Point2D point = Point2DHelpers::Create(x, y);
       path->AddPoint(point);
     }
 

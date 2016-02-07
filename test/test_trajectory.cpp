@@ -34,8 +34,9 @@
  * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include <geometry/trajectory.h>
-#include <geometry/point_2d.h>
+#include <geometry/trajectory_2d.h>
+#include <geometry/point2d_helpers.h>
+#include <util/types.h>
 #include <math/random_generator.h>
 
 #include <vector>
@@ -47,36 +48,35 @@
 namespace path {
 
   // Test that we can construct and destroy a Trajectory.
-  TEST(Trajectory, TestTrajectory) {
+  TEST(Trajectory2D, TestTrajectory) {
     math::RandomGenerator rng(0);
 
     // Empty Trajectory.
-    Trajectory::Ptr path1 = Trajectory::Create();
+    Trajectory2D::Ptr path1 = Trajectory2D::Create();
 
     // Vector of Points.
-    std::vector<Point::Ptr> points;
-    Point::Ptr last_point;
+    std::vector<Point2D> points;
+    Point2D* last_point;
     double length = 0.0;
 
     // Make a bunch of points.
     for (size_t ii = 0; ii < 1000; ++ii) {
-      double x = rng.Double();
-      double y = rng.Double();
-      Point::Ptr point = Point2D::Create(x, y);
-      CHECK_NOTNULL(point.get());
+      float x = rng.Double();
+      float y = rng.Double();
+      Point2D point = Point2DHelpers::Create(x, y);
 
       // Keep track of length for comparison.
       if (ii != 0)
-        length += last_point->DistanceTo(point);
+        length += Point2DHelpers::DistancePointToPoint(last_point, point);
 
       // Add to path and vector.
       path1->AddPoint(point);
       points.push_back(point);
-      last_point = point;
+      last_point = &point;
     }
 
     // Make second Trajectory from vector.
-    Trajectory::Ptr path2 = Trajectory::Create(points);
+    Trajectory2D::Ptr path2 = Trajectory2D::Create(points);
 
     // Checks lengths.
     EXPECT_NEAR(path1->GetLength(), path2->GetLength(), 1e-16);

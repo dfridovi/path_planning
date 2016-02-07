@@ -42,7 +42,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "flann_obstacle_k2tree.h"
+#include "flann_obstacle_2dtree.h"
 #include <glog/logging.h>
 
 namespace path {
@@ -55,7 +55,7 @@ namespace path {
   }
 
   void FlannObstacle2DTree::AddObstacles(std::vector<Obstacle2D>& obstacles) {
-    for (const auto& obstacle : obstacles)
+    for (auto& obstacle : obstacles)
       AddObstacle(obstacle);
   }
 
@@ -78,8 +78,8 @@ namespace path {
 
   // Queries the kd tree for all neighbors of 'query' within the specified radius.
   // Returns whether or not the search exited successfully.
-  bool FlannObstacle2DTree::RadiusSearch(Point::Ptr query,
-                                         std::vector<Obstacle::Ptr>& neighbors,
+  bool FlannObstacle2DTree::RadiusSearch(Point2D& query,
+                                         std::vector<Obstacle2D>& neighbors,
                                          double radius) const {
     // Query kd_tree_.
     std::vector<Point2D> nearest_points;

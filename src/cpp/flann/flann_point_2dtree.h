@@ -79,7 +79,7 @@ namespace path {
 
   private:
     std::shared_ptr< flann::Index< flann::L2<double> > > index_;
-    std::vector<Point2D&> registry_; // to retrieve original points
+    std::vector<Point2D> registry_; // to retrieve original points
 
     DISALLOW_COPY_AND_ASSIGN(FlannPoint2DTree);
 

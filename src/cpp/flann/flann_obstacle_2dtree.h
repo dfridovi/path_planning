@@ -47,7 +47,7 @@
 
 #include <geometry/point2d_helpers.h>
 #include <scene/obstacle_2d.h>
-#include "flann_point_kdtree.h"
+#include "flann_point_2dtree.h"
 #include "../util/disallow_copy_and_assign.h"
 
 #include <flann/flann.h>
@@ -77,7 +77,7 @@ namespace path {
 
   private:
     FlannPoint2DTree kd_tree_;
-    std::unordered_map<Point2D&, Obstacle2D&> registry_; // to retrieve obstacles
+    std::unordered_map<Point2D, Obstacle2D> registry_; // to retrieve obstacles
 
     DISALLOW_COPY_AND_ASSIGN(FlannObstacle2DTree);
   };  //\class FlannObstacle2DTree

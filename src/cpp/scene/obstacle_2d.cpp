@@ -95,6 +95,11 @@ namespace path {
     radius_ = radius;
   }
 
+  // Get location.
+  Point2D& Obstacle2D::GetLocation() {
+    return location_;
+  }
+
   // Is this point feasible?
   bool Obstacle2D::IsFeasible(Point2D& point) const {
     if (Point2DHelpers::DistancePointToPoint(point, location_) < radius_)

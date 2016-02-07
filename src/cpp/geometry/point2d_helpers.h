@@ -51,28 +51,29 @@ namespace path {
   struct Point2DHelpers {
 
     // Create a Point2D.
-    static Point2D& Create(float x, float y) const;
+    static Point2D& Create(float x, float y);
 
     // Midpoint.
-    static Point2D& MidPoint(Point2D& point1, Point2D& point2) const;
+    static Point2D& MidPoint(Point2D& point1, Point2D& point2);
 
     // Distance between a point and this line segment.
     static float DistanceLineToPoint(Point2D& point1,
                                      Point2D& point2,
-                                     Point2D& point3) const;
+                                     Point2D& point3);
 
     // Distance between two points.
     static float DistancePointToPoint(Point2D& point1,
-                                      Point2D& point2) const;
+                                      Point2D& point2);
 
     // Take a step toward point2 from point1.
     static Point2D& StepToward(Point2D& point1, Point2D& point2,
-                               float step_size) const;
+                               float step_size);
 
     // Add two points with a scale factor.
     static Point2D& Add(Point2D& point1, Point2D& point2,
-                        float scale) const;
-
+                        float scale);
+  }; //\ struct Point2DHelpers
+  
 } //\ namespace path
 
 #endif
