@@ -85,6 +85,12 @@ namespace path {
     std::cout << obstacles.size() << std::endl;
 
     for (const auto& obstacle : obstacles) {
+      float line_dist = Point2D::DistanceLineToPoint(point1, point2,
+                                                     obstacle->GetLocation());
+      float rad = obstacle->GetRadius() + radius_;
+      if (line_dist < 0.05)
+        std::cout << line_dist << ", " << rad << std::endl;
+
       if (Point2D::DistanceLineToPoint(point1, point2,
                                        obstacle->GetLocation()) <
           obstacle->GetRadius() + radius_)

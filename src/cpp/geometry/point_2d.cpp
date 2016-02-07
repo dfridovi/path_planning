@@ -68,7 +68,8 @@ namespace path {
     return midpoint;
   }
 
-  // Distance between a point and this line segment.
+  // Distance between a the line segment between the first two points,
+  // and the third point.
   float Point2D::DistanceLineToPoint(Point2D::Ptr point1,
                                      Point2D::Ptr point2,
                                      Point2D::Ptr point3) {
@@ -82,6 +83,7 @@ namespace path {
     float direction_length = std::sqrt(direction_x * direction_x +
                                        direction_y * direction_y);
     direction_x /= direction_length;
+    direction_y /= direction_length;
 
     float query_x = point3->x - point1->x;
     float query_y = point3->y - point1->y;

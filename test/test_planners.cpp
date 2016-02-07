@@ -74,7 +74,7 @@ namespace path {
     Scene2DContinuous scene(0.0, 1.0, 0.0, 1.0, obstacles);
 
     // Create a robot.
-    Robot2DCircular robot(scene, 0.005);
+    Robot2DCircular robot(scene, 0.01);
 
     // Choose origin/goal.
     Point2D::Ptr origin, goal;
