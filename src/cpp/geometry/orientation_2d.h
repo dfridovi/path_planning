@@ -43,29 +43,37 @@
 #ifndef PATH_PLANNING_ORIENTATION_2D_H
 #define PATH_PLANNING_ORIENTATION_2D_H
 
-#include "point_2d.h"
+#include "point2d_helpers.h"
+#include "../util/types.h"
+
+#include <memory>
 #include <glog/logging.h>
 
 namespace path {
 
   class Orientation2D {
   public:
-    // Constructor.
-    Orientation2D(float x, float y, float theta);
+    typedef std::shared_ptr<Orientation2D> Ptr;
+
+    // Factory method.
+    static Create(float x, float y, float theta);
 
     // Compute the distance/angle to a 2D point.
-    float DistanceTo(Point2D& point) const;
-    float AngleTo(Point2D& point) const;
+    float DistanceTo(Point2D::Ptr point) const;
+    float AngleTo(Point2D::Ptr point) const;
 
     // Getters.
-    Point2D& GetPoint2D() const;
+    Point2D::Ptr GetPoint2D() const;
     float GetTheta() const;
 
   private:
     float x_;
     float y_;
     float theta_;
-  };
+
+    // Constructor.
+    Orientation2D(float x, float y, float theta);
+};
 
 } //\ namespace path
 

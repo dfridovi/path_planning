@@ -48,12 +48,19 @@
 #include <Eigen/Core>
 #include <limits>
 #include <vector>
+#include <memory>
 
 namespace path {
 
   // -------------------- Custom types -------------------- //
-  typedef ::pcl::PointXY Point2D;
-  typedef ::pcl::PointXYZ Point3D;
+  namespace Point2D {
+    typedef std::shared_ptr<::pcl::PointXY> Ptr;
+  }
+
+  namespace Point3D {
+    typedef std::shared_ptr<::pcl::PointXYZ> Ptr;
+  }
+
   typedef ::Eigen::Matrix<double, 3, 4> Matrix34d;
 
   // -------------------- Third-party typedefs -------------------- //

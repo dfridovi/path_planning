@@ -40,10 +40,10 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_TRAJECTORY_H
-#define PATH_PLANNING_TRAJECTORY_H
+#ifndef PATH_PLANNING_TRAJECTORY_2D_H
+#define PATH_PLANNING_TRAJECTORY_2D_H
 
-#include "point.h"
+#include "point_2d.h"
 #include <vector>
 #include <list>
 
@@ -53,20 +53,19 @@ namespace path {
   class Trajectory2D {
   public:
     typedef std::shared_ptr<Trajectory2D> Ptr;
-    typedef std::shared_ptr<const Trajectory2D> ConstPtr;
 
     ~Trajectory2D() {}
 
     // Factory methods.
     static Ptr Create();
-    static Ptr Create(std::vector<Point2D>& points);
-    static Ptr Create(std::list<Point2D>& points);
+    static Ptr Create(std::vector<Point2D::Ptr>& points);
+    static Ptr Create(std::list<Point2D::Ptr>& points);
 
     // Recompute length.
     void RecomputeLength();
 
     // Add a point to the path.
-    void AddPoint(Point2D& point);
+    void AddPoint(Point2D::Ptr point);
 
     // Upsample by adding k points linearly between each pair of points
     // in this Trajectory2D.
@@ -78,11 +77,11 @@ namespace path {
 
     // Getters.
     double GetLength() const;
-    std::vector<Point2D>& GetPoints();
-    Point2D& GetAt(size_t index);
+    std::vector<Point2D::Ptr>& GetPoints();
+    Point2D::Ptr GetAt(size_t index);
 
     // Setter.
-    void SetAt(Point2D& point, size_t index);
+    void SetAt(Point2D::Ptr point, size_t index);
 
   private:
     std::vector<Point2D> points_;
@@ -90,9 +89,10 @@ namespace path {
 
     // Private constructors. Use factory methods instead.
     Trajectory2D();
-    Trajectory2D(std::vector<Point2D>& points);
-    Trajectory2D(std::list<Point2D>& points);
+    Trajectory2D(std::vector<Point2D::Ptr>& points);
+    Trajectory2D(std::list<Point2D::Ptr>& points);
   };
+
 } //\ namespace path
 
 #endif

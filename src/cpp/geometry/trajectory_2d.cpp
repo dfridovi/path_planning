@@ -43,7 +43,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "trajectory_2d.h"
-#include "point2d_helpers.h"
+#include "point_2d.h"
 #include <glog/logging.h>
 #include <iostream>
 
@@ -56,12 +56,12 @@ namespace path {
     return path;
   }
 
-  Trajectory2D::Ptr Trajectory2D::Create(std::vector<Point2D>& points) {
+  Trajectory2D::Ptr Trajectory2D::Create(std::vector<Point2D::Ptr>& points) {
     Trajectory2D::Ptr path(new Trajectory2D(points));
     return path;
   }
 
-  Trajectory2D::Ptr Trajectory2D::Create(std::list<Point2D>& points) {
+  Trajectory2D::Ptr Trajectory2D::Create(std::list<Point2D::Ptr>& points) {
     Trajectory2D::Ptr path(new Trajectory2D(points));
     return path;
   }
@@ -71,30 +71,30 @@ namespace path {
     : length_(0.0) {}
 
   // Initialize with a set of points.
-  Trajectory2D::Trajectory2D(std::vector<Point2D>& points) {
+  Trajectory2D::Trajectory2D(std::vector<Point2D::Ptr>& points) {
     length_ = 0.0;
 
     // Iterate through points, compute distances, and add to path.
     for (size_t ii = 0; ii < points.size(); ii++) {
-      Point2D& next_point = points[ii];
+      Point2D::Ptr next_point = points[ii];
       points_.push_back(next_point);
 
       if (ii > 0) {
-        Point2D& last_point = points[ii - 1];
-        length_ += Point2DHelpers::DistancePointToPoint(last_point, next_point);
+        Point2D::Ptr last_point = points[ii - 1];
+        length_ += Point2D::DistancePointToPoint(last_point, next_point);
       }
     }
   }
 
   // Initialize with a set of points.
-  Trajectory2D::Trajectory2D(std::list<Point2D>& points) {
+  Trajectory2D::Trajectory2D(std::list<Point2D::Ptr>& points) {
     length_ = 0.0;
 
     // Iterate through points, compute distances, and add to path.
-    Point2D& last_point = points.front();
+    Point2D::Ptr last_point = points.front();
     for (const auto& next_point : points) {
       points_.push_back(next_point);
-      length_ += Point2DHelpers::DistancePointToPoint(last_point, next_point);
+      length_ += Point2D::DistancePointToPoint(last_point, next_point);
       last_point = next_point;
     }
   }
@@ -104,37 +104,37 @@ namespace path {
     length_ = 0.0;
 
     for (size_t ii = 0; ii < points_.size() - 1; ii++)
-      length_ += Point2DHelpers::DistancePointToPoint(points_[ii],
-                                                      points_[ii + 1]);
+      length_ += Point2D::DistancePointToPoint(points_[ii],
+                                               points_[ii + 1]);
   }
 
   // Add a point to the path.
-  void Trajectory2D::AddPoint(Point2D& point) {
+  void Trajectory2D::AddPoint(Point2D::Ptr point) {
     points_.push_back(point);
-    Point2D& last_point = points_.back();
+    Point2D::Ptr last_point = points_.back();
 
     points_.push_back(point);
-    length_ += Point2DHelpers::DistancePointToPoint(last_point, point);
+    length_ += Point2D::DistancePointToPoint(last_point, point);
   }
 
   // Upsample by adding k points linearly between each pair of points
   // in this Trajectory2D.
   void Trajectory2D::Upsample(unsigned int k) {
-    std::vector<Point2D> old_points(points_);
+    std::vector<Point2D::Ptr> old_points(points_);
     points_.clear();
 
     for (size_t ii = 0; ii < old_points.size() - 1; ii++) {
-      Point2D& current_point = old_points[ii];
-      Point2D& next_point = old_points[ii + 1];
-      double length = Point2DHelpers::DistancePointToPoint(current_point,
-                                                           next_point);
+      Point2D::Ptr current_point = old_points[ii];
+      Point2D::Ptr next_point = old_points[ii + 1];
+      double length = Point2D::DistancePointToPoint(current_point,
+                                                    next_point);
       double step_size = length / static_cast<double>(k + 1);
 
       points_.push_back(current_point);
       for (unsigned int jj = 1; jj <= k; jj++) {
-        Point2D& step =
-          Point2DHelpers::StepToward(current_point, next_point,
-                                     static_cast<double>(jj) * step_size);
+        Point2D::Ptr step =
+          Point2D::StepToward(current_point, next_point,
+                              static_cast<double>(jj) * step_size);
         points_.push_back(step);
       }
 
@@ -157,7 +157,7 @@ namespace path {
       return derivative;
     }
 
-    Point2D& zero = Point2DHelpers::Create(0.0, 0.0);
+    Point2D::Ptr zero = Point2D::Create(0.0, 0.0);
     if (points_.size() == 1) {
       VLOG(1) << "Caution! Tried to evaluate the derivative "
               << "of a Trajectory2D with only a single element.";
@@ -166,17 +166,17 @@ namespace path {
     }
 
     // Handle the first point.
-    Point2D& diff = Point2DHelpers::Add(points_[1], points_[0], -1.0);
+    Point2D::Ptr diff = Point2D::Add(points_[1], points_[0], -1.0);
     derivative->AddPoint(diff);
 
     // Handle middle points. Remember to divide by two for symmetric differences.
     for (size_t ii = 1; ii < points_.size() - 1; ii++) {
-      diff = Point2DHelpers::Add(points_[ii + 1], points_[ii - 1], -1.0);
-      derivative->AddPoint(Point2DHelpers::Add(zero, diff, 0.5));
+      diff = Point2D::Add(points_[ii + 1], points_[ii - 1], -1.0);
+      derivative->AddPoint(Point2D::Add(zero, diff, 0.5));
     }
 
     // Handle the last point.
-    diff = Point2DHelpers::Add(points_[points_.size() - 1],
+    diff = Point2D::Add(points_[points_.size() - 1],
                                points_[points_.size() - 2], -1.0);
     derivative->AddPoint(diff);
 
@@ -185,8 +185,8 @@ namespace path {
 
   // Getters.
   double Trajectory2D::GetLength() const { return length_; }
-  std::vector<Point2D>& Trajectory2D::GetPoints() { return points_; }
-  Point2D& Trajectory2D::GetAt(size_t index) {
+  std::vector<Point2D::Ptr>& Trajectory2D::GetPoints() { return points_; }
+  Point2D::Ptr Trajectory2D::GetAt(size_t index) {
     // Check index.
     if (index >= points_.size()) {
       LOG(ERROR) << "Index is out of bounds. Returning a nullptr.";
@@ -197,7 +197,7 @@ namespace path {
   }
 
   // Setter.
-  void Trajectory2D::SetAt(Point2D& point, size_t index) {
+  void Trajectory2D::SetAt(Point2D::Ptr point, size_t index) {
     // Check index.
     if (index >= points_.size()) {
       VLOG(1) << "Index is out of bounds. Did not replace.";
@@ -208,26 +208,26 @@ namespace path {
     if (index == 0 && points_.size() == 1)
       points_[0] = point;
     else if (index == 0 && points_.size() >= 2) {
-      length_ -= Point2DHelpers::DistancePointToPoint(points_[0],
-                                                      points_[1]);
-      length_ += Point2DHelpers::DistancePointToPoint(point,
-                                                      points_[1]);
+      length_ -= Point2D::DistancePointToPoint(points_[0],
+                                               points_[1]);
+      length_ += Point2D::DistancePointToPoint(point,
+                                               points_[1]);
       points_[0] = point;
     } else if (index == points_.size() - 1) {
-      length_ -= Point2DHelpers::DistancePointToPoint(points_[index],
-                                                      points_[index - 1]);
-      length_ += Point2DHelpers::DistancePointToPoint(point,
-                                                      points_[index - 1]);
+      length_ -= Point2D::DistancePointToPoint(points_[index],
+                                               points_[index - 1]);
+      length_ += Point2D::DistancePointToPoint(point,
+                                               points_[index - 1]);
       points_[index] = point;
     } else {
-      length_ -= Point2DHelpers::DistancePointToPoint(points_[index],
-                                                      points_[index - 1]);
-      length_ -= Point2DHelpers::DistancePointToPoint(points_[index],
-                                                      points_[index + 1]);
-      length_ += Point2DHelpers::DistancePointToPoint(point,
-                                                      points_[index - 1]);
-      length_ += Point2DHelpers::DistancePointToPoint(point,
-                                                      points_[index + 1]);
+      length_ -= Point2D::DistancePointToPoint(points_[index],
+                                               points_[index - 1]);
+      length_ -= Point2D::DistancePointToPoint(points_[index],
+                                               points_[index + 1]);
+      length_ += Point2D::DistancePointToPoint(point,
+                                               points_[index - 1]);
+      length_ += Point2D::DistancePointToPoint(point,
+                                               points_[index + 1]);
       points_[index] = point;
     }
   }

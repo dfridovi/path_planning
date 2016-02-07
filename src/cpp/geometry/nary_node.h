@@ -56,7 +56,6 @@ namespace path {
   class Node {
   public:
     typedef std::shared_ptr<Node> Ptr;
-    typedef std::shared_ptr<const Node> ConstPtr;
 
     ~Node() {}
 
@@ -79,13 +78,13 @@ namespace path {
     DataType& GetData();
 
   private:
-    // Private constructor. Use the factory method instead.
-    Node(const DataType& data)
-      : data_(data) {}
-
     DataType data_;
     Node::Ptr parent_;
     std::vector<Node::Ptr> children_;
+
+    // Private constructor. Use the factory method instead.
+    Node(const DataType& data)
+      : data_(data) {}
 
     DISALLOW_COPY_AND_ASSIGN(Node);
   };
