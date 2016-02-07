@@ -36,45 +36,44 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a Node in an N-ary tree of arbitrary data.
+// This is a helper class to do various useful operations on Point2D objects.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "nary_node.h"
+#ifndef PATH_PLANNING_POINT2D_HELPERS_H
+#define PATH_PLANNING_POINT2D_HELPERS_H
+
+#include "../util/types.h"
 
 namespace path {
 
-  // Factory method.
-  template<typename DataType>
-  typename Node<DataType>::Ptr Node<DataType>::Create(const DataType& data) {
-    Node<DataType>::Ptr node(new Node<DataType>(data));
-    return node;
-  }
+  // Helper functions for Point2D.
+  namespace Point2D {
 
-  // Getters and setters.
-  template<typename DataType>
-  void Node<DataType>::SetParent(Node<DataType>::Ptr parent) {
-    parent_ = parent;
-  }
+    // Create a Point2D.
+    Point2D::Ptr Create(float x, float y);
 
-  template<typename DataType>
-  typename Node<DataType>::Ptr Node<DataType>::GetParent() {
-    return parent_;
-  }
+    // Midpoint.
+    Point2D::Ptr MidPoint(Point2D::Ptr point1, Point2D::Ptr point2);
 
-  template<typename DataType>
-  void Node<DataType>::AddChild(Node<DataType>::Ptr child) {
-    children_.push_back(child);
-  }
+    // Distance between a point and this line segment.
+    float DistanceLineToPoint(Point2D::Ptr point1,
+                                     Point2D::Ptr point2,
+                                     Point2D::Ptr point3);
 
-  template<typename DataType>
-  std::vector< typename Node<DataType>::Ptr >& Node<DataType>::GetChildren() {
-    return children_;
-  }
+    // Distance between two points.
+    float DistancePointToPoint(Point2D::Ptr point1,
+                                      Point2D::Ptr point2);
 
-  template<typename DataType>
-  DataType& Node<DataType>::GetData() {
-    return data_;
-  }
+    // Take a step toward point2 from point1.
+    Point2D::Ptr StepToward(Point2D::Ptr point1, Point2D::Ptr point2,
+                                   float step_size);
+
+    // Add two points with a scale factor.
+    Point2D::Ptr Add(Point2D::Ptr point1, Point2D::Ptr point2,
+                            float scale);
+  }; //\ namespace Point2D
 
 } //\ namespace path
+
+#endif

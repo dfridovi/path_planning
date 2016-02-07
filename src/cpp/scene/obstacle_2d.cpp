@@ -97,14 +97,14 @@ namespace path {
     mean_(1) = y;
     location_ = Point2D::Create(x, y);
 
-    cov_(0, 0) = 1.0;
+    cov_(0, 0) = radius * radius / 3.0;
     cov_(0, 1) = 0.0;
     cov_(1, 0) = 0.0;
-    cov_(1, 1) = 1.0;
+    cov_(1, 1) = radius * radius / 3.0;
 
     // Precalculate determinant and inverse.
-    det_ = 1.0;
-    inv_ = cov_;
+    det_ = cov_.determinant();
+    inv_ = cov_.inverse();
 
     // Set radius.
     radius_ = radius;

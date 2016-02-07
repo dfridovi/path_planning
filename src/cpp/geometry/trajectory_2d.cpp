@@ -110,11 +110,14 @@ namespace path {
 
   // Add a point to the path.
   void Trajectory2D::AddPoint(Point2D::Ptr point) {
-    points_.push_back(point);
-    Point2D::Ptr last_point = points_.back();
+    CHECK_NOTNULL(point.get());
+
+    if (points_.size() > 0) {
+      Point2D::Ptr last_point = points_.back();
+      length_ += Point2D::DistancePointToPoint(last_point, point);
+    }
 
     points_.push_back(point);
-    length_ += Point2D::DistancePointToPoint(last_point, point);
   }
 
   // Upsample by adding k points linearly between each pair of points

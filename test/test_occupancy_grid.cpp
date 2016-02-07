@@ -100,7 +100,7 @@ namespace path {
     OccupancyGrid2D grid(0.0, 1.0, 0.0, 1.0, 0.02);
 
     // Create a bunch of points in a circle and add to the grid.
-    for (float theta = 0.0; theta < 0.999; theta += 0.1) {
+    for (float theta = 0.05; theta < 0.999; theta += 0.1) {
       Point2D::Ptr point = Point2D::Create(0.5 + 0.2*std::cos(2.0*M_PI * theta),
                                            0.5 + 0.2*std::sin(2.0*M_PI * theta));
       grid.Insert(point);

@@ -54,7 +54,7 @@ namespace path {
 
     // Base case -- empty tree.
     if (registry_.size() == 0) {
-      head_ = Node<Point2D::Ptr>::Create(point);
+      head_ = Node2D::Create(point);
       registry_.emplace(point, head_);
       kd_tree_.AddPoint(point);
       return true;
@@ -66,9 +66,9 @@ namespace path {
     // Find nearest point.
     Point2D::Ptr nearest = GetNearest(point);
 
-    // Make a new Node<Point2D::Ptr> and insert.
-    Node<Point2D::Ptr>::Ptr node = Node<Point2D::Ptr>::Create(point);
-    Node<Point2D::Ptr>::Ptr parent = registry_.at(nearest);
+    // Make a new Node2D and insert.
+    Node2D::Ptr node = Node2D::Create(point);
+    Node2D::Ptr parent = registry_.at(nearest);
     node->SetParent(parent);
     parent->AddChild(node);
 
@@ -93,9 +93,9 @@ namespace path {
     // Don't insert if the tree already contains this point.
     if (Contains(point)) return false;
 
-    // Make a new Node<Point2D::Ptr> and insert.
-    Node<Point2D::Ptr>::Ptr node = Node<Point2D::Ptr>::Create(point);
-    Node<Point2D::Ptr>::Ptr parent_node = registry_.at(parent);
+    // Make a new Node2D and insert.
+    Node2D::Ptr node = Node2D::Create(point);
+    Node2D::Ptr parent_node = registry_.at(parent);
     node->SetParent(parent_node);
     parent_node->AddChild(node);
 
@@ -140,7 +140,7 @@ namespace path {
 
     // Trace the tree and populate the path.
     std::list<Point2D::Ptr> trace;
-    Node<Point2D::Ptr>::Ptr current_node = registry_.at(goal);
+    Node2D::Ptr current_node = registry_.at(goal);
     while (current_node) {
       trace.push_front(current_node->GetData());
       current_node = current_node->GetParent();

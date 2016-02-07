@@ -45,9 +45,9 @@
 
 #include "trajectory_2d.h"
 #include "point_2d.h"
-#include "nary_node.h"
-#include <flann/flann_point_2dtree.h>
-#include <util/disallow_copy_and_assign.h>
+#include "node_2d.h"
+#include "../util/disallow_copy_and_assign.h"
+#include "../flann/flann_point_2dtree.h"
 
 #include <memory>
 #include <vector>
@@ -78,8 +78,8 @@ namespace path {
     Trajectory2D::Ptr GetTrajectory(Point2D::Ptr goal);
 
   private:
-    Node<Point2D::Ptr>::Ptr head_;
-    std::unordered_map<Point2D::Ptr, Node<Point2D::Ptr>::Ptr> registry_;
+    Node2D::Ptr head_;
+    std::unordered_map<Point2D::Ptr, Node2D::Ptr> registry_;
     FlannPoint2DTree kd_tree_;
 
     DISALLOW_COPY_AND_ASSIGN(RRT2D);

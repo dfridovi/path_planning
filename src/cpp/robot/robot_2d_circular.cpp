@@ -82,6 +82,8 @@ namespace path {
       return false;
     }
 
+    std::cout << obstacles.size() << std::endl;
+
     for (const auto& obstacle : obstacles) {
       if (Point2D::DistanceLineToPoint(point1, point2,
                                        obstacle->GetLocation()) <

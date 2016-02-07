@@ -36,15 +36,17 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// This class defines a Node in an N-ary tree of Points.
+// This class defines a Node in an N-ary tree of Point2D::Ptr types.
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef PATH_PLANNING_NARY_NODE_H
-#define PATH_PLANNING_NARY_NODE_H
+#ifndef PATH_PLANNING_NODE_2D_H
+#define PATH_PLANNING_NODE_2D_H
 
-#include <util/types.h>
-#include <util/disallow_copy_and_assign.h>
+#include "point_2d.h"
+#include "../util/types.h"
+#include "../util/disallow_copy_and_assign.h"
+
 #include <memory>
 #include <vector>
 #include <glog/logging.h>
@@ -52,41 +54,40 @@
 namespace path {
 
   // Helper class for use with a tree class.
-  template<typename DataType>
-  class Node {
+  class Node2D {
   public:
-    typedef std::shared_ptr<Node> Ptr;
+    typedef std::shared_ptr<Node2D> Ptr;
 
-    ~Node() {}
+    ~Node2D() {}
 
     // Factory method.
-    static Node::Ptr Create(const DataType& data);
+    static Node2D::Ptr Create(const Point2D::Ptr data);
 
     // Add a child.
-    void AddChild(Node::Ptr child);
+    void AddChild(Node2D::Ptr child);
 
     // Set parent.
-    void SetParent(Node::Ptr parent);
+    void SetParent(Node2D::Ptr parent);
 
     // Get children.
-    std::vector<Node::Ptr>& GetChildren();
+    std::vector<Node2D::Ptr>& GetChildren();
 
     // Get parent.
-    Node::Ptr GetParent();
+    Node2D::Ptr GetParent();
 
     // Get data.
-    DataType& GetData();
+    Point2D::Ptr GetData();
 
   private:
-    DataType data_;
-    Node::Ptr parent_;
-    std::vector<Node::Ptr> children_;
+    Point2D::Ptr data_;
+    Node2D::Ptr parent_;
+    std::vector<Node2D::Ptr> children_;
 
     // Private constructor. Use the factory method instead.
-    Node(const DataType& data)
+    Node2D(const Point2D::Ptr data)
       : data_(data) {}
 
-    DISALLOW_COPY_AND_ASSIGN(Node);
+    DISALLOW_COPY_AND_ASSIGN(Node2D);
   };
 
 } //\ namespace path

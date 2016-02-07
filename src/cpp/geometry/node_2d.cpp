@@ -31,56 +31,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  * Please contact the author(s) of this library if you have any questions.
- * Authors: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
+ * Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include <geometry/trajectory_2d.h>
-#include <geometry/point_2d.h>
-#include <util/types.h>
-#include <math/random_generator.h>
+///////////////////////////////////////////////////////////////////////////////
+//
+// This class defines a Node in an N-ary tree of 2D points.
+//
+///////////////////////////////////////////////////////////////////////////////
 
-#include <vector>
-#include <cmath>
-#include <gtest/gtest.h>
-#include <glog/logging.h>
-#include <iostream>
+#include "node_2d.h"
 
 namespace path {
 
-  // Test that we can construct and destroy a Trajectory.
-  TEST(Trajectory2D, TestTrajectory) {
-    math::RandomGenerator rng(0);
+  // Factory method.
+  Node2D::Ptr Node2D::Create(const Point2D::Ptr data) {
+    Node2D::Ptr node(new Node2D(data));
+    return node;
+  }
 
-    // Empty Trajectory.
-    Trajectory2D::Ptr path1 = Trajectory2D::Create();
+  // Getters and setters.
+  void Node2D::SetParent(Node2D::Ptr parent) {
+    parent_ = parent;
+  }
 
-    // Vector of Points.
-    std::vector<Point2D::Ptr> points;
-    Point2D::Ptr last_point;
-    double length = 0.0;
+  Node2D::Ptr Node2D::GetParent() {
+    return parent_;
+  }
 
-    // Make a bunch of points.
-    for (size_t ii = 0; ii < 1000; ++ii) {
-      float x = rng.Double();
-      float y = rng.Double();
-      Point2D::Ptr point = Point2D::Create(x, y);
+  void Node2D::AddChild(Node2D::Ptr child) {
+    children_.push_back(child);
+  }
 
-      // Keep track of length for comparison.
-      if (ii != 0)
-        length += Point2D::DistancePointToPoint(last_point, point);
+  std::vector<Node2D::Ptr>& Node2D::GetChildren() {
+    return children_;
+  }
 
-      // Add to path and vector.
-      path1->AddPoint(point);
-      points.push_back(point);
-      last_point = point;
-    }
-
-    // Make second Trajectory from vector.
-    Trajectory2D::Ptr path2 = Trajectory2D::Create(points);
-
-    // Checks lengths.
-    EXPECT_NEAR(path1->GetLength(), path2->GetLength(), 1e-8);
-    EXPECT_NEAR(path2->GetLength(), length, 1e-8);
+  Point2D::Ptr Node2D::GetData() {
+    return data_;
   }
 
 } //\ namespace path

@@ -82,18 +82,20 @@ namespace path {
 
       // Insert the goal (stepwise) if it is visible.
       if (robot_.LineOfSight(step, goal_)) {
+        /*
         float distance_to_goal = Point2D::DistancePointToPoint(step, goal_);
         int num_steps = static_cast<int>(std::ceil(distance_to_goal / step_size_));
 
-        for (int ii = 1; ii <= num_steps - 1; ii++) {
+        for (int ii = 0; ii < num_steps - 1; ii++) {
           Point2D::Ptr next = Point2D::StepToward(step, goal_, step_size_);
+          std::printf("(%f, %f)\n", next->x, next->y);
 
           if (!tree_.Insert(next, step))
             VLOG(1) << "Error. Could not insert a point.";
 
           step = next;
         }
-
+        */
         // Insert the goal point at the end.
         if (!tree_.Insert(goal_, step))
           VLOG(1) << "Error. Could not insert the goal point.";

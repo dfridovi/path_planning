@@ -51,7 +51,7 @@
 #include <gflags/gflags.h>
 #include <iostream>
 
-DEFINE_bool(visualize_planner, false, "Visualize path?");
+DEFINE_bool(visualize_planner, true, "Visualize path?");
 
 namespace path {
 
@@ -117,7 +117,7 @@ namespace path {
       float y = rng.Double();
       float sigma_xx = 0.005 * rng.DoubleUniform(0.25, 0.75);
       float sigma_yy = 0.005 * rng.DoubleUniform(0.25, 0.75);
-      float sigma_xy = rng.DoubleUniform(-1.0, 1.0) *
+      float sigma_xy = rng.Double() *
         std::sqrt(sigma_xx * sigma_yy);
 
       Obstacle2D::Ptr obstacle =
@@ -147,14 +147,14 @@ namespace path {
       Point2D::Ptr point = Point2D::Create(x, y);
 
       if (robot.IsFeasible(point) &&
-          Point2D::DistancePointToPoint(origin, point) > 0.4)
+          Point2D::DistancePointToPoint(origin, point) > 0.8)
         goal = point;
     }
 
     // Plan a route.
     RRTPlanner2D planner(robot, scene, origin, goal, 0.05);
     Trajectory2D::Ptr route = planner.PlanTrajectory();
-    route->Upsample(2);
+    //    route->Upsample(4);
 
     // If visualize flag is set, query a grid and show the cost map.
     if (FLAGS_visualize_planner) {
@@ -163,7 +163,7 @@ namespace path {
 
     // Optimize path.
     Trajectory2D::Ptr optimized_path =
-      scene.OptimizeTrajectory(route, 1e-6, 1e6, 1e-3, 5e-4, 1000);
+      scene.OptimizeTrajectory(route, 1e-3, 1e6, 1e-3, 5e-4, 1000);
 
     // If visualize flag is set, query a grid and show the cost map.
     if (FLAGS_visualize_planner) {

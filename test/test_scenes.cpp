@@ -49,7 +49,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 
-DEFINE_bool(visualize_scenes, false, "Visualize scene?");
+DEFINE_bool(visualize_scenes, true, "Visualize scene?");
 
 using Eigen::MatrixXf;
 
@@ -64,13 +64,12 @@ namespace path {
     for (size_t ii = 0; ii < 10; ii++) {
       float x = rng.Double();
       float y = rng.Double();
-      float sigma_xx = 0.005 * rng.Double();
-      float sigma_yy = 0.005 * rng.Double();
-      float sigma_xy = rng.DoubleUniform(-1.0, 1.0) *
-        std::sqrt(sigma_xx * sigma_yy);
+      float sigma_xx = 0.005 * rng.DoubleUniform(0.25, 0.75);
+      float sigma_yy = 0.005 * rng.DoubleUniform(0.25, 0.75);
+      float sigma_xy = rng.Double() * std::sqrt(sigma_xx * sigma_yy);
 
       Obstacle2D::Ptr obstacle =
-        Obstacle2D::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.01);
+        Obstacle2D::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 3.0);
       obstacles.push_back(obstacle);
     }
 
@@ -92,13 +91,13 @@ namespace path {
     for (size_t ii = 0; ii < 10; ii++) {
       float x = rng.Double();
       float y = rng.Double();
-      float sigma_xx = 0.005 * rng.Double();
-      float sigma_yy = 0.005 * rng.Double();
-      float sigma_xy = rng.DoubleUniform(-1.0, 1.0) *
+      float sigma_xx = 0.005 * rng.DoubleUniform(0.25, 0.75);
+      float sigma_yy = 0.005 * rng.DoubleUniform(0.25, 0.75);
+      float sigma_xy = rng.Double() *
         std::sqrt(sigma_xx * sigma_yy);
 
       Obstacle2D::Ptr obstacle =
-        Obstacle2D::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 0.01);
+        Obstacle2D::Create(x, y, sigma_xx, sigma_yy, sigma_xy, 3.0);
       obstacles.push_back(obstacle);
     }
 
