@@ -37,32 +37,32 @@
 #ifndef PATH_MAPPER_H
 #define PATH_MAPPER_H
 
-#include <vector>
+#include "../mapper/depth_map.h"
 
 #include <Eigen/Core>
-#include <mapper/depthmap.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
+#include <vector>
 
-namespace path
-{
+namespace path {
 
-class Mapper
-{
-public:
-	Mapper();
-	Mapper( bool cullSaturated );
+  class Mapper {
+  public:
+    // Constructors.
+    Mapper();
+    Mapper(bool cull_saturated);
 
-	pcl::PointCloud<pcl::PointXYZ> ProjectDepthMap( const DepthMap& map ) const;
-	void AddDepthMap( const DepthMap& map );
+    // Adding data to the map.
+    pcl::PointCloud<pcl::PointXYZ> ProjectDepthMap(const DepthMap& map) const;
+    void AddDepthMap(const DepthMap& map);
 
-	// Getters
-	pcl::PointCloud<pcl::PointXYZ> getMap() const;
+    // Getters
+    pcl::PointCloud<pcl::PointXYZ> GetMap() const;
 
-private:
-	bool cullSaturated_;
-	pcl::PointCloud<pcl::PointXYZ> mapCloud;
-};
+  private:
+    bool cull_saturated_;
+    pcl::PointCloud<pcl::PointXYZ> cloud_;
+  };
 
 }
 

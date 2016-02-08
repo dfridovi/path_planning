@@ -34,59 +34,47 @@
  * Author: James Smith	 ( james.smith@berkeley.edu )
  */
 
-#include <mapper/mapper.h>
+#include "../mapper/mapper.h"
 
-namespace path
-{
+namespace path {
 
-Mapper::Mapper()
-	: cullSaturated_(true)
-{
-}
+  Mapper::Mapper()
+    : cull_saturated_(true) {}
 
-Mapper::Mapper( bool cullSaturated )
-	: cullSaturated_(cullSaturated)
-{
-}
+  Mapper::Mapper(bool cull_saturated)
+    : cull_saturated_(cull_saturated) {}
 
-pcl::PointCloud<pcl::PointXYZ> Mapper::ProjectDepthMap( const DepthMap& map ) const
-{
-	pcl::PointCloud<pcl::PointXYZ> cloud;
-	cloud.width = map.Width();
-	cloud.height = map.Height();
-	cloud.is_dense = false;
-	// TODO: Include sensor orientation information?
+  pcl::PointCloud<pcl::PointXYZ> Mapper::ProjectDepthMap(const DepthMap& map) const {
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+    cloud.width = map.Width();
+    cloud.height = map.Height();
+    cloud.is_dense = false;
+    // TODO: Include sensor orientation information?
 
-	cloud.points.resize( cloud.width * cloud.height );
+    cloud.points.resize(cloud.width * cloud.height);
+    size_t ii = 0;
+    for(size_t u = 0; u < map.Height(); ++u) {
+      for(size_t v = 0; v < map.Width(); ++v) {
+        if(!cull_saturated_ || !map.SaturatedAt(u, v)) {
+            Vector3d world = map.Unproject(u, v);
 
-	int i = 0;
-	for( size_t u = 0; u < map.Height(); ++u )
-	{
-		for( size_t v = 0; v < map.Width(); ++v )
-		{
-			if( !(cullSaturated_ && map.SaturatedAt( u, v )) )
-			{
-				Eigen::Vector3d world = map.Unproject( u, v );
+            cloud.points[ii].x = world(0);
+            cloud.points[ii].y = world(1);
+            cloud.points[ii].z = world(2);
+            ii++;
+          }
+      }
+    }
 
-				cloud.points[i].x = world(0);
-				cloud.points[i].y = world(1);
-				cloud.points[i].z = world(2);
-				i++;
-			}
-		}
-	}
-	return cloud;
-}
+    return cloud;
+  }
 
-void Mapper::AddDepthMap( const DepthMap& map )
-{
-	pcl::PointCloud<pcl::PointXYZ> newCloud = ProjectDepthMap( map );
-	mapCloud = mapCloud + newCloud;
-}
+  void Mapper::AddDepthMap(const DepthMap& map) {
+    pcl::PointCloud<pcl::PointXYZ> cloud = ProjectDepthMap(map);
+    cloud_ = cloud_ + cloud;
+  }
 
-pcl::PointCloud<pcl::PointXYZ> Mapper::getMap() const
-{
-	return mapCloud;
-}
-
+  pcl::PointCloud<pcl::PointXYZ> Mapper::GetMap() const {
+    return cloud_;
+  }
 }

@@ -34,42 +34,47 @@
  * Author: James Smith   ( james.smith@berkeley.edu )
  */
 
-#ifndef PATH_DEPTHMAP_H
-#define PATH_DEPTHMAP_H
+#ifndef PATH_DEPTH_MAP_H
+#define PATH_DEPTH_MAP_H
 
-#include <image/image.h>
-#include <camera/camera.h>
-#include <pose/pose.h>
+#include "../image/image.h"
+#include "../camera/camera.h"
+#include "../pose/pose.h"
 
-namespace path
-{
+namespace path {
 
-class DepthMap : public Image
-{
-public:
-	using Image::Image;
+  class DepthMap : public Image {
+  public:
+    using Image::Image;
 
-	DepthMap();
-	DepthMap( bool inverted );
+    // Constructors.
+    DepthMap();
+    DepthMap(bool inverted);
 
-	uchar GetValue( size_t u, size_t v ) const;
-	Camera CreateCamera( const Eigen::Vector3d& position, const Eigen::Matrix3d& rotation ) const;
-	Camera CreateCamera( const double X, const double Y, const double Z, const double Phi, const double Theta, const double Psi ) const;
-	Eigen::Vector3d Unproject( size_t u, size_t v ) const;
-	bool SaturatedAt( size_t u, size_t v ) const;
+    // Create camera.
+    Camera CreateCamera(const Vector3d& position,
+                        const Matrix3d& rotation) const;
+    Camera CreateCamera(const double X, const double Y, const double Z,
+                        const double Phi, const double Theta,
+                        const double Psi) const;
 
-	// Setters.
-	void SetInverted( bool value );
-	void SetCamera( const Camera& c );
+    // Helpers.
+    Vector3d Unproject(size_t u, size_t v) const;
+    bool SaturatedAt(size_t u, size_t v) const;
 
-	// Getters.
-	bool IsInverted() const;
-	Camera GetCamera() const;
+    // Setters.
+    void SetInverted(bool value);
+    void SetCamera(const Camera& camera);
 
-private:
-	Camera camera;
-	bool inverted_;
-};
+    // Getters.
+    uchar GetValue(size_t u, size_t v) const;
+    bool IsInverted() const;
+    Camera& GetCamera();
+
+  private:
+    Camera camera_;
+    bool inverted_;
+  };
 
 }
 

@@ -34,79 +34,66 @@
  * Author: James Smith	 ( james.smith@berkeley.edu )
  */
 
-#include <mapper/depthmap.h>
-#include <geometry/rotation.h>
+#include "depth_map.h"
+#include "../geometry/rotation.h"
 
-namespace path
-{
+namespace path {
 
-DepthMap::DepthMap()
-	: inverted_( false )
-{
-}
+  DepthMap::DepthMap()
+    : inverted_(false) {}
 
-DepthMap::DepthMap( bool inverted )
-    : inverted_( inverted )
-{
-}
+  DepthMap::DepthMap(bool inverted)
+    : inverted_(inverted) {}
 
-void DepthMap::SetInverted( bool value )
-{
+  void DepthMap::SetInverted(bool value) {
     inverted_ = value;
-}
+  }
 
-bool DepthMap::IsInverted() const
-{
+  bool DepthMap::IsInverted() const {
     return inverted_;
-}
+  }
 
-uchar DepthMap::GetValue( size_t u, size_t v ) const
-{
-    uchar value = at<uchar>( u, v );
-    if( IsInverted() )
-    {
+  uchar DepthMap::GetValue(size_t u, size_t v) const {
+    uchar value = at<uchar>(u, v);
+    if (IsInverted()) {
         value = 255 - value;
     }
     return value;
-}
+  }
 
-Camera DepthMap::CreateCamera( const Eigen::Vector3d& position, const Eigen::Matrix3d& rotation ) const
-{
-    Pose cameraPose( rotation, position );
-    CameraExtrinsics extrinsics( cameraPose );
+  Camera DepthMap::CreateCamera(const Vector3d& position,
+                                const Matrix3d& rotation ) const {
+    Pose camera_pose(rotation, position);
+    CameraExtrinsics extrinsics(camera_pose);
 
-    // JDS: Not sure how to properly calculate focal length of a point camera
+    // JDS: Not sure how to properly calculate focal length of a point camera.
     float focal_length = Width() * 0.35/0.36;
     Matrix3d A;
     A << focal_length, 0, Width()/2, 0, focal_length, Height()/2, 0, 0, 1;
 
-    CameraIntrinsics intrinsics( A, Width(), Height() );
-
-    Camera c( extrinsics, intrinsics );
-
-    return c;
-}
-
-Camera DepthMap::CreateCamera( const double X, const double Y, const double Z, const double Phi, const double Theta, const double Psi ) const
-{
-    // phi, theta, psi = yaw, pitch, roll?
-    Eigen::Vector3d position( X, Y, Z );
-    Matrix3d rotation = EulerAnglesToMatrix( Phi, Theta, Psi );
-    return CreateCamera( position, rotation );
-}
-
-void DepthMap::SetCamera( const Camera& c )
-{
-    camera = c;
-}
-
-Camera DepthMap::GetCamera() const
-{
+    CameraIntrinsics intrinsics(A, Width(), Height());
+    Camera camera(extrinsics, intrinsics);
     return camera;
-}
+  }
 
-Eigen::Vector3d DepthMap::Unproject( size_t u, size_t v ) const
-{
+  Camera DepthMap::CreateCamera(const double X, const double Y, const double Z,
+                                const double Phi, const double Theta,
+                                const double Psi) const {
+    // Phi, theta, psi = yaw, pitch, roll?
+    Vector3d position(X, Y, Z);
+    Matrix3d rotation = EulerAnglesToMatrix(Phi, Theta, Psi);
+    return CreateCamera(position, rotation);
+  }
+
+  void DepthMap::SetCamera(const Camera& camera) {
+    camera_ = camera;
+  }
+
+  Camera& DepthMap::GetCamera() {
+    return camera_;
+  }
+
+  Vector3d DepthMap::Unproject(size_t u, size_t v) const {
     double cameraX = 0.0;
     double cameraY = 0.0;
     double cameraZ = 0.0;
@@ -115,16 +102,16 @@ Eigen::Vector3d DepthMap::Unproject( size_t u, size_t v ) const
     double worldY = 0.0;
     double worldZ = 0.0;
 
-    camera.ImageToDirection( u, v, &cameraX, &cameraY );
-    cameraZ = GetValue( u, v * 3 ) / 256.0;
-    camera.CameraToWorld( cameraX, cameraY, cameraZ, &worldX, &worldY, &worldZ );
+    camera_.ImageToDirection(u, v, &cameraX, &cameraY);
+    cameraZ = GetValue(u, v * 3) / 256.0;
+    camera_.CameraToWorld(cameraX, cameraY, cameraZ, &worldX, &worldY, &worldZ);
 
-    return Eigen::Vector3d( worldX, worldY, worldZ );
-}
+    Vector3d point = Vector3d(worldX, worldY, worldZ);
+    return point;
+  }
 
-bool DepthMap::SaturatedAt( size_t u, size_t v ) const
-{
-    return GetValue( u, v * 3 ) <= 0 || GetValue( u, v * 3 ) >= 255;
-}
+  bool DepthMap::SaturatedAt(size_t u, size_t v) const {
+    return GetValue(u, v * 3) <= 0 || GetValue(u, v * 3) >= 255;
+  }
 
 }
