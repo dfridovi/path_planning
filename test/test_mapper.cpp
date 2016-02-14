@@ -140,7 +140,7 @@ namespace path
 		dm.SetCamera(c);
 		Mapper m( true );
 		m.AddDepthMap(dm);
-		Camera c2 = dm.CreateCamera(0, 0, 0, M_PI, 0, 0);
+		Camera c2 = dm.CreateCamera(1.4, 0, 0, 0, M_PI, 0);
 		dm.SetCamera(c2);
 		m.AddDepthMap(dm);
 
