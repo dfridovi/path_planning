@@ -88,13 +88,14 @@ namespace path
 			Camera c = dm.CreateCamera( 0, 0, 0, 0, 0, 0 );
 			dm.SetCamera(c);
 			Mapper m( false );
+			m.AddDepthMap(dm);
 
-			pcl::PointCloud<pcl::PointXYZ> cloud = m.ProjectDepthMap( dm );
-			EXPECT_EQ(cloud.width * cloud.height, data.size());
+			pcl::PointCloud<pcl::PointXYZ> cloud = m.GetMap();
+			EXPECT_EQ(data.size(), cloud.width * cloud.height);
 
 			for( size_t i = 0; i < cloud.width * cloud.height; ++i )
 			{
-				double originalZ = data(i / cols, i % cols) / 256.0;
+				double originalZ = data(i % rows, i / rows) / 256.0;
 				double projectedZ = cloud.points[i].z;
 				EXPECT_EQ(originalZ, projectedZ);
 			}
