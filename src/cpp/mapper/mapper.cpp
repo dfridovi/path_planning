@@ -35,6 +35,7 @@
  */
 
 #include "../mapper/mapper.h"
+#include <iostream>
 
 namespace path {
 
@@ -45,6 +46,8 @@ namespace path {
     : cull_saturated_(cull_saturated) {}
 
   pcl::PointCloud<pcl::PointXYZ> Mapper::ProjectDepthMap(const DepthMap& map) const {
+  	// TODO: Found a bug where we are allocating points for every vertex but 
+  	// not accounting for culled points!
     pcl::PointCloud<pcl::PointXYZ> cloud;
     cloud.width = map.Width();
     cloud.height = map.Height();
@@ -52,9 +55,10 @@ namespace path {
     // TODO: Include sensor orientation information?
 
     cloud.points.resize(cloud.width * cloud.height);
+
     size_t ii = 0;
-    for(size_t u = 0; u < map.Height(); ++u) {
-      for(size_t v = 0; v < map.Width(); ++v) {
+    for(size_t u = 0; u < map.Width(); ++u) {
+      for(size_t v = 0; v < map.Height(); ++v) {
         if(!cull_saturated_ || !map.SaturatedAt(u, v)) {
             Vector3d world = map.Unproject(u, v);
 

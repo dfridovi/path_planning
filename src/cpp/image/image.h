@@ -137,6 +137,7 @@ class Image {
   void ImShow(const std::string& window_name = std::string(),
               unsigned int wait_time = 0);
 
+  std::string GetTypeStr() const;
  private:
   bool grayscale_;
   std::shared_ptr<cv::Mat> image_;

@@ -54,7 +54,7 @@ namespace path {
   }
 
   uchar DepthMap::GetValue(size_t u, size_t v) const {
-    uchar value = at<uchar>(u, v);
+    uchar value = at<uchar>(v, u * 3);
     if (IsInverted()) {
         value = 255 - value;
     }
@@ -65,6 +65,8 @@ namespace path {
                                 const Matrix3d& rotation ) const {
     Pose camera_pose(rotation, position);
     CameraExtrinsics extrinsics(camera_pose);
+
+    //std::cout << "Matrix: " << GetTypeStr() << " " << Width() << "x" << Height() << std::endl;
 
     // JDS: Not sure how to properly calculate focal length of a point camera.
     float focal_length = Width() * 0.35/0.36;
@@ -103,7 +105,7 @@ namespace path {
     double worldZ = 0.0;
 
     camera_.ImageToDirection(u, v, &cameraX, &cameraY);
-    cameraZ = GetValue(u, v * 3) / 256.0;
+    cameraZ = GetValue(u, v) / 256.0;
     camera_.CameraToWorld(cameraX, cameraY, cameraZ, &worldX, &worldY, &worldZ);
 
     Vector3d point = Vector3d(worldX, worldY, worldZ);
@@ -111,7 +113,7 @@ namespace path {
   }
 
   bool DepthMap::SaturatedAt(size_t u, size_t v) const {
-    return GetValue(u, v * 3) <= 0 || GetValue(u, v * 3) >= 255;
+    return GetValue(u, v) <= 0 || GetValue(u, v) >= 255;
   }
 
 }

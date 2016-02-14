@@ -116,7 +116,35 @@ namespace path
 		Camera c = dm.CreateCamera( 0, 0, 0, 0, 0, 0 );
 		dm.SetCamera(c);
 		Mapper m( true );
-		pcl::PointCloud<pcl::PointXYZ> cloud = m.ProjectDepthMap( dm );
+		m.AddDepthMap(dm);
+		pcl::PointCloud<pcl::PointXYZ> cloud = m.GetMap();
+
+		std::remove(point_cloud_file.c_str());
+		
+		pcl::io::savePCDFileASCII( point_cloud_file, cloud );
+	}
+
+	// Load a depth map and generate a pointcloud file to verify correctness
+	// TODO: Automatically verify correctness (save the a correct point cloud file and compare them)
+	TEST( Mapper, TestMapperAdd )
+	{
+		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene.png" );
+		const std::string point_cloud_file = strings::JoinFilepath( GENERATED_TEST_DATA_DIR, "mapper_point_cloud_loaded.pcd" );
+
+		cv::Mat M = cv::imread(depth_map_file.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+		EXPECT_TRUE(M.data);
+
+		DepthMap dm(M);
+		dm.SetInverted( true );
+		Camera c = dm.CreateCamera( 0, 0, 0, 0, 0, 0 );
+		dm.SetCamera(c);
+		Mapper m( true );
+		m.AddDepthMap(dm);
+		Camera c2 = dm.CreateCamera(0, 0, 0, M_PI, 0, 0);
+		dm.SetCamera(c2);
+		m.AddDepthMap(dm);
+
+		pcl::PointCloud<pcl::PointXYZ> cloud = m.GetMap();
 
 		std::remove(point_cloud_file.c_str());
 		
