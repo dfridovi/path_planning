@@ -30,13 +30,13 @@ endif(NOT CMAKE_BUILD_TYPE)
 add_subdirectory(external)
 
 # Add the source directories to the search path so cmake can find our headers.
-include_directories(${CMAKE_SOURCE_DIR}/src/cpp/)
+include_directories(${CMAKE_SOURCE_DIR}/include/cpp/)
 
 # Collect source files and build the path_planning object.
 file(GLOB_RECURSE path_srcs ${CMAKE_SOURCE_DIR}/src/cpp/*.cpp)
 add_library(path_planning ${path_srcs})
 
-file(GLOB_RECURSE HEADER_FILES ${CMAKE_SOURCE_DIR}/src/cpp/*.h)
+file(GLOB_RECURSE HEADER_FILES ${CMAKE_SOURCE_DIR}/include/cpp/*.h)
 install(FILES ${HEADER_FILES} DESTINATION include/path_planning)
 install(TARGETS path_planning DESTINATION lib)
 
