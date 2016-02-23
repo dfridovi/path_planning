@@ -36,9 +36,9 @@ include_directories(${CMAKE_SOURCE_DIR}/src/cpp/)
 file(GLOB_RECURSE path_srcs ${CMAKE_SOURCE_DIR}/src/cpp/*.cpp)
 add_library(path_planning ${path_srcs})
 
-install(TARGETS path_planning DESTINATION lib)
-file(GLOB HEADER_FILES ${CMAKE_SOURCE_DIR}/src/cpp/*.h)
+file(GLOB_RECURSE HEADER_FILES ${CMAKE_SOURCE_DIR}/src/cpp/*.h)
 install(FILES ${HEADER_FILES} DESTINATION include/path_planning)
+install(TARGETS path_planning DESTINATION lib)
 
 # Set up output directory for executables.
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/)
