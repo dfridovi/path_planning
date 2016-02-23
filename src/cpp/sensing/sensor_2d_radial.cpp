@@ -41,8 +41,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "sensor_2d_radial.h"
-#include "../robot/robot_2d_circular.h"
+#include <sensing/sensor_2d_radial.h>
+#include <robot/robot_2d_circular.h>
 
 #include <glog/logging.h>
 

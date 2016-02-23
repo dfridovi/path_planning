@@ -40,8 +40,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "robot_2d_circular.h"
-#include "../scene/obstacle_2d.h"
+#include <robot/robot_2d_circular.h>
+#include <scene/obstacle_2d.h>
 
 #include <glog/logging.h>
 

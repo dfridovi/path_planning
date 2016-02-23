@@ -35,7 +35,7 @@
  *          David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include "timer.h"
+#include <util/timer.h>
 
 #include <stdio.h>
 

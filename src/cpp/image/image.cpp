@@ -35,7 +35,7 @@
  *          David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include "image.h"
+#include <image/image.h>
 
 namespace path {
 

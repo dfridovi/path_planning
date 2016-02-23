@@ -43,9 +43,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "camera/camera_extrinsics.h"
+#include <camera/camera_extrinsics.h>
 
-#include "../geometry/rotation.h"
+#include <geometry/rotation.h>
 
 namespace path {
 

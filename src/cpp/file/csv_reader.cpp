@@ -37,9 +37,9 @@
 
 #include <glog/logging.h>
 
-#include "csv_reader.h"
+#include <file/csv_reader.h>
 
-#include "../strings/tokenize.h"
+#include <strings/tokenize.h>
 
 namespace path {
 namespace file {

@@ -34,8 +34,8 @@
  * Author: James Smith	 ( james.smith@berkeley.edu )
  */
 
-#include "depth_map.h"
-#include "../geometry/rotation.h"
+#include <mapper/depth_map.h>
+#include <geometry/rotation.h>
 
 namespace path {
 

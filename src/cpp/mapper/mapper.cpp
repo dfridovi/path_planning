@@ -34,7 +34,7 @@
  * Author: James Smith   ( james.smith@berkeley.edu )
  */
 
-#include "../mapper/mapper.h"
+#include <mapper/mapper.h>
 #include <iostream>
 
 namespace path {

@@ -43,7 +43,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "rrt_planner_2d.h"
+#include <planning/rrt_planner_2d.h>
 
 #include <iostream>
 #include <glog/logging.h>

@@ -40,8 +40,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "orientation_2d.h"
-#include "point_2d.h"
+#include <geometry/orientation_2d.h>
+#include <geometry/point_2d.h>
 
 namespace path {
 

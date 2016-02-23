@@ -40,9 +40,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "scene_2d_continuous.h"
-#include "../math/random_generator.h"
-#include "../geometry/point_2d.h"
+#include <scene/scene_2d_continuous.h>
+#include <math/random_generator.h>
+#include <geometry/point_2d.h>
 
 #include <glog/logging.h>
 #include <Eigen/Dense>
