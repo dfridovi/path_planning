@@ -45,6 +45,7 @@
 #ifndef PATH_FILE_CSV_READER_H
 #define PATH_FILE_CSV_READER_H
 
+#include <memory>
 #include <fstream>
 #include <sstream>
 #include <string>

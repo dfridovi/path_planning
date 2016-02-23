@@ -45,6 +45,7 @@
 #ifndef PATH_FILE_CSV_WRITER_H
 #define PATH_FILE_CSV_WRITER_H
 
+#include <memory>
 #include <Eigen/Core>
 #include <fstream>
 #include <string>
