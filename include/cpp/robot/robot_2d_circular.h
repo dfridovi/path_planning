@@ -43,9 +43,9 @@
 #ifndef PATH_PLANNING_ROBOT_2D_CIRCULAR_H
 #define PATH_PLANNING_ROBOT_2D_CIRCULAR_H
 
-#include "../util/types.h"
-#include "../geometry/point_2d.h"
-#include "../scene/scene_2d_continuous.h"
+#include <util/types.h>
+#include <geometry/point_2d.h>
+#include <scene/scene_2d_continuous.h>
 
 namespace path {
 

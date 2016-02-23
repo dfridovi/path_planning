@@ -32,7 +32,7 @@
 #include <sstream>
 #include <string.h>
 
-#include "timer.h"
+#include <util/timer.h>
 
 namespace path {
 namespace util {

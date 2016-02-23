@@ -46,9 +46,9 @@
 #ifndef PATH_PLANNING_FLANN_POINT_2DTREE_H
 #define PATH_PLANNING_FLANN_POINT_2DTREE_H
 
-#include "../geometry/point_2d.h"
-#include "../util/types.h"
-#include "../util/disallow_copy_and_assign.h"
+#include <geometry/point_2d.h>
+#include <util/types.h>
+#include <util/disallow_copy_and_assign.h>
 
 #include <flann/flann.h>
 

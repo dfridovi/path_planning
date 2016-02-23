@@ -41,7 +41,7 @@
 #include <initializer_list>
 #include <string>
 
-#include "join.h"
+#include <strings/join.h>
 
 namespace path {
 namespace strings {

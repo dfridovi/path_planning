@@ -43,11 +43,11 @@
 #ifndef PATH_PLANNING_RRT_2D_H
 #define PATH_PLANNING_RRT_2D_H
 
-#include "trajectory_2d.h"
-#include "point_2d.h"
-#include "node_2d.h"
-#include "../util/disallow_copy_and_assign.h"
-#include "../flann/flann_point_2dtree.h"
+#include <geometry/trajectory_2d.h>
+#include <geometry/point_2d.h>
+#include <geometry/node_2d.h>
+#include <util/disallow_copy_and_assign.h>
+#include <flann/flann_point_2dtree.h>
 
 #include <memory>
 #include <vector>

@@ -64,8 +64,8 @@
 
 #include <Eigen/Core>
 
-#include "../pose/pose.h"
-#include "../util/types.h"
+#include <pose/pose.h>
+#include <util/types.h>
 
 namespace path {
 

@@ -44,11 +44,11 @@
 #ifndef PATH_PLANNING_SENSOR_MODEL_2D_RADIAL_H
 #define PATH_PLANNING_SENSOR_MODEL_2D_RADIAL_H
 
-#include "../geometry/point_2d.h"
-#include "../geometry/orientation_2d.h"
-#include "../occupancy/occupancy_grid_2d.h"
-#include "../util/disallow_copy_and_assign.h"
-#include "../util/types.h"
+#include <geometry/point_2d.h>
+#include <geometry/orientation_2d.h>
+#include <occupancy/occupancy_grid_2d.h>
+#include <util/disallow_copy_and_assign.h>
+#include <util/types.h>
 
 namespace path {
 

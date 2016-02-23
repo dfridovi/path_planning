@@ -43,7 +43,7 @@
 #ifndef PATH_PLANNING_POINT2D_HELPERS_H
 #define PATH_PLANNING_POINT2D_HELPERS_H
 
-#include "../util/types.h"
+#include <util/types.h>
 
 namespace path {
 

@@ -51,9 +51,9 @@
 
 //#include <matching/feature_match.h>
 
-#include "camera_extrinsics.h"
-#include "camera_intrinsics.h"
-#include "../util/types.h"
+#include <camera/camera_extrinsics.h>
+#include <camera/camera_intrinsics.h>
+#include <util/types.h>
 
 namespace path {
 

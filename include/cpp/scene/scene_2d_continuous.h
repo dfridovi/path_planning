@@ -43,13 +43,13 @@
 #ifndef PATH_PLANNING_SCENE_2D_CONTINUOUS_H
 #define PATH_PLANNING_SCENE_2D_CONTINUOUS_H
 
-#include "obstacle_2d.h"
-#include "../geometry/point_2d.h"
-#include "../geometry/trajectory_2d.h"
-#include "../flann/flann_obstacle_2dtree.h"
-#include "../util/types.h"
-#include "../image/image.h"
-#include "../math/random_generator.h"
+#include <scene/obstacle_2d.h>
+#include <geometry/point_2d.h>
+#include <geometry/trajectory_2d.h>
+#include <flann/flann_obstacle_2dtree.h>
+#include <util/types.h>
+#include <image/image.h>
+#include <math/random_generator.h>
 
 #include <vector>
 #include <string>

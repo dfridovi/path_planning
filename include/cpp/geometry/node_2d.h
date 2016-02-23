@@ -43,9 +43,9 @@
 #ifndef PATH_PLANNING_NODE_2D_H
 #define PATH_PLANNING_NODE_2D_H
 
-#include "point_2d.h"
-#include "../util/types.h"
-#include "../util/disallow_copy_and_assign.h"
+#include <geometry/point_2d.h>
+#include <util/types.h>
+#include <util/disallow_copy_and_assign.h>
 
 #include <memory>
 #include <vector>

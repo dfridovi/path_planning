@@ -43,8 +43,8 @@
 #ifndef PATH_PLANNING_ORIENTATION_2D_H
 #define PATH_PLANNING_ORIENTATION_2D_H
 
-#include "point_2d.h"
-#include "../util/types.h"
+#include <geometry/point_2d.h>
+#include <util/types.h>
 
 #include <memory>
 #include <glog/logging.h>

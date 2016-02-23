@@ -43,9 +43,9 @@
 #ifndef PATH_PLANNING_OBSTACLE_2D_H
 #define PATH_PLANNING_OBSTACLE_2D_H
 
-#include "../geometry/point_2d.h"
-#include "../util/types.h"
-#include "../util/disallow_copy_and_assign.h"
+#include <geometry/point_2d.h>
+#include <util/types.h>
+#include <util/disallow_copy_and_assign.h>
 
 #include <Eigen/Dense>
 #include <memory>

@@ -43,10 +43,10 @@
 #ifndef PATH_PLANNING_OCCUPANCY_GRID_2D_H
 #define PATH_PLANNING_OCCUPANCY_GRID_2D_H
 
-#include "../util/disallow_copy_and_assign.h"
-#include "../util/types.h"
-#include "../geometry/point_2d.h"
-#include "../scene/scene_2d_continuous.h"
+#include <util/disallow_copy_and_assign.h>
+#include <util/types.h>
+#include <geometry/point_2d.h>
+#include <scene/scene_2d_continuous.h>
 #include <Eigen/Dense>
 
 using Eigen::MatrixXi;

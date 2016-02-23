@@ -37,7 +37,7 @@
 #ifndef PATH_MAPPER_H
 #define PATH_MAPPER_H
 
-#include "../mapper/depth_map.h"
+#include <mapper/depth_map.h>
 
 #include <Eigen/Core>
 #include <pcl/io/pcd_io.h>

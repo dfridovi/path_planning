@@ -37,9 +37,9 @@
 #ifndef PATH_DEPTH_MAP_H
 #define PATH_DEPTH_MAP_H
 
-#include "../image/image.h"
-#include "../camera/camera.h"
-#include "../pose/pose.h"
+#include <image/image.h>
+#include <camera/camera.h>
+#include <pose/pose.h>
 
 namespace path {
 

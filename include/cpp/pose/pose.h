@@ -42,7 +42,7 @@
 #include <glog/logging.h>
 #include <string>
 
-#include "../util/types.h"
+#include <util/types.h>
 
 namespace path {
 

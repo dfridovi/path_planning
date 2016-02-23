@@ -51,7 +51,7 @@
 #include <string>
 #include <vector>
 
-#include "../util/disallow_copy_and_assign.h"
+#include <util/disallow_copy_and_assign.h>
 
 namespace path {
 namespace file {

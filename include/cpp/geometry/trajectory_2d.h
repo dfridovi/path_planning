@@ -43,7 +43,7 @@
 #ifndef PATH_PLANNING_TRAJECTORY_2D_H
 #define PATH_PLANNING_TRAJECTORY_2D_H
 
-#include "point_2d.h"
+#include <geometry/point_2d.h>
 #include <vector>
 #include <list>
 

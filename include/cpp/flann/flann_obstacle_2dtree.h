@@ -45,10 +45,10 @@
 #ifndef PATH_PLANNING_FLANN_OBSTACLE_2DTREE_H
 #define PATH_PLANNING_FLANN_OBSTACLE_2DTREE_H
 
-#include "flann_point_2dtree.h"
-#include "../geometry/point_2d.h"
-#include "../scene/obstacle_2d.h"
-#include "../util/disallow_copy_and_assign.h"
+#include <flann/flann_point_2dtree.h>
+#include <geometry/point_2d.h>
+#include <scene/obstacle_2d.h>
+#include <util/disallow_copy_and_assign.h>
 
 #include <flann/flann.h>
 #include <unordered_map>
