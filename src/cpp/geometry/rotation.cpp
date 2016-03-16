@@ -35,7 +35,7 @@
  *          David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include "rotation.h"
+#include <geometry/rotation.h>
 
 #include <cmath>
 #include <Eigen/LU>

@@ -40,7 +40,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "point_2d.h"
+#include <geometry/point_2d.h>
 #include <pcl/point_types.h>
 
 #include <glog/logging.h>

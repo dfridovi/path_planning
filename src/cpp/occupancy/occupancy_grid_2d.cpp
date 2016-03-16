@@ -40,9 +40,9 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "occupancy_grid_2d.h"
-#include "../geometry/point_2d.h"
-#include "../scene/obstacle_2d.h"
+#include <occupancy/occupancy_grid_2d.h>
+#include <geometry/point_2d.h>
+#include <scene/obstacle_2d.h>
 
 #include <cmath>
 #include <glog/logging.h>

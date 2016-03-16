@@ -43,7 +43,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "flann_point_2dtree.h"
+#include <flann/flann_point_2dtree.h>
 #include <glog/logging.h>
 #include <iostream>
 #include <cmath>

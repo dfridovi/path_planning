@@ -47,7 +47,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "camera_intrinsics.h"
+#include <camera/camera_intrinsics.h>
 
 #include <glog/logging.h>
 

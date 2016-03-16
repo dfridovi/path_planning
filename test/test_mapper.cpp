@@ -49,81 +49,106 @@
 
 namespace path
 {
-	using Eigen::Matrix3d;
-	using Eigen::Vector3d;
+  using Eigen::Matrix3d;
+  using Eigen::Vector3d;
 
-	// Check if various constructors work
-	TEST( Mapper, TestMapperConstruction )
-	{
-		CHECK_NOTNULL( new Mapper() );
-		CHECK_NOTNULL( new Mapper(true) );
-	}
+  // Check if various constructors work
+  TEST( Mapper, TestMapperConstruction )
+  {
+    CHECK_NOTNULL(new Mapper());
+    CHECK_NOTNULL(new Mapper(true));
+  }
 
-	// Generate a depth map and verify that it reprojects to the correct point
-	TEST( Mapper, TestMapperGenerated )
-	{
-		// TODO JDS in the future add an option to export generated point clouds
-		//const std::string point_cloud_file = strings::JoinFilepath( GENERATED_TEST_DATA_DIR, "mapper_point_cloud_gen.csv" );
-		math::RandomGenerator rng(0);
+  // Generate a depth map and verify that it reprojects to the correct point
+  TEST( Mapper, TestMapperGenerated )
+  {
+    // TODO JDS in the future add an option to export generated point clouds
+    //const std::string point_cloud_file = strings::JoinFilepath( GENERATED_TEST_DATA_DIR, "mapper_point_cloud_gen.csv" );
+    math::RandomGenerator rng(0);
 
-		for( size_t ii = 0; ii < 1000; ++ii )
-		{
-			int rows = rng.IntegerUniform(1, 20);
-			int cols = rng.IntegerUniform(1, 20);
+    for (size_t ii = 0; ii < 1000; ++ii) {
+      int rows = rng.IntegerUniform(1, 20);
+      int cols = rng.IntegerUniform(1, 20);
 
-			cv::Mat M = cv::Mat( rows, cols, CV_8UC1 );
-			Eigen::MatrixXd data( rows, cols );
+      cv::Mat M = cv::Mat(rows, cols, CV_8UC1);
+      Eigen::MatrixXd data(rows, cols);
 
-			for( int x = 0; x < rows; ++x )
-			{
-				uchar* row = M.ptr<uchar>(x);
-				for( int y = 0; y < cols; ++y )
-				{
-					data(x, y) = rng.IntegerUniform(0, 255);
-					row[y] = (uchar)(data(x, y));
-				}
-			}
+      for (int x = 0; x < rows; ++x) {
+        uchar* row = M.ptr<uchar>(x);
+        for (int y = 0; y < cols; ++y) {
+          data(x, y) = rng.IntegerUniform(0, 255);
+          row[y] = (uchar)(data(x, y));
+        }
+      }
 
-			DepthMap dm(M);
-			Camera c = dm.CreateCamera( 0, 0, 0, 0, 0, 0 );
-			dm.SetCamera(c);
-			Mapper m( false );
+      DepthMap dm(M);
+      Camera c = dm.CreateCamera(0, 0, 0, 0, 0, 0);
+      dm.SetCamera(c);
+      Mapper m(false);
+      m.AddDepthMap(dm);
 
-			pcl::PointCloud<pcl::PointXYZ> cloud = m.ProjectDepthMap( dm );
-			EXPECT_EQ(cloud.width * cloud.height, data.size());
+      pcl::PointCloud<pcl::PointXYZ> cloud = m.GetMap();
+      EXPECT_EQ(data.size(), cloud.width * cloud.height);
 
-			for( size_t i = 0; i < cloud.width * cloud.height; ++i )
-			{
-				double originalZ = data(i / cols, i % cols) / 256.0;
-				double projectedZ = cloud.points[i].z;
-				EXPECT_EQ(originalZ, projectedZ);
-			}
-		}
-	}
+      for (size_t i = 0; i < cloud.width * cloud.height; ++i) {
+        double originalZ = data(i % rows, i / rows) / 256.0;
+        double projectedZ = cloud.points[i].z;
+        EXPECT_EQ(originalZ, projectedZ);
+      }
+    }
+  }
 
-	// Load a depth map and generate a pointcloud file to verify correctness
-	// TODO: Automatically verify correctness (save the a correct point cloud file and compare them)
-	TEST( Mapper, TestMapperLoaded )
-	{
-		const std::string depth_map_file = strings::JoinFilepath( PATH_TEST_DATA_DIR, "depth_scene.png" );
-		const std::string point_cloud_file = strings::JoinFilepath( GENERATED_TEST_DATA_DIR, "mapper_point_cloud_loaded.pcd" );
+  // Load a depth map and generate a pointcloud file to verify correctness
+  // TODO: Automatically verify correctness (save the a correct point cloud file and compare them)
+  TEST( Mapper, TestMapperLoaded )
+  {
+    const std::string depth_map_file = strings::JoinFilepath(PATH_TEST_DATA_DIR, "depth_scene.png");
+    const std::string point_cloud_file = strings::JoinFilepath(GENERATED_TEST_DATA_DIR, "mapper_point_cloud_loaded.pcd");
 
-		cv::Mat M = cv::imread(depth_map_file.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
-		EXPECT_TRUE(M.data);
+    cv::Mat M = cv::imread(depth_map_file.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+    EXPECT_TRUE(M.data);
 
-		DepthMap dm(M);
-		dm.SetInverted( true );
-		Camera c = dm.CreateCamera( 0, 0, 0, 0, 0, 0 );
-		dm.SetCamera(c);
-		Mapper m( true );
-		pcl::PointCloud<pcl::PointXYZ> cloud = m.ProjectDepthMap( dm );
+    DepthMap dm(M);
+    dm.SetInverted(true);
 
-		std::remove(point_cloud_file.c_str());
-		
-		pcl::io::savePCDFileASCII( point_cloud_file, cloud );
-	}
+    Camera c = dm.CreateCamera(0, 0, 0, 0, 0, 0);
+    dm.SetCamera(c);
+    Mapper m(true);
+    m.AddDepthMap(dm);
+    
+    pcl::PointCloud<pcl::PointXYZ> cloud = m.GetMap();
 
-	// TODO: Add a test for "AddDepthMap functionality"
+    std::remove(point_cloud_file.c_str());
+    pcl::io::savePCDFileASCII(point_cloud_file, cloud);
+  }
 
-	// TODO: Add DepthMap specific tests?
+  // Load a depth map and generate a pointcloud file to verify correctness
+  // TODO: Automatically verify correctness (save the a correct point cloud file and compare them)
+  TEST( Mapper, TestMapperAdd )
+  {
+    const std::string depth_map_file = strings::JoinFilepath(PATH_TEST_DATA_DIR, "depth_scene.png");
+    const std::string point_cloud_file = strings::JoinFilepath(GENERATED_TEST_DATA_DIR, "mapper_point_cloud_loaded.pcd");
+
+    cv::Mat M = cv::imread(depth_map_file.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+    EXPECT_TRUE(M.data);
+
+    DepthMap dm(M);
+    dm.SetInverted(true);
+
+    Camera c = dm.CreateCamera(0, 0, 0, 0, 0, 0);
+    dm.SetCamera(c);
+    Mapper m(true);
+    m.AddDepthMap(dm);
+
+    Camera c2 = dm.CreateCamera(1.4, 0, 0, 0, M_PI, 0);
+    dm.SetCamera(c2);
+    m.AddDepthMap(dm);
+
+    pcl::PointCloud<pcl::PointXYZ> cloud = m.GetMap();
+
+    std::remove(point_cloud_file.c_str());
+    pcl::io::savePCDFileASCII(point_cloud_file, cloud);
+  }
+
+  // TODO: Add DepthMap specific tests?
 } //\ namespace path

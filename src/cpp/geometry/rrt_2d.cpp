@@ -41,7 +41,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "rrt_2d.h"
+#include <geometry/rrt_2d.h>
 #include <list>
 #include <iostream>
 #include <glog/logging.h>

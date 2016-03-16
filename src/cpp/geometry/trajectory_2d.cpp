@@ -42,8 +42,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "trajectory_2d.h"
-#include "point_2d.h"
+#include <geometry/trajectory_2d.h>
+#include <geometry/point_2d.h>
 #include <glog/logging.h>
 #include <iostream>
 

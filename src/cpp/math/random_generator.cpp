@@ -35,7 +35,7 @@
  *          David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include "random_generator.h"
+#include <math/random_generator.h>
 
 namespace path {
 namespace math {

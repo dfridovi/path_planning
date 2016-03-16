@@ -35,7 +35,7 @@
  *          David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
  */
 
-#include "progress_bar.h"
+#include <util/progress_bar.h>
 
 namespace path {
 namespace util {

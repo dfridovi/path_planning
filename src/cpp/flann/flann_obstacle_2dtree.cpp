@@ -42,7 +42,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "flann_obstacle_2dtree.h"
+#include <flann/flann_obstacle_2dtree.h>
 #include <glog/logging.h>
 
 namespace path {

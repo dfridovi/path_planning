@@ -40,7 +40,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "obstacle_2d.h"
+#include <scene/obstacle_2d.h>
 
 #include <memory>
 #include <cmath>

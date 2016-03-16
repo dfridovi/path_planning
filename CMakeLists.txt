@@ -18,6 +18,8 @@ include(cmake/Dependencies.cmake)
 # Check for C++11 features and enable.
 path_enable_cpp11()
 
+
+
 # Set the build type. Default to Release mode.
 if(NOT CMAKE_BUILD_TYPE)
   message("Defaulting to building targets in Release mode.")
@@ -28,11 +30,14 @@ endif(NOT CMAKE_BUILD_TYPE)
 add_subdirectory(external)
 
 # Add the source directories to the search path so cmake can find our headers.
-include_directories(${CMAKE_SOURCE_DIR}/src/cpp/)
+include_directories(${CMAKE_SOURCE_DIR}/include/cpp/)
 
 # Collect source files and build the path_planning object.
 file(GLOB_RECURSE path_srcs ${CMAKE_SOURCE_DIR}/src/cpp/*.cpp)
 add_library(path_planning ${path_srcs})
+
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/cpp/ DESTINATION include/path_planning)
+install(TARGETS path_planning DESTINATION lib)
 
 # Set up output directory for executables.
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin/)
