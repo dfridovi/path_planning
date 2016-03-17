@@ -36,7 +36,7 @@ Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
 
 ###########################################################################
 #
-# 3D point class.
+# 2D/3D point classes.
 #
 ###########################################################################
 
@@ -58,3 +58,17 @@ class Point3D:
         dy = self.y_ - other.y_
         dz = self.z_ - other.z_
         return dx*dx + dy*dy + dz*dz
+
+class Point2D:
+    def __init__(self):
+        self.x_ = 0
+        self.y_ = 0
+
+    def __init__(self, x, y):
+        self.x_ = x
+        self.y_ = y
+
+    def SquaredDistanceTo(self, other):
+        dx = self.x_ - other.x_
+        dy = self.y_ - other.y_
+        return dx*dx + dy*dy

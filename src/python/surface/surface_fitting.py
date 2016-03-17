@@ -43,40 +43,117 @@ Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
 
 import matplotlib.pyplot as plt
 import numpy as np
+from point import Point3D, Point2D
 
-def RBF(p1, p2, gamma):
-    """
-    Compute the RBF covariance kernel for two points.
-    i.e. exp(- gamma * ||p1 - p2||_2^2)
-    """
-    return np.exp(-gamma * p1.SquaredDistanceTo(p2))
-
-def Covariance(points, gamma):
-    """
-    Compute covariance matrix for a list of points, using the RBF kernel.
-    """
-    K = np.zeros((len(points), len(points)))
-    for ii, p1 in enumerate(points):
-        for jj, p2 in enumerate(points):
-            K[ii, jj] = RBF(p1, p2, gamma)
-
-    return np.asmatrix(K)
-
-def CrossCovariance(points1, points2):
-    """
-    Compute cross covariance matrix for two lists of points.
-    """
-    K = np.zeros((len(points1), len(points2)))
-    for ii, p1 in enumerate(points1):
-        for jj, p2 in enumerate(points2):
-            K[ii, jj] = RBF(p1, p2, gamma)
-
-    return np.asmatrix(K)
-
-def EstimateDistance(training_points, training_dists, query_points):
+class EstimateSurface:
     """
     Generate covariance matrices and compute conditional expectation
     and covariance for signed distance function.
     """
+    def __init__(self, training_points, training_dists, gamma, noise_sd):
+        self.K11_ = self.Covariance(training_points, gamma, noise_sd)
+        self.K11_inv_ = np.linalg.inv(self.K11_)
+        self.mu_training_ = np.asarray(training_dists)
+        self.mu_training_ = np.asmatrix(self.mu_training_).T
+
+    def RBF(self, p1, p2, gamma):
+        """
+        Compute the RBF covariance kernel for two points.
+        i.e. exp(- gamma * ||p1 - p2||_2^2)
+        """
+        return np.exp(-gamma * p1.SquaredDistanceTo(p2))
+
+    def Covariance(self, points, gamma, noise_sd=0.0):
+        """
+        Compute covariance matrix for a list of points, using the RBF kernel.
+        """
+        K = np.zeros((len(points), len(points)))
+        for ii, p1 in enumerate(points):
+            for jj, p2 in enumerate(points):
+                K[ii, jj] = self.RBF(p1, p2, gamma)
+
+        return np.asmatrix(K + noise_sd*noise_sd*np.eye(len(points)))
+
+    def CrossCovariance(self, points1, points2, gamma):
+        """
+        Compute cross covariance matrix for two lists of points.
+        """
+        K = np.zeros((len(points1), len(points2)))
+        for ii, p1 in enumerate(points1):
+            for jj, p2 in enumerate(points2):
+                K[ii, jj] = self.RBF(p1, p2, gamma)
+
+        return np.asmatrix(K)
 
 
+    def SignedDistance(self, query, gamma, noise_sd):
+        K22 = self.Covariance([query], gamma, noise_sd)
+        K12 = self.CrossCovariance(training_points, [query], gamma)
+        K21 = K12.T
+
+        # Gaussian conditioning.
+        mu_query = K21 * self.K11_inv_ * self.mu_training_
+        K_query = K22 - K21 * self.K11_inv_ * K12
+
+        return (mu_query, K_query)
+
+    def CovarianceToUncertainty(self, K):
+        """
+        Return uncertainty -- essentially just the diagonal of the covariance matrix.
+        """
+        uncertainty = []
+        for ii in range(K.shape[0]):
+            uncertainty.append(K[ii, ii])
+
+        return uncertainty
+
+# --------------------------------- MAIN FUNCTION ------------------------------ #
+
+if __name__ == "__main__":
+    N = 20  # number of points
+    R = 1.0   # radius of sphere
+    BOX = 2.0 # bounding box
+    RES = 0.1 # plot resolution
+    SD = 0.1  # noise standard deviation
+    GAMMA = 10.0 # RBF parameter
+
+    # Generate a bunch of points on a sphere of radius R.
+    training_points = []
+    training_dists = []
+    for ii in range(N):
+        theta = np.random.uniform(0.0, 2.0*np.pi)
+        x = R * np.cos(theta)
+        y = R * np.sin(theta)
+
+        # Compute a point inside and a point outside the sphere.
+        p_inside = Point2D(0.9*x, 0.9*y)
+        training_points.append(p_inside)
+        training_dists.append(-0.1*R)
+
+        p_outside = Point2D(1.1*x, 1.1*y)
+        training_points.append(p_outside)
+        training_dists.append(0.1*R)
+
+    # Create a new EstimateSurface object.
+    gp = EstimateSurface(training_points, training_dists, GAMMA, SD)
+
+    # Generate a meshgrid and plot the isosurface.
+    x, y = np.meshgrid(np.arange(-BOX, BOX, RES), np.arange(-BOX, BOX, RES))
+    distances = np.zeros(x.shape)
+    errors = np.zeros(x.shape)
+    for ii in range(x.shape[0]):
+        for jj in range(x.shape[1]):
+            query = Point2D(x[ii, jj], y[ii, jj])
+            dist, err = gp.SignedDistance(query, GAMMA, SD)
+            distances[ii, jj] = dist
+            errors[ii, jj] = err
+
+    plt.figure()
+    cs = plt.contour(x, y, distances, [-0.1, 0, 0.1])
+    plt.colorbar()
+
+    # Plot the training points.
+    for p in training_points:
+        plt.plot(p.x_, p.y_, 'ro')
+
+    plt.show()
