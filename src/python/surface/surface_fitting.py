@@ -42,6 +42,7 @@ Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
 ###########################################################################
 
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from point import Point3D, Point2D
 
@@ -148,12 +149,16 @@ if __name__ == "__main__":
             distances[ii, jj] = dist
             errors[ii, jj] = err
 
-    plt.figure()
+    plt.figure(1)
     cs = plt.contour(x, y, distances, [-0.1, 0, 0.1])
     plt.colorbar()
 
     # Plot the training points.
     for p in training_points:
         plt.plot(p.x_, p.y_, 'ro')
+
+    fig = plt.figure(2)
+    ax = fig.gca(projection="3d")
+    surf = ax.plot_surface(x, y, distances, rstride=1, cstride=1, antialiased=False)
 
     plt.show()
