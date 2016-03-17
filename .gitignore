@@ -35,3 +35,6 @@ resources
 theory/*.aux
 theory/*.log
 theory/*.out
+
+# python compiled fils
+*.pyc
