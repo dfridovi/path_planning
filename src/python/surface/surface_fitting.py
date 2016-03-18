@@ -42,6 +42,7 @@ Author: David Fridovich-Keil   ( dfk@eecs.berkeley.edu )
 ###########################################################################
 
 import matplotlib.pyplot as plt
+from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 from point import Point3D, Point2D
@@ -56,6 +57,7 @@ class EstimateSurface:
         self.K11_inv_ = np.linalg.inv(self.K11_)
         self.mu_training_ = np.asarray(training_dists)
         self.mu_training_ = np.asmatrix(self.mu_training_).T
+        self.training_points_ = training_points
 
     def RBF(self, p1, p2, gamma):
         """
@@ -89,7 +91,7 @@ class EstimateSurface:
 
     def SignedDistance(self, query, gamma, noise_sd):
         K22 = self.Covariance([query], gamma, noise_sd)
-        K12 = self.CrossCovariance(training_points, [query], gamma)
+        K12 = self.CrossCovariance(self.training_points_, [query], gamma)
         K21 = K12.T
 
         # Gaussian conditioning.
@@ -159,6 +161,8 @@ if __name__ == "__main__":
 
     fig = plt.figure(2)
     ax = fig.gca(projection="3d")
-    surf = ax.plot_surface(x, y, distances, rstride=1, cstride=1, antialiased=False)
-
+    cmap = cm.ScalarMappable()
+    cmap.set_array(errors)
+    surf = ax.plot_surface(x, y, distances, rstride=1, cstride=1,
+                           antialiased=False, facecolors=cm.coolwarm(errors))
     plt.show()
