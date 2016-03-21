@@ -113,7 +113,7 @@ class EstimateSurface:
 # --------------------------------- MAIN FUNCTION ------------------------------ #
 
 if __name__ == "__main__":
-    N = 20  # number of points
+    N = 100  # number of points
     R = 1.0   # radius of sphere
     BOX = 2.0 # bounding box
     RES = 0.1 # plot resolution
@@ -161,8 +161,9 @@ if __name__ == "__main__":
 
     fig = plt.figure(2)
     ax = fig.gca(projection="3d")
-    cmap = cm.ScalarMappable()
+    cmap = cm.ScalarMappable(cmap=cm.coolwarm)
     cmap.set_array(errors)
     surf = ax.plot_surface(x, y, distances, rstride=1, cstride=1,
                            antialiased=False, facecolors=cm.coolwarm(errors))
+    fig.colorbar(cmap)
     plt.show()
